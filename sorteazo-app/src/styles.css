@@ -6,4 +6,12 @@
   --font-fira: "Fira Code", monospace;
   --font-open-sans: "Open Sans", sans-serif;
   --font-afacad: "Afacad", sans-serif;
+
+  --color-primary: #579460;
+  --color-background: #FFFFFF;
+  --color-light-gray: #F1F1F1;
+  --color-light-text: #FFFFFF;
+  --color-dark-text: #363636;
+  --color-gray-text: #B3B3B3;
+
 }
