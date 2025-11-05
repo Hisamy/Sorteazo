@@ -11,42 +11,45 @@ export function InicioSesion() {
             </div>
 
             <div className="col-start-2 col-end-4  p-10 flex flex-col bg-[var(--color-background)] flex align-center">
-                <div className="max-w-sm ">
+                <div className="w-full flex justify-center mb-10">
                     <img
                         src={sorteazoLogo}
                         alt="Sorteazo logo"
-                        className="w-1/2 mb-10"
+                        className="max-w-50"
                     />
                 </div>
-                <div className="flex flex-col gap-15 align-center justify-center">
-                    <div>
-                        <ToggleButtonText isCrearCuenta={false} />
-                    </div>
-                    <div className="font-afacad">
-                        <form action="#" method="get">
-                            <fieldset className="flex flex-col">
-                                <label htmlFor="#">Correo Electrónico</label>
-                                <InputForm
-                                    type="text"
-                                    placeholder="tucorreo@ejemplo.com"
-                                />
-                            </fieldset>
-                            <fieldset className="flex flex-col">
-                                <label htmlFor="#">Contraseña</label>
-                                <PasswordInput
+                <div className="flex flex-col align-center mt-10 gap-10 px-10 w-full h-full">
+                    <div className="w-full max-w-lg mx-auto">
+                        <div className="w-full">
+                            <ToggleButtonText isCrearCuenta={false} />
+                        </div>
+                        <div className="font-afacad mt-20 ">
+                            <form action="#" method="get">
+                                <fieldset className="flex flex-col mb-5">
+                                    <label htmlFor="#">Correo Electrónico</label>
+                                    <InputForm
+                                        type="text"
+                                        placeholder="tucorreo@ejemplo.com"
+                                    />
+                                </fieldset>
+                                <fieldset className="flex flex-col mb-5">
+                                    <label htmlFor="#">Contraseña</label>
+                                    <PasswordInput
 
-                                />
+                                    />
 
-                            </fieldset>
+                                </fieldset>
 
-                            <button
-                                type="submit"
-                                className=" cursor-pointer bg-[var(--color-primary)] text-[var(--color-light-text)] font-afacad  w-full py-2 px-[18px] mt-5 rounded-xl">
-                                Continuar
-                            </button>
+                                <button
+                                    type="submit"
+                                    className=" cursor-pointer bg-[var(--color-primary)] text-[var(--color-light-text)] font-afacad  w-full py-2 px-[18px]  rounded-xl">
+                                    Continuar
+                                </button>
 
 
-                        </form>
+                            </form>
+                        </div>
+
                     </div>
 
                 </div>
