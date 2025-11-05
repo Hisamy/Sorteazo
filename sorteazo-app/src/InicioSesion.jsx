@@ -42,12 +42,17 @@ export function InicioSesion() {
 
                                 <button
                                     type="submit"
-                                    className=" cursor-pointer bg-[var(--color-primary)] text-[var(--color-light-text)] font-afacad  w-full py-2 px-[18px]  rounded-xl">
+                                    className=" hover:bg-[var(--color-primary-hover)] transition-colors duration-500 cursor-pointer mb-2 bg-[var(--color-primary)] text-[var(--color-light-text)] font-afacad  w-full py-2 px-[18px]  rounded-xl">
                                     Continuar
                                 </button>
 
 
                             </form>
+                            <div>
+                                <a href="#" target="_self" rel="noopener noreferrer" className="hover:text-[var(--color-primary-hover)] transition-colors duration-300 cursor-pointer">
+                                    ¿Olvidaste tu Contraseña?
+                                </a>
+                            </div>
                         </div>
 
                     </div>
