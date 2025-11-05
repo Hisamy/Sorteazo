@@ -4,6 +4,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Client } from './entities/client.entity';
+import { Organizador } from './entities/organizador.entity';
 
 @Injectable()
 export class UsersService {
@@ -11,6 +13,12 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    @InjectRepository(Client)
+    private readonly clientRepository: Repository<Client>,
+
+    @InjectRepository(Organizador)
+    private readonly organizadorRepository: Repository<Organizador>,
   ) { }
 
   create(createUserDto: CreateUserDto) {
