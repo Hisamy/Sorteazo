@@ -1,34 +1,75 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+// src/users/users.controller.ts
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Res,
+  HttpCode,
+  HttpStatus,
+  Req,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
+import type { Response, Request } from 'express';
+import { AuthGuard } from '@nestjs/passport';
+import { CreateClientDto } from './dto/create-client.dto';
+import { CreateOrganizadorDto } from './dto/create-organizador.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(
+    private readonly usersService: UsersService,
+  ) { }
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  @Post('/register/client')
+  async registerClient(@Body() createClientDto: CreateClientDto) {
+    return this.usersService.createClient(createClientDto);
   }
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
+  @Post('/register/organizador')
+  async registerOrganizador(@Body() createOrganizadorDto: CreateOrganizadorDto) {
+    return this.usersService.createOrganizador(createOrganizadorDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @Post('/login')
+  @HttpCode(HttpStatus.OK)
+  async login(
+    @Body() loginUserDto: LoginUserDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { access_token } = await this.usersService.login(loginUserDto);
+
+    res.cookie('access_token', access_token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'strict',
+      maxAge: 3600000,
+    });
+
+    return { message: 'Successful Login' };
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:id')
+  async findUserById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.usersService.findOne(id);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/profile/me')
+  getProfile(@Req() req: Request) {
+    return req.user;
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/logout')
+  @HttpCode(HttpStatus.OK)
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('access_token');
+    return { message: 'Successful Logout' };
   }
 }
