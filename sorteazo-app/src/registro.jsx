@@ -39,6 +39,10 @@ export function Registro({ toggleView }) {
                                 <InputForm type="text" placeholder="Ingresa tu apellido" />
                             </fieldset>
                             <fieldset className="flex flex-col mb-4">
+                                <label htmlFor="telefono">Correo electronido:</label>
+                                <InputForm type="tel" placeholder="prueba@gmail.com" />
+                            </fieldset>
+                            <fieldset className="flex flex-col mb-4">
                                 <label htmlFor="telefono">Número de teléfono:</label>
                                 <InputForm type="tel" placeholder="111-222-333-4" />
                             </fieldset>
