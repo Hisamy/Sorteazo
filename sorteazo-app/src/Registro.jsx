@@ -31,29 +31,29 @@ export function Registro({ toggleView }) {
                         <form action="#" method="post">
                           
                             <fieldset className="flex flex-col mb-4">
-                                <label htmlFor="nombre">Nombre(*)</label>
+                                <label htmlFor="nombre">Nombre(s):</label>
                                 <InputForm type="text" placeholder="Ingresa tu nombre" />
                             </fieldset>
                             <fieldset className="flex flex-col mb-4">
-                                <label htmlFor="apellido">Apellido(*)</label>
+                                <label htmlFor="apellido">Apellido(s):</label>
                                 <InputForm type="text" placeholder="Ingresa tu apellido" />
                             </fieldset>
                             <fieldset className="flex flex-col mb-4">
-                                <label htmlFor="telefono">Número de teléfono</label>
+                                <label htmlFor="telefono">Número de teléfono:</label>
                                 <InputForm type="tel" placeholder="111-222-333-4" />
                             </fieldset>
                             <fieldset className="flex flex-col mb-4">
-                                <label htmlFor="direccion">Dirección</label>
+                                <label htmlFor="direccion">Dirección:</label>
                                 <InputForm type="text" placeholder="Av. Juarez" />
                             </fieldset>
                             <fieldset className="flex flex-col mb-4">
-                                <label htmlFor="codigopostal">Código postal</label>
+                                <label htmlFor="codigopostal">Código postal:</label>
                                 <InputForm type="text" placeholder="1111" />
                             </fieldset>
 
                             
                             <fieldset className="flex flex-col mb-4">
-                                <label htmlFor="contrasena">Contraseña</label>
+                                <label htmlFor="contrasena">Contraseña:</label>
                                 <PasswordInput placeholder="Crea tu contraseña" />
                             </fieldset>
                             <fieldset className="flex flex-col mb-4">
@@ -80,7 +80,7 @@ export function Registro({ toggleView }) {
                                 type="submit"
                                 className="cursor-pointer bg-[var(--color-primary)] text-[var(--color-light-text)] font-afacad w-full py-2 px-[18px] mt-2 rounded-xl hover:bg-green-700 transition-colors"
                             >
-                                ¡Regístrarme!
+                                Regístrarme
                             </button>
                         </form>
                     </div>
