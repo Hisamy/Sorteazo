@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+
 
 export function ToggleButtonText({ isCrearCuenta }) {
     const [isIniciarSesion, setIsIniciarSesion] = useState(isCrearCuenta);
@@ -19,23 +21,22 @@ export function ToggleButtonText({ isCrearCuenta }) {
                     onChange={handleCheckboxChange}
                 />
 
-                <span
-                    className={`flex items-center justify-center w-full space-x-[6px] m-1 rounded-[10px] py-2 px-[18px] text-md transition-all duration-200 ${!isIniciarSesion
-                        ? 'text-dark-text bg-[var(--color-background)]'
-                        : 'text-gray-text'
-                        }`}
-                >
-                    Iniciar sesión
-                </span>
-
-                <span
-                    className={`flex items-center justify-center w-full space-x-[6px] m-1 rounded-[10px] py-2 px-[18px] text-md transition-all duration-200 ${isIniciarSesion
-                        ? 'text-dark-text bg-[var(--color-background)]'
-                        : 'text-gray-text'
-                        }`}
-                >
-                    Crear cuenta
-                </span>
+                <Link to="/" className={`flex items-center justify-center w-full space-x-[6px] m-1 rounded-[10px] py-2 px-[18px] text-md transition-all duration-200 ${!isIniciarSesion
+                    ? 'text-dark-text bg-[var(--color-background)]'
+                    : 'text-gray-text'
+                    }`}>
+                    <span>
+                        Iniciar sesión
+                    </span>
+                </Link>
+                <Link to="/CrearCuenta" className={`flex items-center justify-center w-full space-x-[6px] m-1 rounded-[10px] py-2 px-[18px] text-md transition-all duration-200 ${isIniciarSesion
+                    ? 'text-dark-text bg-[var(--color-background)]'
+                    : 'text-gray-text'
+                    }`}>
+                    <span>
+                        Crear cuenta
+                    </span>
+                </Link>
             </label>
         </>
     );

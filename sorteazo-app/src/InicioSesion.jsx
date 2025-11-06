@@ -6,8 +6,12 @@ import { PasswordInput } from "./form-components/InputPassword";
 export function InicioSesion() {
     return (
         <div className="grid grid-cols-3 h-screen ">
-            <div>
-                <Hero text="Welcome back," />
+            <div className="fixed top-0 left-0 h-screen w-1/3">
+                <Hero
+                    header="Hola de nuevo,"
+                    text="por favor ingrese sus detalles de cuenta."
+
+                />
             </div>
 
             <div className="col-start-2 col-end-4  p-10 flex flex-col bg-[var(--color-background)] flex align-center">
@@ -28,7 +32,7 @@ export function InicioSesion() {
                                 <fieldset className="flex flex-col mb-5">
                                     <label htmlFor="#">Correo Electrónico</label>
                                     <InputForm
-                                        type="text"
+                                        type="email"
                                         placeholder="tucorreo@ejemplo.com"
                                     />
                                 </fieldset>
