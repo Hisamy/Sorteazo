@@ -52,13 +52,6 @@ export function CrearCuenta() {
                                 <fieldset className="flex flex-col mb-5">
                                     <label htmlFor="#">Número de teléfono</label>
                                     <InputForm
-                                        type="number"
-                                        placeholder="111-222-333-4"
-                                    />
-                                </fieldset>
-                                <fieldset className="flex flex-col mb-5">
-                                    <label htmlFor="#">Número de teléfono</label>
-                                    <InputForm
                                         type="text"
                                         placeholder="111-222-333-4"
                                     />
