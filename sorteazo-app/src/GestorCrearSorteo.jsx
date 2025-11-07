@@ -97,7 +97,7 @@ export function GestorCrearSorteo() {
             <TopNavBar />
 
             <div className="container mx-auto px-4 py-8">
-                <h1 className="text-4xl font-afacad font-bold text-center text-[var(--color-dark-text)] mb-8">
+                <h1 className="text-4xl font-afacad font-bold text-center text-[var(--color-dark-text)] mb-2">
                     Crear nuevo Sorteo
                 </h1>
 
