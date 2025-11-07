@@ -1,5 +1,5 @@
 import { Hero } from "./Hero";
-import sorteazoLogo from "./assets/sorteazo.svg"
+import sorteazoLogo from "./assets/LogoSorteazo-B.svg";
 import { ToggleButtonText } from "./ToggleButtonText";
 import { InputForm } from "./form-components/InputForm";
 import { PasswordInput } from "./form-components/InputPassword";
