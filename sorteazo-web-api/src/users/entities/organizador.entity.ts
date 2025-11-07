@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
-import { Sorteo } from "src/sorteos/entities/sorteo.entity";
+import { Sorteo } from "../../sorteos/entities/sorteo.entity";
 
 @Entity('organizadores')
 export class Organizador {

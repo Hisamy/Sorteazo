@@ -1,7 +1,7 @@
 import { Organizador } from "../../users/entities/organizador.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Premio } from "./premio.entity";
-import { Boleto } from "src/boletos/entities/boleto.entity";
+import { Boleto } from "../../boletos/entities/boleto.entity";
 
 @Entity('sorteos')
 export class Sorteo {

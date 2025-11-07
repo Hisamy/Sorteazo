@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
-import { Boleto } from "src/boletos/entities/boleto.entity";
+import { Boleto } from "../../boletos/entities/boleto.entity";
 
 @Entity('clients')
 export class Client {

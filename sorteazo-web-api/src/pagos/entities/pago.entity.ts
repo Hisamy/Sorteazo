@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { TipoPago, EstadoPago } from "../enums/pagos.enum";
-import { Boleto } from "src/boletos/entities/boleto.entity";
+import { Boleto } from "../../boletos/entities/boleto.entity";
 import { Comprobante } from "./comprobante.entity";
 
 @Entity('pagos')
