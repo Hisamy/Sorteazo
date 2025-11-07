@@ -18,10 +18,10 @@ export function CrearCuenta() {
                     <img
                         src={sorteazoLogo}
                         alt="Sorteazo logo"
-                        className="max-w-50"
+                        className="max-h-25"
                     />
                 </div>
-                <div className="flex flex-col align-center mt-10 gap-10 px-10 w-full h-full">
+                <div className="flex flex-col align-center gap-10 px-10 w-full h-full">
                     <div className="w-full max-w-lg mx-auto">
                         <div className="w-full">
                             <ToggleButtonText isCrearCuenta={true} />
@@ -47,13 +47,6 @@ export function CrearCuenta() {
                                     <InputForm
                                         type="email"
                                         placeholder="tucorreo@ejemplo.com"
-                                    />
-                                </fieldset>
-                                <fieldset className="flex flex-col mb-5">
-                                    <label htmlFor="#">Número de teléfono</label>
-                                    <InputForm
-                                        type="number"
-                                        placeholder="111-222-333-4"
                                     />
                                 </fieldset>
                                 <fieldset className="flex flex-col mb-5">
