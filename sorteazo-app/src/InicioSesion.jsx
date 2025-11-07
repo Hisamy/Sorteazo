@@ -19,10 +19,10 @@ export function InicioSesion() {
                     <img
                         src={sorteazoLogo}
                         alt="Sorteazo logo"
-                        className="max-w-50"
+                        className="max-h-25"
                     />
                 </div>
-                <div className="flex flex-col align-center mt-10 gap-10 px-10 w-full h-full">
+                <div className="flex flex-col align-center gap-10 px-10 w-full h-full">
                     <div className="w-full max-w-lg mx-auto">
                         <div className="w-full">
                             <ToggleButtonText isCrearCuenta={false} />
