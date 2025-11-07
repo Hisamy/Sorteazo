@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
+import { Boleto } from "src/boletos/entities/boleto.entity";
 
 @Entity('clients')
 export class Client {
@@ -16,4 +17,7 @@ export class Client {
 
     @Column({ name: 'zip_code' })
     zipCode: string;
+
+    @OneToMany(() => Boleto, (boleto) => boleto.client)
+    boletos: Boleto[];
 }
