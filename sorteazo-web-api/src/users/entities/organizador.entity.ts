@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
+import { Sorteo } from "../../sorteos/entities/sorteo.entity";
 
 @Entity('organizadores')
 export class Organizador {
@@ -13,4 +14,7 @@ export class Organizador {
 
     @Column({ name: 'admin_name' })
     adminName: string;
+
+    @OneToMany(() => Sorteo, (sorteo) => sorteo.organizador)
+    sorteos: Sorteo[];
 }
