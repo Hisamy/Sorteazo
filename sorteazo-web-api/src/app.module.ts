@@ -4,11 +4,13 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmOptions } from './users/configs/typeorm.config';
+import { SorteosModule } from './sorteos/sorteos.module';
 
 @Module({
   imports: [
     UsersModule,
-    TypeOrmModule.forRoot(TypeOrmOptions)
+    TypeOrmModule.forRoot(TypeOrmOptions),
+    SorteosModule
   ],
   controllers: [AppController],
   providers: [AppService],
