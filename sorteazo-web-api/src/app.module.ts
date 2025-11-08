@@ -5,12 +5,16 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmOptions } from './users/configs/typeorm.config';
 import { SorteosModule } from './sorteos/sorteos.module';
-import { BoletosModule } from './pagos/boletos/boletos.module';
-import { PagosModule } from './pagos/pagos.module';
 import { BoletosModule } from './boletos/boletos.module';
+import { PagosModule } from './pagos/pagos.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     UsersModule,
     TypeOrmModule.forRoot(TypeOrmOptions),
     SorteosModule,
