@@ -1,5 +1,5 @@
 import { Hero } from "./Hero";
-import sorteazoLogo from "./assets/sorteazo.svg"
+import sorteazoLogo from "./assets/LogoSorteazo-B.svg"
 import { ToggleButtonText } from "./ToggleButtonText.jsx";
 import { InputForm } from "./form-components/InputForm.jsx";
 import { PasswordInput } from "./form-components/InputPassword";
@@ -21,7 +21,6 @@ export function CrearCuenta() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        console.log("Cambiando:", name, "→", value);
         setFormData({
             ...formData,
             [name]: value,
