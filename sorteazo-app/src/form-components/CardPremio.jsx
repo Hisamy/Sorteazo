@@ -1,5 +1,4 @@
 import React from 'react';
-import { InputWrapper, InputText, TextArea, InputFile } from '../form-components/FormComponents'; 
 
 export function CardPremio({ index, prize, handleChange, handleRemove }) {
     
