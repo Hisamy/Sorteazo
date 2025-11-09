@@ -10,8 +10,8 @@ import { BoletosModule } from './boletos/boletos.module';
 
 @Module({
   imports: [
-    UsersModule,
     TypeOrmModule.forRoot(TypeOrmOptions),
+    UsersModule,
     SorteosModule,
     BoletosModule,
     PagosModule
