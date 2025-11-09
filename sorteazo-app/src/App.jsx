@@ -1,7 +1,6 @@
 import { InicioSesion } from "./InicioSesion"
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CrearCuenta } from "./CrearCuenta";
-import { GestorCrearSorteo } from "./GestorCrearSorteo";
 
 
 function App() {
@@ -11,7 +10,6 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/CrearCuenta" element={<CrearCuenta />} />
-        <Route path="/CrearSorteo" element={<GestorCrearSorteo />} />
         <Route path="/" element={<InicioSesion />} />
       </Routes>
     </BrowserRouter>

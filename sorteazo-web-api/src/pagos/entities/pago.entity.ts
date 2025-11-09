@@ -30,6 +30,6 @@ export class Pago {
     @OneToOne(() => Comprobante, (comprobante) => comprobante.pago, { nullable: true, cascade: true })
     comprobante: Comprobante;
 
-    @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+    @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
     createdAt: Date;
 }

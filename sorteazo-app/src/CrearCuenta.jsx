@@ -1,5 +1,5 @@
 import { Hero } from "./Hero";
-import sorteazoLogo from "./assets/LogoSorteazo-B.svg";
+import sorteazoLogo from "./assets/LogoSorteazo-B.svg"
 import { ToggleButtonText } from "./ToggleButtonText.jsx";
 import { InputForm } from "./form-components/InputForm.jsx";
 import { PasswordInput } from "./form-components/InputPassword";
@@ -21,7 +21,6 @@ export function CrearCuenta() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        console.log("Cambiando:", name, "→", value);
         setFormData({
             ...formData,
             [name]: value,
@@ -150,15 +149,15 @@ export function CrearCuenta() {
                                     <div className="flex gap-2">
                                         <div>
                                             <input className="mt-2" type="checkbox" name="terminosCondiciones" id="" />
-                                        </div>
+                                        </div >
 
                                         <div >
                                             <label className="text-lg">Acepto los terminos y condiciones</label>
                                             <p className="text-gray-text">Tus datos podrán ser utilizados para enviarte recordatorios de tus sorteos.</p>
                                         </div>
 
-                                    </div>
-                                </fieldset>
+                                    </div >
+                                </fieldset >
 
                                 <button
                                     type="submit"
@@ -166,16 +165,16 @@ export function CrearCuenta() {
                                 >
                                     Registrarme
                                 </button>
-                            </form>
+                            </form >
 
-                        </div>
+                        </div >
 
-                    </div>
+                    </div >
 
-                </div>
+                </div >
 
 
-            </div>
+            </div >
         </div >
 
     );

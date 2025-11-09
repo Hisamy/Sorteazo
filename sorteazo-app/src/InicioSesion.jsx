@@ -3,7 +3,33 @@ import sorteazoLogo from "./assets/LogoSorteazo-B.svg";
 import { ToggleButtonText } from "./ToggleButtonText";
 import { InputForm } from "./form-components/InputForm";
 import { PasswordInput } from "./form-components/InputPassword";
+import { useState } from "react";
+import { iniciarSesion } from "./controllers/UsuarioController";
+
 export function InicioSesion() {
+    const [formData, setFormData] = useState({
+        email: "",
+        password: ""
+    });
+    const [loading, setLoading] = useState(false);
+
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const response = await iniciarSesion(formData);
+            console.log("Login exitoso:", response);
+            alert("Inicio de sesión exitoso");
+        } catch (err) {
+            console.error(err);
+            alert(err.message || "Hubo un error al crear la cuenta");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="grid grid-cols-3 h-screen ">
             <div className="fixed top-0 left-0 h-screen w-1/3">
@@ -28,20 +54,28 @@ export function InicioSesion() {
                             <ToggleButtonText isCrearCuenta={false} />
                         </div>
                         <div className="font-afacad mt-20 ">
-                            <form action="#" method="get">
+                            <form onSubmit={handleSubmit}>
                                 <fieldset className="flex flex-col mb-5">
-                                    <label htmlFor="#">Correo Electrónico</label>
+                                    <label>Correo Electrónico</label>
                                     <InputForm
                                         type="email"
                                         placeholder="tucorreo@ejemplo.com"
+                                        value={formData.email}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, email: e.target.value })
+                                        }
+                                        required
                                     />
                                 </fieldset>
                                 <fieldset className="flex flex-col mb-5">
-                                    <label htmlFor="#">Contraseña</label>
+                                    <label>Contraseña</label>
                                     <PasswordInput
-
+                                        value={formData.password}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, password: e.target.value })
+                                        }
+                                        required
                                     />
-
                                 </fieldset>
 
                                 <button

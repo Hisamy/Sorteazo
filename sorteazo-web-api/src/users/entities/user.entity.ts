@@ -18,7 +18,7 @@ export class User {
 
     @CreateDateColumn({
         name: "registered_at",
-        type: "timestamptz",
+        type: "timestamp",
         nullable: false
     })
     registeredAt: Date;
