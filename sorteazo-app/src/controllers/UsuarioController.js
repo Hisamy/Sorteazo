@@ -1,4 +1,5 @@
 import { createUsuario } from "../services/SorteazoApi";
+import { obtenerUsuario } from "../services/SorteazoApi";
 
 export const registrarUsuario = async (formData) => {
     if (formData.password !== formData.confirmarPassword) {
@@ -9,8 +10,10 @@ export const registrarUsuario = async (formData) => {
         throw new Error("El nombre y el correo son obligatorios");
     }
     try {
+        const response = await createUsuario(formData);
         return response;
     } catch (error) {
+        console.log(error);
         if (error.response) {
             const status = error.response.status;
             const message =
@@ -27,12 +30,14 @@ export const registrarUsuario = async (formData) => {
     }
 };
 
-export const obtenerUsuario = async (formData) => {
+export const iniciarSesion = async (formData) => {
 
     try {
-        const response = await createUsuario(formData);
+        const response = await obtenerUsuario(formData);
+        console.log(response);
         return response;
     } catch (error) {
+        console.log(error);
         if (error.response) {
             const status = error.response.status;
             const message =

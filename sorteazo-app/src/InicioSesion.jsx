@@ -4,27 +4,27 @@ import { ToggleButtonText } from "./ToggleButtonText";
 import { InputForm } from "./form-components/InputForm";
 import { PasswordInput } from "./form-components/InputPassword";
 import { useState } from "react";
+import { iniciarSesion } from "./controllers/UsuarioController";
 
 export function InicioSesion() {
     const [formData, setFormData] = useState({
         email: "",
         password: ""
     });
-    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");
         setLoading(true);
 
         try {
-            const response = await obtenerUsuario(formData);
+            const response = await iniciarSesion(formData);
             console.log("Login exitoso:", response);
             alert("Inicio de sesión exitoso");
         } catch (err) {
             console.error(err);
-            setError(err.message || "Error al iniciar sesión");
+            alert(err.message || "Hubo un error al crear la cuenta");
         } finally {
             setLoading(false);
         }
@@ -54,7 +54,7 @@ export function InicioSesion() {
                             <ToggleButtonText isCrearCuenta={false} />
                         </div>
                         <div className="font-afacad mt-20 ">
-                            <form action="#" method="get">
+                            <form onSubmit={handleSubmit}>
                                 <fieldset className="flex flex-col mb-5">
                                     <label>Correo Electrónico</label>
                                     <InputForm
