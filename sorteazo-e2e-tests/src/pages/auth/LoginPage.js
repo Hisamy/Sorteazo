@@ -1,5 +1,5 @@
 const { By, until } = require('selenium-webdriver');
-const { BASE_URL } = require('../utils/config');
+const { BASE_URL } = require('../../utils/config');
 
 class LoginPage {
 
@@ -7,7 +7,6 @@ class LoginPage {
     this.driver = driver;
     this.url = `${BASE_URL}`;
     
-    // 💡 AÑADIDO: Definición de todos los selectores.
     this.emailField = By.name('email');
     this.passwordField = By.name('password');
     this.loginButton = By.css('button[type="submit"]');
