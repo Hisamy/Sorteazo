@@ -1,4 +1,4 @@
-const { LoginPage } = require('../../pages/LoginPage');
+const { LoginPage } = require('../../pages/auth/LoginPage');
 const driver = require('../../setup/driver');
 const { By, until } = require('selenium-webdriver');
 
