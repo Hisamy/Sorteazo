@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { CardPremio } from './CardPremio'; 
+import { useState } from 'react';
+import { CardPremio } from '../form-components/CardPremio';
 
-export function Paso3Premios({ initialData }) {
-   
+export function Paso3Placeholder({ initialData }) {
+
     const [prizes, setPrizes] = useState(initialData?.prizes || [
         { id: 1, name: '', description: '', image: null }
     ]);
@@ -25,45 +25,46 @@ export function Paso3Premios({ initialData }) {
     };
 
     const handleRemovePrize = (indexToRemove) => {
-        setPrizes(prizes.filter((_, index) => index !== indexToRemove));
+        if (prizes.length > 1) {
+            setPrizes(prizes.filter((_, index) => index !== indexToRemove));
+        }
     };
-    
-    
+
+
 
     return (
         <>
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-afacad font-semibold text-[var(--color-dark-text)] mb-2">
+            <div className="flex justify-between items-center mb-2">
+                <h2 className="text-2xl font-afacad font-semibold text-[var(--color-dark-text)]">
                     Premios
                 </h2>
                 <button
+                    type="button"
                     onClick={handleAddPrize}
-                    className="flex items-center space-x-1 px-3 py-1 bg-[var(--color-success)] text-white rounded-lg hover:bg-[var(--color-success-dark)] transition duration-150 text-sm font-semibold"
+                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl font-afacad font-semibold hover:bg-[var(--color-primary-hover)] transition-colors duration-300"
                 >
                     <span className="text-xl leading-none">+</span>
                     <span>Agregar premio</span>
                 </button>
             </div>
-            
+
             <p className="text-[var(--color-gray-text)] mb-8 font-afacad">
                 Define los premios que se llevarán tus participantes
             </p>
 
-         
-            <div className="py-2">
+
+            <div className="space-y-4">
                 {prizes.map((prize, index) => (
                     <CardPremio
                         key={prize.id}
                         index={index}
                         prize={prize}
+                        totalPrizes={prizes.length}
                         handleChange={handleChangePrize}
                         handleRemove={handleRemovePrize}
                     />
                 ))}
             </div>
-
-
-          
         </>
     );
 }
