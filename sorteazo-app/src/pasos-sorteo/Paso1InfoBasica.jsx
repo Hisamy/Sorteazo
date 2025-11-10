@@ -13,7 +13,7 @@ export function Paso1InfoBasica({ initialData }) {
 
             <div className="grid grid-cols-1 gap-6 mb-6">
                 <div>
-                    <label className="block mb-2 text-[var(--color-dark-text)] font-semibold font-afacad">
+                    <label className="block mb-2 text-[var(--color-primary)] font-semibold font-afacad">
                         Título del Sorteo:
                     </label>
                     <InputForm
@@ -25,7 +25,7 @@ export function Paso1InfoBasica({ initialData }) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block mb-2 text-[var(--color-dark-text)] font-semibold font-afacad">
+                        <label className="block mb-2 text-[var(--color-primary)] font-semibold font-afacad">
                             Cantidad de boletos (1-1000):
                         </label>
                         <InputForm
@@ -36,7 +36,7 @@ export function Paso1InfoBasica({ initialData }) {
                         />
                     </div>
                     <div>
-                        <label className="block mb-2 text-[var(--color-dark-text)] font-semibold font-afacad">
+                        <label className="block mb-2 text-[var(--color-primary)] font-semibold font-afacad">
                             Iniciar numeración desde:
                         </label>
                         <InputForm
@@ -49,7 +49,7 @@ export function Paso1InfoBasica({ initialData }) {
                 </div>
 
                 <div>
-                    <label className="block mb-2 text-[var(--color-dark-text)] font-semibold font-afacad">
+                    <label className="block mb-2 text-[var(--color-primary)] font-semibold font-afacad">
                         Precio del boleto:
                     </label>
                     <InputForm
@@ -63,7 +63,7 @@ export function Paso1InfoBasica({ initialData }) {
                 </div>
 
                 <div>
-                    <label className="block mb-2 text-[var(--color-dark-text)] font-semibold font-afacad">
+                    <label className="block mb-2 text-[var(--color-primary)] font-semibold font-afacad">
                         Descripción:
                     </label>
                     <TextAreaForm
@@ -74,7 +74,7 @@ export function Paso1InfoBasica({ initialData }) {
                 </div>
 
                 <div>
-                    <label className="block mb-2 text-[var(--color-dark-text)] font-semibold font-afacad">
+                    <label className="block mb-2 text-[var(--color-primary)] font-semibold font-afacad">
                         Imagen:
                     </label>
                     <input
