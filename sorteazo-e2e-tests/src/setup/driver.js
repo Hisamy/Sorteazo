@@ -7,7 +7,7 @@ beforeAll(async () => {
   console.log('[*] Abriendo Chrome en headless...');
 
   const options = new chrome.Options();
-  //options.addArguments('--headless=new');      // headless moderno
+  options.addArguments('--headless=new');      // headless moderno
   options.addArguments('--disable-gpu');       // deshabilita GPU
   options.addArguments('--no-sandbox');        // evita problemas en Windows
   options.addArguments('--window-size=1920,1080'); // tamaño de ventana

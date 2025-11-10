@@ -17,7 +17,8 @@ class SignUpPage {
     this.confirmPasswordField = By.name('confirmarPassword');
     this.termsAndConditionsCheckBox = By.name('terminosCondiciones');
     this.registerButton = By.css('button[type="submit"]');
-    //this.passwordToggleButton = By.css('div.relative button[type="button"]');
+    this.passwordToggleButton = By.xpath(`//input[@name='password']/following-sibling::button[@type='button']`);
+    this.confirmPasswordToggleButton = By.xpath(`//input[@name='confirmarPassword']/following-sibling::button[@type='button']`);
   }
 
   async open() {
@@ -98,6 +99,41 @@ class SignUpPage {
     } catch (err) {
       return null;
     }
+  }
+
+  async clickPasswordToggle() {
+    await this.driver.wait(until.elementLocated(this.passwordToggleButton), 5000, 'El botón de toggle de contraseña no apareció.');
+    await this.driver.findElement(this.passwordToggleButton).click();
+  }
+
+  async getPasswordInputType() {
+    const passwordInput = await this.driver.findElement(this.passwordField);
+    return await passwordInput.getAttribute('type');
+  }
+
+  async clickConfirmPasswordToggle() {
+    await this.driver.wait(until.elementLocated(this.confirmPasswordToggleButton), 5000, 'El botón de toggle de confirmar contraseña no apareció.');
+    await this.driver.findElement(this.confirmPasswordToggleButton).click();
+  }
+
+  async getConfirmPasswordInputType() {
+    const passwordInput = await this.driver.findElement(this.passwordField);
+    return await passwordInput.getAttribute('type');
+  }
+
+  /**
+   * Obtiene el mensaje de validación HTML5 de un campo.
+   * Esto funciona para inputs con required, type="email", etc.
+   */
+  async getNativeValidationError(locator) {
+    const element = await this.driver.findElement(locator);
+    const validationMessage = await this.driver.executeScript(
+      // El script usa el API de validación nativa del elemento DOM
+      'return arguments[0].validationMessage;',
+      element // Pasa el elemento de Selenium como argumento[0]
+    );
+    
+    return validationMessage;
   }
 
   /**
