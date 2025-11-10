@@ -59,6 +59,7 @@ export function InicioSesion() {
                                     <label>Correo Electrónico</label>
                                     <InputForm
                                         type="email"
+                                        name="email"
                                         placeholder="tucorreo@ejemplo.com"
                                         value={formData.email}
                                         onChange={(e) =>
@@ -71,6 +72,7 @@ export function InicioSesion() {
                                     <label>Contraseña</label>
                                     <PasswordInput
                                         value={formData.password}
+                                        name="password"
                                         onChange={(e) =>
                                             setFormData({ ...formData, password: e.target.value })
                                         }
