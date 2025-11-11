@@ -75,8 +75,8 @@ describe('SorteosController (E2E) - POST /sorteos', () => {
     saleEndDate: new Date(),
     raffleDateTime: new Date(Date.now()),
     premios: [
-      { name: 'Premio 1', place: 1, imageUrl: '', description: 'Primer lugar' },
-      { name: 'Premio 2', place: 2, imageUrl: '', description: 'Segundo lugar' },
+      { name: 'Premio 1', place: 1, imageUrl: 'a', description: 'Primer lugar' },
+      { name: 'Premio 2', place: 2, imageUrl: 'b', description: 'Segundo lugar' },
     ],
   };
 
@@ -95,7 +95,7 @@ describe('SorteosController (E2E) - POST /sorteos', () => {
       .overrideProvider(getRepositoryToken(Organizador))
       .useValue(mockOrganizadorRepository)
       // Sobrescribir el Guard de autenticación
-      .overrideGuard(AuthGuard) 
+      .overrideGuard(AuthGuard("jwt")) 
       .useClass(MockAuthGuard)
       .compile();
 
@@ -208,7 +208,7 @@ describe('SorteosController (E2E) - POST /sorteos', () => {
       .expect(HttpStatus.NOT_FOUND); // Assert (Verificar estado)
 
     // Assert (Verificar mensaje de error del servicio)
-    expect(response.body.message).toContain(`Organizador con userId ${mockOrganizadorUser.sub} no encontrado`);
+    expect(response.body.message).toContain("There is not an Organizador at the database.");
 
     // Verificar que el 'save' nunca se llamó
     expect(mockSorteoRepository.save).not.toHaveBeenCalled();

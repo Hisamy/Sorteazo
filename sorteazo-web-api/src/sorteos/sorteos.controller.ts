@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { SorteosService } from './sorteos.service';
 import { CreateSorteoDto } from './dto/create-sorteo.dto';
 import { UpdateSorteoDto } from './dto/update-sorteo.dto';
+import { AuthGuard } from '@nestjs/passport';
 
+@UseGuards(AuthGuard("jwt"))
 @Controller('sorteos')
 export class SorteosController {
   constructor(private readonly sorteosService: SorteosService) {}
@@ -10,7 +12,6 @@ export class SorteosController {
   @Post()
   create(@Body() createSorteoDto: CreateSorteoDto, @Req() req) {
     const user = req.user;
-    console.log("Llega la info", createSorteoDto.title)
     if(user.role != "organizador") throw new UnauthorizedException("Organizador rol required, not authorized.");
     return this.sorteosService.create(createSorteoDto, user.sub);
   }

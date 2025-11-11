@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSorteoDto } from './dto/create-sorteo.dto';
 import { UpdateSorteoDto } from './dto/update-sorteo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,13 +18,14 @@ export class SorteosService {
 
   async create(createSorteoDto: CreateSorteoDto, idOrganizador:string) {
     const organizador = await this.organizadorRepository.findOneBy({userId:idOrganizador});
+    if(!organizador) throw new NotFoundException("There is not an Organizador at the database.")
     const boletos:Boleto[] = [];
     const premios:Premio[] = [];
 
     let maxNumber:number = createSorteoDto.startNumber + createSorteoDto.numbersQuantity;
     for(let i = createSorteoDto.startNumber; i < maxNumber; i++){
       const boleto:Boleto = this.boletoRepository.create({
-        number:i, 
+        number:i.toString(), 
         price:createSorteoDto.ticketPrice
       })
       boletos.push(boleto);
@@ -47,9 +48,10 @@ export class SorteosService {
       startNumber:createSorteoDto.startNumber,
       imageUrl:createSorteoDto.imageUrl,
       description:createSorteoDto.description,
-      paymentDeadLine:createSorteoDto.paymentDeadline,
+      paymentDeadline:createSorteoDto.paymentDeadline,
       saleStartDate:createSorteoDto.saleStartDate,
-      raffleDataTime:createSorteoDto.raffleDateTime,
+      saleEndDate:createSorteoDto.saleEndDate,
+      raffleDateTime:createSorteoDto.raffleDateTime,
       organizador:organizador,
       premios:premios,
       boletos:boletos

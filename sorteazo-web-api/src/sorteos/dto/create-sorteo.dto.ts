@@ -1,4 +1,4 @@
-import { IsArray, IsDate, IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsDate, IsDateString, IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class-validator';
 import { Timestamp } from 'typeorm';
 import { Type } from 'class-transformer';
 import { CreatePremioDto } from './create-premio.dto';
@@ -26,19 +26,19 @@ export class CreateSorteoDto {
     @IsString()
     description: string;
 
-    @IsDate()
+    @IsDateString()
     @IsNotEmpty()
     paymentDeadline: Date;
 
-    @IsDate()
+    @IsDateString()
     @IsNotEmpty()
     saleStartDate: Date;
 
-    @IsDate()
+    @IsDateString()
     @IsNotEmpty()
     saleEndDate: Date;
 
-    @IsDate()
+    @IsDateString()
     @IsNotEmpty()
     raffleDateTime: Date;
 
