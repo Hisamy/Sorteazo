@@ -34,6 +34,7 @@ export class UsersService {
       name: dto.name,
       email: dto.email,
       password: dto.password,
+      phone: dto.phone,
       role: 'client',
     });
     const savedUser = await this.userRepository.save(user);
@@ -66,6 +67,7 @@ export class UsersService {
       name: dto.adminName,
       email: dto.email,
       password: dto.password,
+      phone: dto.phone,
       role: 'organizador',
     });
     const savedUser = await this.userRepository.save(user);
