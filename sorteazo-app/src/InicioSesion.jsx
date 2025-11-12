@@ -22,12 +22,13 @@ export function InicioSesion() {
 
         try {
             const response = await iniciarSesion(formData);
-            console.log("Login exitoso:", response);
             
             // Redirigir según el rol del usuario
-            if (response.user?.role === "ORGANIZADOR" || response.user?.role === "organizador") {
+            const role = response.role?.toString().toLowerCase();
+            
+            if (role === "organizador") {
                 navigate("/DashboardOrganizador");
-            } else if (response.user?.role === "CLIENTE" || response.user?.role === "cliente") {
+            } else if (role === "cliente") {
                 navigate("/DashboardCliente");
             } else {
                 // Si no hay rol definido, redirigir a cliente por defecto
