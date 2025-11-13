@@ -2,7 +2,7 @@ import { useState } from "react";
 import { TopNavBar } from "./util-components/TopNavBar";
 import { EmptyStateCard } from "./util-components/EmptyStateCard";
 import { useNavigate } from "react-router-dom";
-import CardSorteoOrganizador from "./consulta-sorteo-components/CardSorteoOrganizador"; // Usando la card genérica que creamos
+import CardSorteoOrganizador from "./consulta-sorteo-components/CardSorteoOrganizador"; 
 import sorteoImage from './assets/images/sorteo-placeholder.png'; 
 
 export function DashboardOrganizador() {
@@ -51,6 +51,7 @@ export function DashboardOrganizador() {
                                 key={sorteo.id}
                                 sorteo={sorteo}
                                 onDelete={handleDelete}
+                                onClick={() => navigate(`/sorteo/organizador/${sorteo.id}`)}
                             />
                         ))
                     ) : (

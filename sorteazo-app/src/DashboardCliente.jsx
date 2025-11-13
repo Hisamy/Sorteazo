@@ -4,8 +4,11 @@ import { EmptyStateCard } from "./util-components/EmptyStateCard";
 import CardSorteoCliente from "./consulta-sorteo-components/CardSorteoCliente";
 import sorteoImage from './assets/images/sorteo-placeholder.png';
 import { FaSearch } from 'react-icons/fa';
+import { useNavigate } from "react-router-dom";
 
 export function DashboardCliente() {
+    const navigate = useNavigate();
+
     const [sorteos, setSorteos] = useState([
         {
             id: 1,
@@ -52,6 +55,7 @@ export function DashboardCliente() {
                             <CardSorteoCliente
                                 key={sorteo.id}
                                 sorteo={sorteo}
+                                onClick={() => navigate(`/sorteo/cliente/${sorteo.id}`)}
                             />
                         ))
                     ) : (

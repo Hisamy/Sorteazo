@@ -1,6 +1,6 @@
 import React from 'react';
 
-const CardSorteoCliente = ({ sorteo }) => {
+const CardSorteoCliente = ({ sorteo, onClick }) => {
     const { nombre, precioBoleto, fechaSorteo, imagen } = sorteo;
 
     const date = new Date(fechaSorteo + 'T00:00:00');
@@ -11,7 +11,7 @@ const CardSorteoCliente = ({ sorteo }) => {
     }) : 'Fecha inválida';
 
     return (
-        <div className="flex items-center gap-6 bg-white border border-gray-200 rounded-lg p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+        <div onClick={onClick} className="flex items-center gap-6 bg-white border border-gray-200 rounded-lg p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
             <img src={imagen} alt={nombre} className="w-32 h-24 object-cover rounded-md" />
             <div className="flex-grow">
                 <h2 className="text-xl font-semibold text-gray-800 mb-3">{nombre}</h2>
