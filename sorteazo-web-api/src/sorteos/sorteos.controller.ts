@@ -4,7 +4,7 @@ import { CreateSorteoDto } from './dto/create-sorteo.dto';
 import { UpdateSorteoDto } from './dto/update-sorteo.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { multerConfig } from '../upload/multer.config';
+import { multerConfig } from '../configs/multer.config';
 
 @UseGuards(AuthGuard("jwt"))
 @Controller('sorteos')
