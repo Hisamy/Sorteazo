@@ -4,6 +4,7 @@ import { TopNavBar } from './util-components/TopNavBar';
 import { FaArrowLeft } from 'react-icons/fa';
 import prizeImage from './assets/images/sorteo-placeholder.png';
 import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos';
+import { GridBoletos } from './consulta-sorteo-components/GridBoletos';
 export const ConsultaSorteoOrganizador = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -17,6 +18,9 @@ export const ConsultaSorteoOrganizador = () => {
         numerosTotales: 300,
         imagen: prizeImage,
     };
+
+    // Números apartados de ejemplo (estos vendrían del backend)
+    const reservedNumbers = [26, 35, 36, 37, 67, 68, 69];
 
     return (
         <div className="min-h-screen bg-[var(--color-background)]">
@@ -66,22 +70,31 @@ export const ConsultaSorteoOrganizador = () => {
                     </div>
                 </div>
 
-                {/* Sección de Boletos (Placeholder) */}
+                {/* Sección de Boletos (Solo lectura) */}
                 <div className="mt-12 space-y-4">
                     <AccordionBoletos title="Boletos 1-100" available={95}>
-                        <div className="text-center text-gray-500 p-10 bg-gray-100 rounded-md">
-                            <p>Componente de asientos del sorteo pendiente.</p>
-                        </div>
+                        <GridBoletos 
+                            startNumber={1} 
+                            endNumber={100} 
+                            reservedNumbers={reservedNumbers}
+                            readOnly={true}
+                        />
                     </AccordionBoletos>
                     <AccordionBoletos title="Boletos 101-200" available={47}>
-                         <div className="text-center text-gray-500 p-10 bg-gray-100 rounded-md">
-                            <p>Componente de asientos del sorteo pendiente.</p>
-                        </div>
+                        <GridBoletos 
+                            startNumber={101} 
+                            endNumber={200} 
+                            reservedNumbers={[]}
+                            readOnly={true}
+                        />
                     </AccordionBoletos>
                     <AccordionBoletos title="Boletos 201-300" available={79}>
-                         <div className="text-center text-gray-500 p-10 bg-gray-100 rounded-md">
-                            <p>Componente de asientos del sorteo pendiente.</p>
-                        </div>
+                        <GridBoletos 
+                            startNumber={201} 
+                            endNumber={300} 
+                            reservedNumbers={[]}
+                            readOnly={true}
+                        />
                     </AccordionBoletos>
                 </div>
             </div>

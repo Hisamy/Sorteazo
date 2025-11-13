@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TopNavBar } from './util-components/TopNavBar';
 import { FaArrowLeft } from 'react-icons/fa';
 import prizeImage from './assets/images/sorteo-placeholder.png';
 import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos';
+import { GridBoletos } from './consulta-sorteo-components/GridBoletos';
 
 export const ConsultaSorteoCliente = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [selectedNumbers, setSelectedNumbers] = useState([]);
 
     const sorteo = {
         id: id,
@@ -17,6 +19,19 @@ export const ConsultaSorteoCliente = () => {
         numerosDisponibles: 59,
         numerosTotales: 300,
         imagen: prizeImage,
+    };
+
+    // Números apartados de ejemplo (estos vendrían del backend)
+    const reservedNumbers = [26, 35, 36, 37, 67, 68, 69];
+
+    const handleNumberClick = (number) => {
+        setSelectedNumbers(prev => {
+            if (prev.includes(number)) {
+                return prev.filter(n => n !== number);
+            } else {
+                return [...prev, number];
+            }
+        });
     };
 
     return (
@@ -71,22 +86,34 @@ export const ConsultaSorteoCliente = () => {
                     </div>
                 </div>
 
-                {/* Sección de Boletos (Placeholder) */}
+                {/* Sección de Boletos */}
                 <div className="mt-12 space-y-4">
                     <AccordionBoletos title="Boletos 1-100" available={95}>
-                        <div className="text-center text-gray-500 p-10 bg-gray-100 rounded-md">
-                            <p>Componente de asientos del sorteo pendiente.</p>
-                        </div>
+                        <GridBoletos 
+                            startNumber={1} 
+                            endNumber={100} 
+                            selectedNumbers={selectedNumbers}
+                            onNumberClick={handleNumberClick}
+                            reservedNumbers={reservedNumbers}
+                        />
                     </AccordionBoletos>
                     <AccordionBoletos title="Boletos 101-200" available={47}>
-                         <div className="text-center text-gray-500 p-10 bg-gray-100 rounded-md">
-                            <p>Componente de asientos del sorteo pendiente.</p>
-                        </div>
+                        <GridBoletos 
+                            startNumber={101} 
+                            endNumber={200} 
+                            selectedNumbers={selectedNumbers}
+                            onNumberClick={handleNumberClick}
+                            reservedNumbers={[]}
+                        />
                     </AccordionBoletos>
                     <AccordionBoletos title="Boletos 201-300" available={79}>
-                         <div className="text-center text-gray-500 p-10 bg-gray-100 rounded-md">
-                            <p>Componente de asientos del sorteo pendiente.</p>
-                        </div>
+                        <GridBoletos 
+                            startNumber={201} 
+                            endNumber={300} 
+                            selectedNumbers={selectedNumbers}
+                            onNumberClick={handleNumberClick}
+                            reservedNumbers={[]}
+                        />
                     </AccordionBoletos>
                 </div>
             </div>

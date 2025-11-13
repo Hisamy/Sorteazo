@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 export const AccordionBoletos = ({ title, available, children }) => {
-    const [isOpen, setIsOpen] = useState(true); 
+    const [isOpen, setIsOpen] = useState(false); 
     return (
         <div className="border border-gray-200 rounded-lg">
             <button
