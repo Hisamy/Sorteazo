@@ -3,7 +3,7 @@ import { BoletosService } from './boletos.service';
 import { BoletosController } from './boletos.controller';
 import { Boleto } from './entities/boleto.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Sorteo } from 'src/sorteos/entities/sorteo.entity';
+import { Sorteo } from '../sorteos/entities/sorteo.entity';
 
 @Module({
   imports: [

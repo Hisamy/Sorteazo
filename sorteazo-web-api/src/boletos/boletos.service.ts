@@ -2,9 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBoletoDto } from './dto/create-boleto.dto';
 import { UpdateBoletoDto } from './dto/update-boleto.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Boleto } from './entities/boleto.entity';
 import { Repository } from 'typeorm';
-import { Sorteo } from 'src/sorteos/entities/sorteo.entity';
+import { Sorteo } from '../sorteos/entities/sorteo.entity';
 
 @Injectable()
 export class BoletosService {
