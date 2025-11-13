@@ -1,9 +1,26 @@
+import { useState } from "react";
 import { TopNavBar } from "./util-components/TopNavBar";
 import { EmptyStateCard } from "./util-components/EmptyStateCard";
 import { useNavigate } from "react-router-dom";
+import CardSorteo from "./consulta-sorteo-components/CardSorteo";
+import sorteoImage from './assets/images/sorteo-placeholder.png'; 
 
 export function DashboardOrganizador() {
     const navigate = useNavigate();
+
+    const [sorteos, setSorteos] = useState([
+        {
+            id: 1,
+            nombre: 'Sorteo Potro Millonario 2025',
+            precioBoleto: 50,
+            fechaSorteo: '2025-11-30',
+            imagen: sorteoImage
+        }
+    ]);
+
+    const handleDelete = (id) => {
+        setSorteos(sorteos.filter(s => s.id !== id));
+    };
 
     return (
         <div className="min-h-screen bg-[var(--color-background)]">
@@ -27,12 +44,20 @@ export function DashboardOrganizador() {
                     </button>
                 </div>
 
-                <div className="mb-8">
-                    <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-6">
+                    {sorteos.length > 0 ? (
+                        sorteos.map(sorteo => (
+                            <CardSorteo
+                                key={sorteo.id}
+                                sorteo={sorteo}
+                                onDelete={handleDelete}
+                            />
+                        ))
+                    ) : (
                         <EmptyStateCard 
-                            message="Aquí estarán los sorteos del admin"
+                            message="No tienes sorteos activos. ¡Crea uno para empezar!"
                         />
-                    </div>
+                    )}
                 </div>
             </div>
         </div>
