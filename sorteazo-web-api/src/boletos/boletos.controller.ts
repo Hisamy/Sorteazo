@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { 
+  Controller, 
+  Get, Post, Body, Patch, Delete,
+  Param, 
+  Request, 
+  ForbiddenException, UnauthorizedException,
+  UseGuards 
+} from '@nestjs/common';
+
+import { JwtStrategy } from '../users/strategies/jwt.strategy';
+import { AuthGuard } from '@nestjs/passport';
+
 import { BoletosService } from './boletos.service';
 import { CreateBoletoDto } from './dto/create-boleto.dto';
 import { UpdateBoletoDto } from './dto/update-boleto.dto';
@@ -17,8 +28,18 @@ export class BoletosController {
     return this.boletosService.findAllBySorteoForClient(sorteoId);
   }
 
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/organizador/:sorteoId')
+  findAllBySorteoForOrganizador(@Param('sorteoId') sorteoId: string,  @Request() req) {
 
-  @Get(':id')
+    if (!req.user || req.user.role !== 'organizador') {
+      throw new UnauthorizedException('No cuentas con los permisos necesarios para acceder a este recurso');
+    }
+
+    return this.boletosService.findAllBySorteoForOrganizador(sorteoId, req.user.id);
+  }
+
+  @Get('detalles/:id')
   findOne(@Param('id') id: string) {
     return this.boletosService.findOne(+id);
   }

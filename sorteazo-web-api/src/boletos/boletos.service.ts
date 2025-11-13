@@ -16,25 +16,51 @@ export class BoletosService {
   }
 
   async findAllBySorteoForClient(id: string) {
-   const sorteo = await this.sorteoRepository.findOne({
-    where: { id },
-    relations: ['boletos'],
-  });
+    const sorteo = await this.sorteoRepository.findOne({
+      where: { id },
+      relations: ['boletos'],
+    });
+    
+    if (!sorteo) {
+      throw new NotFoundException('No existe un sorteo con ese ID');
+    }
 
-  if (!sorteo) {
-    throw new NotFoundException('No existe un sorteo con ese ID');
+    return sorteo.boletos.map((boleto) => ({
+      id: boleto.id,
+      number: boleto.number,
+      price: boleto.price,
+      isReserved: boleto.isReserved,
+    }));
   }
 
-  return sorteo.boletos.map((boleto) => ({
-    id: boleto.id,
-    number: boleto.number,
-    price: boleto.price,
-    isReserved: boleto.isReserved,
-  }));
-  }
+  /*
+  TODO: Anadir paginacion
+  */
+  async findAllBySorteoForOrganizador(idSorteo: string, idOrganizador: string) {
+    const sorteo = await this.sorteoRepository.findOne({
+      where: { 
+        id: idSorteo,
+        organizador: { userId: idOrganizador }
+      },
+      relations: [
+        'boletos',
+        'boletos.client',
+        'boletos.pago'
+      ],
+    });
+    
+    if (!sorteo) {
+      throw new NotFoundException('No existe un sorteo con ese ID o no cuentas con los permisos para acceder a él.');
+    }
 
-  findAllBySorteoForOrganizador() {
-    return `This action returns all boletos`;
+    return sorteo.boletos.map((boleto) => ({
+      id: boleto.id,
+      number: boleto.number,
+      price: boleto.price,
+      isReserved: boleto.isReserved,
+      client_id: boleto.client?.userId,
+      payment: boleto.pago
+    }));
   }
 
   findOne(id: number) {
