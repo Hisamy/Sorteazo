@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CrearCuenta } from "./CrearCuenta";
 import { GestorCrearSorteo } from "./GestorCrearSorteo";
 import { DashboardOrganizador } from "./DashboardOrganizador";
-import { DashboardCliente } from "./DashboardCliente";
 
 
 function App() {
@@ -14,8 +13,7 @@ function App() {
       <Routes>
         <Route path="/CrearCuenta" element={<CrearCuenta />} />
         <Route path="/CrearSorteo" element={<GestorCrearSorteo />} />
-        <Route path="/DashboardOrganizador" element={<DashboardOrganizador />} />
-        <Route path="/DashboardCliente" element={<DashboardCliente />} />
+        <Route path="/dashboard/organizador" element={<DashboardOrganizador />} />
         <Route path="/" element={<InicioSesion />} />
       </Routes>
     </BrowserRouter>
