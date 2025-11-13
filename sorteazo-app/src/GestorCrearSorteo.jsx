@@ -5,6 +5,7 @@ import { ProgressBar } from "./util-components/ProgressBar";
 import { Paso1InfoBasica } from "./pasos-sorteo/Paso1InfoBasica";
 import { Paso2FechasSorteo } from "./pasos-sorteo/Paso2FechasSorteo";
 import { Paso3Placeholder } from "./pasos-sorteo/Paso3Placeholder";
+import { crearSorteo } from './controllers/SorteoController.js';
 
 export function GestorCrearSorteo() {
     const navigate = useNavigate();
@@ -123,11 +124,10 @@ export function GestorCrearSorteo() {
         });
         
         try {
-            const { crearSorteo } = await import('./controllers/SorteoController.js');
             await crearSorteo(formDataToSend);
             
             alert("¡Sorteo creado exitosamente!");
-            navigate('/dashboard-organizador');
+            navigate('/sorteos/organizador');
         } catch (error) {
             console.error("Error al crear sorteo:", error);
             alert(error.response?.data?.message || error.message || "Hubo un error al crear el sorteo. Por favor intenta de nuevo.");
