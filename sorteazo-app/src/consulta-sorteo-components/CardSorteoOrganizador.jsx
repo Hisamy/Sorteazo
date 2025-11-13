@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaTrash } from 'react-icons/fa';
 
-const CardSorteoOrganizador = ({ sorteo, onDelete }) => {
+const CardSorteoOrganizador = ({ sorteo, onDelete, onClick }) => {
     const { id, nombre, precioBoleto, fechaSorteo, imagen } = sorteo;
 
     const date = new Date(fechaSorteo + 'T00:00:00');
@@ -11,8 +11,22 @@ const CardSorteoOrganizador = ({ sorteo, onDelete }) => {
         year: 'numeric'
     }) : 'Fecha inválida';
 
+    const handleCardClick = (e) => {
+        if (e.target.closest('button')) {
+            return;
+        }
+        if (onClick) {
+            onClick();
+        }
+    };
+
+    const handleDeleteClick = (e) => {
+        e.stopPropagation(); 
+        onDelete(id);
+    };
+
     return (
-        <div className="flex items-center gap-6 bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+        <div onClick={handleCardClick} className="flex items-center gap-6 bg-white border border-gray-200 rounded-lg p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
             <img src={imagen} alt={nombre} className="w-28 h-20 object-cover rounded-md" />
             <div className="flex-grow">
                 <h2 className="text-xl font-semibold text-gray-800 mb-3">{nombre}</h2>
@@ -27,9 +41,9 @@ const CardSorteoOrganizador = ({ sorteo, onDelete }) => {
                     </p>
                 </div>
             </div>
-            <button 
-                onClick={() => onDelete(id)} 
-                className="text-gray-500 hover:text-red-600 text-lg p-2" 
+            <button
+                onClick={handleDeleteClick}
+                className="text-gray-500 hover:text-red-600 text-lg p-2 z-10"
                 aria-label="Eliminar sorteo"
             >
                 <FaTrash />
