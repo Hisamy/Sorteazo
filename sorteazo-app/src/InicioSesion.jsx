@@ -4,9 +4,11 @@ import { ToggleButtonText } from "./ToggleButtonText";
 import { InputForm } from "./form-components/InputForm";
 import { PasswordInput } from "./form-components/InputPassword";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { iniciarSesion } from "./controllers/UsuarioController";
 
 export function InicioSesion() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: "",
         password: ""
@@ -20,11 +22,21 @@ export function InicioSesion() {
 
         try {
             const response = await iniciarSesion(formData);
-            console.log("Login exitoso:", response);
-            alert("Inicio de sesión exitoso");
+            
+            // Redirigir según el rol del usuario
+            const role = response.role?.toString().toLowerCase();
+            
+            if (role === "organizador") {
+                navigate("/DashboardOrganizador");
+            } else if (role === "cliente") {
+                navigate("/DashboardCliente");
+            } else {
+                // Si no hay rol definido, redirigir a cliente por defecto
+                navigate("/DashboardCliente");
+            }
         } catch (err) {
             console.error(err);
-            alert(err.message || "Hubo un error al crear la cuenta");
+            alert(err.message || "Hubo un error al iniciar sesión");
         } finally {
             setLoading(false);
         }
