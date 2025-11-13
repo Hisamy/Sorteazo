@@ -1,8 +1,7 @@
 import React from 'react';
-import { FaTrash } from 'react-icons/fa';
 
-const CardSorteo = ({ sorteo, onDelete }) => {
-    const { id, nombre, precioBoleto, fechaSorteo, imagen } = sorteo;
+const CardSorteoCliente = ({ sorteo }) => {
+    const { nombre, precioBoleto, fechaSorteo, imagen } = sorteo;
 
     const date = new Date(fechaSorteo + 'T00:00:00');
     const formattedDate = !isNaN(date) ? date.toLocaleDateString('es-ES', {
@@ -12,8 +11,8 @@ const CardSorteo = ({ sorteo, onDelete }) => {
     }) : 'Fecha inválida';
 
     return (
-        <div className="flex items-center gap-6 bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-            <img src={imagen} alt={nombre} className="w-28 h-20 object-cover rounded-md" />
+        <div className="flex items-center gap-6 bg-white border border-gray-200 rounded-lg p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+            <img src={imagen} alt={nombre} className="w-32 h-24 object-cover rounded-md" />
             <div className="flex-grow">
                 <h2 className="text-xl font-semibold text-gray-800 mb-3">{nombre}</h2>
                 <div className="flex gap-10 text-sm text-gray-500">
@@ -27,15 +26,8 @@ const CardSorteo = ({ sorteo, onDelete }) => {
                     </p>
                 </div>
             </div>
-            <button 
-                onClick={() => onDelete(id)} 
-                className="text-gray-500 hover:text-red-600 text-lg p-2" 
-                aria-label="Eliminar sorteo"
-            >
-                <FaTrash />
-            </button>
         </div>
     );
 };
 
-export default CardSorteo;
+export default CardSorteoCliente;
