@@ -20,6 +20,7 @@ export function Paso1InfoBasica({ initialData }) {
                         placeholder="Ej. Sorteo San Valentín"
                         name="titulo"
                         defaultValue={initialData?.titulo || ""}
+                        required
                     />
                 </div>
 
@@ -33,6 +34,9 @@ export function Paso1InfoBasica({ initialData }) {
                             placeholder="Ej. 100"
                             name="cantidadBoletos"
                             defaultValue={initialData?.cantidadBoletos || ""}
+                            required
+                            min="1"
+                            max="1000"
                         />
                     </div>
                     <div>
@@ -44,6 +48,8 @@ export function Paso1InfoBasica({ initialData }) {
                             placeholder="Ej. 1"
                             name="inicioNumeracion"
                             defaultValue={initialData?.inicioNumeracion || ""}
+                            required
+                            min="0"
                         />
                     </div>
                 </div>
@@ -59,6 +65,7 @@ export function Paso1InfoBasica({ initialData }) {
                         step="0.01"
                         min="0"
                         defaultValue={initialData?.precioBoleto || ""}
+                        required
                     />
                 </div>
 
@@ -70,17 +77,19 @@ export function Paso1InfoBasica({ initialData }) {
                         placeholder="Describe los detalles de tu sorteo."
                         name="descripcion"
                         defaultValue={initialData?.descripcion || ""}
+                        required
                     />
                 </div>
 
                 <div>
                     <label className="block mb-2 text-[var(--color-primary)] font-semibold font-afacad">
-                        Imagen:
+                        Imagen del sorteo:
                     </label>
                     <input
                         type="file"
-                        name="imagen"
+                        name="imagenSorteo"
                         accept="image/*"
+                        required
                         className="w-full border border-[var(--color-light-gray)] rounded-xl px-4 py-2 text-[var(--color-dark-text)] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--color-light-gray)] file:text-[var(--color-dark-text)] hover:file:bg-[var(--color-gray-text)] hover:file:text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
                     />
                 </div>

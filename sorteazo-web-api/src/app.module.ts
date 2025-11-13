@@ -7,6 +7,7 @@ import { TypeOrmOptions } from './users/configs/typeorm.config';
 import { SorteosModule } from './sorteos/sorteos.module';
 import { PagosModule } from './pagos/pagos.module';
 import { BoletosModule } from './boletos/boletos.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { BoletosModule } from './boletos/boletos.module';
     UsersModule,
     SorteosModule,
     BoletosModule,
-    PagosModule
+    PagosModule,
+    UploadModule
   ],
   controllers: [AppController],
   providers: [AppService],

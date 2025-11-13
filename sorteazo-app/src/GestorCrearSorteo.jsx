@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { TopNavBar } from "./util-components/TopNavBar";
 import { ProgressBar } from "./util-components/ProgressBar";
 import { Paso1InfoBasica } from "./pasos-sorteo/Paso1InfoBasica";
@@ -6,39 +7,67 @@ import { Paso2FechasSorteo } from "./pasos-sorteo/Paso2FechasSorteo";
 import { Paso3Placeholder } from "./pasos-sorteo/Paso3Placeholder";
 
 export function GestorCrearSorteo() {
+    const navigate = useNavigate();
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState({
-        // Aqui la informacion de cada paso que se vaya acumulando
         paso1: {},
         paso2: {},
         paso3: {},
     });
+    const formRef = useRef(null);
+    const paso3Ref = useRef(null);
 
     const totalSteps = 3;
 
-    const handleNext = (stepData) => {
-        // Guardar los datos del paso actual
+    // Función para extraer datos del formulario
+    const extractFormData = () => {
+        if (!formRef.current) return {};
+        
+        const formDataObj = new FormData(formRef.current);
+        const data = {};
+        
+        for (let [key, value] of formDataObj.entries()) {
+            data[key] = value;
+        }
+        
+        return data;
+    };
+
+    const handleNext = () => {
+        const stepData = extractFormData();
+        
+        if (currentStep === 3 && paso3Ref.current) {
+            stepData.premios = paso3Ref.current.getPrizes();
+        }
+        
         setFormData(prev => ({
             ...prev,
             [`paso${currentStep}`]: stepData
         }));
 
-        // Continua al siguiente paso
         if (currentStep < totalSteps) {
             setCurrentStep(currentStep + 1);
         }
     };
 
     const handlePrevious = () => {
+        const stepData = extractFormData();
+        if (currentStep === 3 && paso3Ref.current) {
+            stepData.premios = paso3Ref.current.getPrizes();
+        }
+        
+        setFormData(prev => ({
+            ...prev,
+            [`paso${currentStep}`]: stepData
+        }));
+
         if (currentStep > 1) {
             setCurrentStep(currentStep - 1);
         }
     };
 
     const handleCancel = () => {
-        // Si al final siempre no lo quiere hacer
         if (window.confirm("¿Estás seguro de que deseas cancelar? Se perderán todos los cambios.")) {
-            // Resetea todo y regresamos al paso 1, posteriormente seria que nos movamos a la principal
             setCurrentStep(1);
             setFormData({
                 paso1: {},
@@ -48,18 +77,63 @@ export function GestorCrearSorteo() {
         }
     };
 
-    const handleSubmit = (finalStepData) => {
-        // Juntamos los datos y listo para enviar
+    const handleSubmit = async () => {
+        const finalStepData = extractFormData();
+        if (currentStep === 3 && paso3Ref.current) {
+            finalStepData.premios = paso3Ref.current.getPrizes();
+        }
+
         const completeData = {
             ...formData,
             [`paso${currentStep}`]: finalStepData
         };
+        
+        const { paso1, paso2, paso3 } = completeData;
+        const formDataToSend = new FormData();
 
-        console.log("Datos completos del sorteo:", completeData);
-        // Aqui estaria la integracion a la API
+        formDataToSend.append('title', paso1.titulo);
+        formDataToSend.append('ticketPrice', parseFloat(paso1.precioBoleto));
+        formDataToSend.append('numbersQuantity', parseInt(paso1.cantidadBoletos));
+        formDataToSend.append('startNumber', parseInt(paso1.inicioNumeracion));
+        formDataToSend.append('description', paso1.descripcion);
+        formDataToSend.append('paymentDeadline', paso2.fechaLimitePago);
+        formDataToSend.append('saleStartDate', paso2.fechaInicioVenta);
+        formDataToSend.append('saleEndDate', paso2.fechaFinVenta);
+        formDataToSend.append('raffleDateTime', paso2.fechaRealizacionSorteo);
+
+        if (paso1.imagenSorteo instanceof File) {
+            formDataToSend.append('imagenSorteo', paso1.imagenSorteo);
+        } else if (paso1.imagenUrl) {
+            formDataToSend.append('imageUrl', paso1.imagenUrl);
+        }
+
+        const premios = (paso3.premios || []).map(({ name, place, description }) => ({
+            name,
+            place: parseInt(place),
+            description,
+            imageUrl: ''
+        }));
+
+        formDataToSend.append('premios', JSON.stringify(premios));
+
+        (paso3.premios || []).forEach(({ imageFile }) => {
+            if (imageFile instanceof File) {
+                formDataToSend.append('imagenesPremios', imageFile);
+            }
+        });
+        
+        try {
+            const { crearSorteo } = await import('./controllers/SorteoController.js');
+            await crearSorteo(formDataToSend);
+            
+            alert("¡Sorteo creado exitosamente!");
+            navigate('/dashboard-organizador');
+        } catch (error) {
+            console.error("Error al crear sorteo:", error);
+            alert(error.response?.data?.message || error.message || "Hubo un error al crear el sorteo. Por favor intenta de nuevo.");
+        }
     };
 
-    // Renderizar el paso actual
     const renderStep = () => {
         const commonProps = {
             initialData: formData[`paso${currentStep}`],
@@ -71,7 +145,7 @@ export function GestorCrearSorteo() {
             case 2:
                 return <Paso2FechasSorteo {...commonProps} />;
             case 3:
-                return <Paso3Placeholder {...commonProps} />;
+                return <Paso3Placeholder {...commonProps} ref={paso3Ref} />;
             default:
                 return <Paso1InfoBasica {...commonProps} />;
         }
@@ -81,9 +155,9 @@ export function GestorCrearSorteo() {
         e.preventDefault();
 
         if (currentStep === totalSteps) {
-            handleSubmit(formData[`paso${currentStep}`]);
+            handleSubmit();
         } else {
-            handleNext(formData[`paso${currentStep}`]);
+            handleNext();
         }
     };
 
@@ -97,12 +171,10 @@ export function GestorCrearSorteo() {
                 </h1>
 
                 <div className="max-w-4xl mx-auto">
-                    {/* Contenedor del paso en que vamos */}
                     <div className="bg-white rounded-2xl shadow-lg p-8">
-                        <form onSubmit={handleFormSubmit}>
+                        <form ref={formRef} onSubmit={handleFormSubmit}>
                             {renderStep()}
 
-                            {/* Botones y barra de progreso */}
                             <div className="mt-8 pt-6 border-t border-[var(--color-light-gray)] flex items-center justify-between">
 
 
