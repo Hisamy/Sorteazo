@@ -12,10 +12,11 @@ export class BoletosController {
     return this.boletosService.create(createBoletoDto);
   }
 
-  @Get()
-  findAll() {
-    return this.boletosService.findAll();
+  @Get(':sorteoId')
+  findAllBySorteoForClient(@Param('sorteoId') sorteoId: string) {
+    return this.boletosService.findAllBySorteoForClient(sorteoId);
   }
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {
