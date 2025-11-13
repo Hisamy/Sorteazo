@@ -12,9 +12,9 @@ export class BoletosController {
     return this.boletosService.create(createBoletoDto);
   }
 
-  @Get()
-  findAll() {
-    return this.boletosService.findAll();
+  @Get(':sorteoId')
+  findAllBySorteoForClient(@Param('id') id: string) {
+    return this.boletosService.findAllBySorteoForClient(id);
   }
 
   @Get(':id')

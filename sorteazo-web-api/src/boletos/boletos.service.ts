@@ -1,14 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBoletoDto } from './dto/create-boleto.dto';
 import { UpdateBoletoDto } from './dto/update-boleto.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Boleto } from './entities/boleto.entity';
+import { Repository } from 'typeorm';
+import { Sorteo } from 'src/sorteos/entities/sorteo.entity';
 
 @Injectable()
 export class BoletosService {
+  constructor(
+    @InjectRepository(Sorteo)
+    private sorteoRepository: Repository <Sorteo>,
+  ){}
   create(createBoletoDto: CreateBoletoDto) {
     return 'This action adds a new boleto';
   }
 
-  findAll() {
+  async findAllBySorteoForClient(id: string) {
+   const sorteo = await this.sorteoRepository.findOne({
+    where: { id },
+    relations: ['boletos'],
+  });
+
+  if (!sorteo) {
+    throw new NotFoundException('No existe un sorteo con ese ID');
+  }
+
+  return sorteo.boletos.map((boleto) => ({
+    id: boleto.id,
+    number: boleto.number,
+    price: boleto.price,
+    isReserved: boleto.isReserved,
+  }));
+  }
+
+  findAllBySorteoForOrganizador() {
     return `This action returns all boletos`;
   }
 
