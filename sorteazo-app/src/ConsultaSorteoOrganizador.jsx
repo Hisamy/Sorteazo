@@ -1,26 +1,59 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TopNavBar } from './util-components/TopNavBar';
 import { FaArrowLeft } from 'react-icons/fa';
 import prizeImage from './assets/images/sorteo-placeholder.png';
 import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos';
-import { GridBoletos } from './consulta-sorteo-components/GridBoletos';
+import { BoletoGrid } from './consulta-sorteo-components/BoletoGrid';
+import { BoletoDetalleModal } from './consulta-sorteo-components/BoletoDetalleModal';
+
+// Simula la llamada al backend y genera datos con la estructura correcta
+const fetchBoletosDeSorteo = (totalBoletos) => {
+    let boletos = [];
+    for (let i = 1; i <= totalBoletos; i++) {
+        boletos.push({
+            id: `boleto-${i}`,
+            number: i,
+            price: 50, // Precio base
+            isReserved: Math.random() < 0.15, // 15% de probabilidad de estar reservado
+        });
+    }
+    return boletos;
+};
+
 export const ConsultaSorteoOrganizador = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+
+    const [boletos, setBoletos] = useState([]);
+    const [selectedBoleto, setSelectedBoleto] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const sorteo = {
         id: id,
         nombre: 'Sorteo de navidad 2026',
         descripcion: 'Aquí va la descripción breve oficial del sorteo',
         precioBoleto: 50,
-        numerosDisponibles: 59,
+        numerosDisponibles: boletos.filter(b => !b.isReserved).length,
         numerosTotales: 300,
         imagen: prizeImage,
     };
 
-    // Números apartados de ejemplo (estos vendrían del backend)
-    const reservedNumbers = [26, 35, 36, 37, 67, 68, 69];
+    // Simula la carga de datos del backend cuando el componente se monta
+    useEffect(() => {
+        const datosDelBackend = fetchBoletosDeSorteo(sorteo.numerosTotales);
+        setBoletos(datosDelBackend);
+    }, [sorteo.numerosTotales]);
+
+    const handleBoletoClick = (boleto) => {
+        setSelectedBoleto(boleto);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedBoleto(null);
+    };
 
     return (
         <div className="min-h-screen bg-[var(--color-background)]">
@@ -70,34 +103,21 @@ export const ConsultaSorteoOrganizador = () => {
                     </div>
                 </div>
 
-                {/* Sección de Boletos (Solo lectura) */}
+                {/* Sección de Boletos */}
                 <div className="mt-12 space-y-4">
-                    <AccordionBoletos title="Boletos 1-100" available={95}>
-                        <GridBoletos 
-                            startNumber={1} 
-                            endNumber={100} 
-                            reservedNumbers={reservedNumbers}
-                            readOnly={true}
-                        />
+                    <AccordionBoletos title="Boletos 1-100" available={boletos.slice(0, 100).filter(b => !b.isReserved).length}>
+                        <BoletoGrid boletos={boletos.slice(0, 100)} onBoletoClick={handleBoletoClick} />
                     </AccordionBoletos>
-                    <AccordionBoletos title="Boletos 101-200" available={47}>
-                        <GridBoletos 
-                            startNumber={101} 
-                            endNumber={200} 
-                            reservedNumbers={[]}
-                            readOnly={true}
-                        />
+                    <AccordionBoletos title="Boletos 101-200" available={boletos.slice(100, 200).filter(b => !b.isReserved).length}>
+                        <BoletoGrid boletos={boletos.slice(100, 200)} onBoletoClick={handleBoletoClick} />
                     </AccordionBoletos>
-                    <AccordionBoletos title="Boletos 201-300" available={79}>
-                        <GridBoletos 
-                            startNumber={201} 
-                            endNumber={300} 
-                            reservedNumbers={[]}
-                            readOnly={true}
-                        />
+                    <AccordionBoletos title="Boletos 201-300" available={boletos.slice(200, 300).filter(b => !b.isReserved).length}>
+                        <BoletoGrid boletos={boletos.slice(200, 300)} onBoletoClick={handleBoletoClick} />
                     </AccordionBoletos>
                 </div>
             </div>
+
+            <BoletoDetalleModal isOpen={isModalOpen} boleto={selectedBoleto} onClose={closeModal} />
         </div>
     );
 };
