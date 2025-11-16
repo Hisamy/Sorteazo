@@ -31,6 +31,13 @@ export class SorteosController {
     return this.sorteosService.findAll();
   }
 
+  @Get('organizador/mis-sorteos')
+  findSorteosByOrganizador(@Req() req) {
+    const user = req.user;
+    if(user.role != "organizador") throw new UnauthorizedException("Organizador rol required, not authorized.");
+    return this.sorteosService.findAllByOrganizador(user.sub);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.sorteosService.findOne(+id);

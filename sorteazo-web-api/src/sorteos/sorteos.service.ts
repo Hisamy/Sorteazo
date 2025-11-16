@@ -74,8 +74,25 @@ export class SorteosService {
     return savedSorteo;
   }
 
-  findAll() {
-    return `This action returns all sorteos`;
+  async findAll() {
+    return await this.sorteoRepository.find({
+      relations:['organizador', 'premios']
+    });
+  }
+
+  async findAllByOrganizador(idOrganizador: string) {
+    const sorteos = await this.sorteoRepository.find({
+      where: {
+        organizador: {
+          userId: idOrganizador
+        }
+      },
+      relations: ['organizador', 'premios']
+    });
+
+    if (!sorteos) throw new NotFoundException(`Sorteos for organizador with id ${idOrganizador} not found.`);
+
+    return sorteos;
   }
 
   findOne(id: number) {
