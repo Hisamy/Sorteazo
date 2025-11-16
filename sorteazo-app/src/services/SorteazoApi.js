@@ -25,3 +25,25 @@ export const obtenerUsuario = async (usuarioData) => {
         throw error;
     }
 };
+
+// Para el dashboard del cliente
+export const obtenerTodosLosSorteos = async () => {
+    try {
+        const response = await api.get("/sorteos");
+        return response.data;
+    } catch (error) {
+        console.error("Error al obtener los sorteos:", error);
+        throw error;
+    }
+};
+
+// Para el dashboard del organizador (ruta protegida)
+export const obtenerSorteosPorOrganizador = async () => {
+    try {
+        const response = await api.get("/sorteos/organizador/mis-sorteos");
+        return response.data;
+    } catch (error) {
+        console.error("Error al obtener los sorteos del organizador:", error);
+        throw error;
+    }
+};
