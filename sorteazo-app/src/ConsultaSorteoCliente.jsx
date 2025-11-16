@@ -1,15 +1,25 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
+=======
+import React from 'react';
+>>>>>>> feature/frontend-crear-sorteo
 import { useNavigate, useParams } from 'react-router-dom';
 import { TopNavBar } from './util-components/TopNavBar';
 import { FaArrowLeft } from 'react-icons/fa';
 import prizeImage from './assets/images/sorteo-placeholder.png';
 import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos';
+<<<<<<< HEAD
 import { GridBoletos } from './consulta-sorteo-components/GridBoletos';
+=======
+>>>>>>> feature/frontend-crear-sorteo
 
 export const ConsultaSorteoCliente = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+<<<<<<< HEAD
     const [selectedNumbers, setSelectedNumbers] = useState([]);
+=======
+>>>>>>> feature/frontend-crear-sorteo
 
     const sorteo = {
         id: id,
@@ -21,6 +31,7 @@ export const ConsultaSorteoCliente = () => {
         imagen: prizeImage,
     };
 
+<<<<<<< HEAD
     // Números apartados de ejemplo (estos vendrían del backend)
     const reservedNumbers = [26, 35, 36, 37, 67, 68, 69];
 
@@ -34,6 +45,8 @@ export const ConsultaSorteoCliente = () => {
         });
     };
 
+=======
+>>>>>>> feature/frontend-crear-sorteo
     return (
         <div className="min-h-screen bg-[var(--color-background)]">
             <TopNavBar showLogout={true} />
@@ -86,6 +99,7 @@ export const ConsultaSorteoCliente = () => {
                     </div>
                 </div>
 
+<<<<<<< HEAD
                 {/* Sección de Boletos */}
                 <div className="mt-12 space-y-4">
                     <AccordionBoletos title="Boletos 1-100" available={95}>
@@ -114,6 +128,24 @@ export const ConsultaSorteoCliente = () => {
                             onNumberClick={handleNumberClick}
                             reservedNumbers={[]}
                         />
+=======
+                {/* Sección de Boletos (Placeholder) */}
+                <div className="mt-12 space-y-4">
+                    <AccordionBoletos title="Boletos 1-100" available={95}>
+                        <div className="text-center text-gray-500 p-10 bg-gray-100 rounded-md">
+                            <p>Componente de asientos del sorteo pendiente.</p>
+                        </div>
+                    </AccordionBoletos>
+                    <AccordionBoletos title="Boletos 101-200" available={47}>
+                         <div className="text-center text-gray-500 p-10 bg-gray-100 rounded-md">
+                            <p>Componente de asientos del sorteo pendiente.</p>
+                        </div>
+                    </AccordionBoletos>
+                    <AccordionBoletos title="Boletos 201-300" available={79}>
+                         <div className="text-center text-gray-500 p-10 bg-gray-100 rounded-md">
+                            <p>Componente de asientos del sorteo pendiente.</p>
+                        </div>
+>>>>>>> feature/frontend-crear-sorteo
                     </AccordionBoletos>
                 </div>
             </div>

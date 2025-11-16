@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TypeOrmOptions } from './users/configs/typeorm.config';
+import { TypeOrmOptions } from './configs/typeorm.config';
 import { SorteosModule } from './sorteos/sorteos.module';
 import { PagosModule } from './pagos/pagos.module';
 import { BoletosModule } from './boletos/boletos.module';
@@ -15,7 +15,7 @@ import { ConfigModule } from '@nestjs/config';
     UsersModule,
     SorteosModule,
     BoletosModule,
-    PagosModule
+    PagosModule,
   ],
   controllers: [AppController],
   providers: [AppService],

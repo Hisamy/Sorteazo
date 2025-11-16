@@ -1,18 +1,23 @@
-import { useState } from 'react';
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import { CardPremio } from '../form-components/CardPremio';
 
-export function Paso3Placeholder({ initialData }) {
+export const Paso3Placeholder = forwardRef(({ initialData }, ref) => {
 
     const [prizes, setPrizes] = useState(initialData?.prizes || [
-        { id: 1, name: '', description: '', image: null }
+        { id: 1, name: '', place: 1, description: '', imageFile: null }
     ]);
+
+    useImperativeHandle(ref, () => ({
+        getPrizes: () => prizes
+    }));
 
     const handleAddPrize = () => {
         const newPrize = {
             id: Date.now(),
             name: '',
+            place: prizes.length + 1,
             description: '',
-            image: null
+            imageFile: null
         };
         setPrizes([...prizes, newPrize]);
     };
@@ -67,4 +72,4 @@ export function Paso3Placeholder({ initialData }) {
             </div>
         </>
     );
-}
+});

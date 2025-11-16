@@ -4,7 +4,10 @@ import { TopNavBar } from './util-components/TopNavBar';
 import { FaArrowLeft } from 'react-icons/fa';
 import prizeImage from './assets/images/sorteo-placeholder.png';
 import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos';
+<<<<<<< HEAD
 import { GridBoletos } from './consulta-sorteo-components/GridBoletos';
+=======
+>>>>>>> feature/frontend-crear-sorteo
 export const ConsultaSorteoOrganizador = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -19,9 +22,12 @@ export const ConsultaSorteoOrganizador = () => {
         imagen: prizeImage,
     };
 
+<<<<<<< HEAD
     // Números apartados de ejemplo (estos vendrían del backend)
     const reservedNumbers = [26, 35, 36, 37, 67, 68, 69];
 
+=======
+>>>>>>> feature/frontend-crear-sorteo
     return (
         <div className="min-h-screen bg-[var(--color-background)]">
             <TopNavBar showLogout={true} />
@@ -70,6 +76,7 @@ export const ConsultaSorteoOrganizador = () => {
                     </div>
                 </div>
 
+<<<<<<< HEAD
                 {/* Sección de Boletos (Solo lectura) */}
                 <div className="mt-12 space-y-4">
                     <AccordionBoletos title="Boletos 1-100" available={95}>
@@ -95,6 +102,24 @@ export const ConsultaSorteoOrganizador = () => {
                             reservedNumbers={[]}
                             readOnly={true}
                         />
+=======
+                {/* Sección de Boletos (Placeholder) */}
+                <div className="mt-12 space-y-4">
+                    <AccordionBoletos title="Boletos 1-100" available={95}>
+                        <div className="text-center text-gray-500 p-10 bg-gray-100 rounded-md">
+                            <p>Componente de asientos del sorteo pendiente.</p>
+                        </div>
+                    </AccordionBoletos>
+                    <AccordionBoletos title="Boletos 101-200" available={47}>
+                         <div className="text-center text-gray-500 p-10 bg-gray-100 rounded-md">
+                            <p>Componente de asientos del sorteo pendiente.</p>
+                        </div>
+                    </AccordionBoletos>
+                    <AccordionBoletos title="Boletos 201-300" available={79}>
+                         <div className="text-center text-gray-500 p-10 bg-gray-100 rounded-md">
+                            <p>Componente de asientos del sorteo pendiente.</p>
+                        </div>
+>>>>>>> feature/frontend-crear-sorteo
                     </AccordionBoletos>
                 </div>
             </div>

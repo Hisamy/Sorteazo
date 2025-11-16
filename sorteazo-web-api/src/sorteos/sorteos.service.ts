@@ -16,7 +16,11 @@ export class SorteosService {
     @InjectRepository(Organizador) private readonly organizadorRepository
   ){}
 
-  async create(createSorteoDto: CreateSorteoDto, idOrganizador:string) {
+  async create(
+    createSorteoDto: CreateSorteoDto, 
+    idOrganizador: string,
+    files?: { imagenSorteo?: Express.Multer.File[], imagenesPremios?: Express.Multer.File[] }
+  ) {
     const organizador = await this.organizadorRepository.findOneBy({userId:idOrganizador});
     if(!organizador) throw new NotFoundException("There is not an Organizador at the database.")
     const boletos:Boleto[] = [];
@@ -31,12 +35,20 @@ export class SorteosService {
       boletos.push(boleto);
     }
 
-    createSorteoDto.premios.forEach((p)=>{
+    const imagenSorteoUrl = files?.imagenSorteo?.[0] 
+      ? `/uploads/${files.imagenSorteo[0].filename}` 
+      : createSorteoDto.imageUrl || '';
+
+    createSorteoDto.premios.forEach((p, index) => {
+      const imagenPremioUrl = files?.imagenesPremios?.[index]
+        ? `/uploads/${files.imagenesPremios[index].filename}`
+        : p.imageUrl || '';
+
       const premio:Premio = this.premioRepository.create({
-        name:p.name, 
-        place:p.place, 
-        imageUrl:p.imageUrl, 
-        description:p.description
+        name: p.name, 
+        place: p.place, 
+        imageUrl: imagenPremioUrl, 
+        description: p.description
       })
       premios.push(premio)
     })
@@ -46,7 +58,7 @@ export class SorteosService {
       ticketPrice:createSorteoDto.ticketPrice,
       numbersQuantity:createSorteoDto.numbersQuantity,
       startNumber:createSorteoDto.startNumber,
-      imageUrl:createSorteoDto.imageUrl,
+      imageUrl: imagenSorteoUrl,
       description:createSorteoDto.description,
       paymentDeadline:createSorteoDto.paymentDeadline,
       saleStartDate:createSorteoDto.saleStartDate,

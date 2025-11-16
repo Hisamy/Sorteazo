@@ -27,12 +27,12 @@ export function InicioSesion() {
             const role = response.role?.toString().toLowerCase();
             
             if (role === "organizador") {
-                navigate("/DashboardOrganizador");
+                navigate("/sorteo/organizador");
             } else if (role === "cliente") {
-                navigate("/DashboardCliente");
+                navigate("/sorteo/cliente");
             } else {
                 // Si no hay rol definido, redirigir a cliente por defecto
-                navigate("/DashboardCliente");
+                navigate("/sorteo/cliente");
             }
         } catch (err) {
             console.error(err);

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
-import { JWT_SECRET_KEY } from "../configs/enviroment.config";
+import { JWT_SECRET_KEY } from "../../configs/enviroment.config";
 
 const cookieExtractor = (req: Request): string | null => {
   let token = null;

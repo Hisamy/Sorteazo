@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 export const AccordionBoletos = ({ title, available, children }) => {
+<<<<<<< HEAD
     const [isOpen, setIsOpen] = useState(false); 
+=======
+    const [isOpen, setIsOpen] = useState(true); 
+>>>>>>> feature/frontend-crear-sorteo
     return (
         <div className="border border-gray-200 rounded-lg">
             <button
