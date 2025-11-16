@@ -4,7 +4,6 @@ import { ProgressBar } from "./util-components/ProgressBar";
 import { Paso1InfoBasica } from "./pasos-sorteo/Paso1InfoBasica";
 import { Paso2FechasSorteo } from "./pasos-sorteo/Paso2FechasSorteo";
 import { Paso3Placeholder } from "./pasos-sorteo/Paso3Placeholder";
-import { Paso4Placeholder } from "./pasos-sorteo/Paso4Placeholder";
 
 export function GestorCrearSorteo() {
     const [currentStep, setCurrentStep] = useState(1);
@@ -13,10 +12,9 @@ export function GestorCrearSorteo() {
         paso1: {},
         paso2: {},
         paso3: {},
-        paso4: {},
     });
 
-    const totalSteps = 4;
+    const totalSteps = 3;
 
     const handleNext = (stepData) => {
         // Guardar los datos del paso actual
@@ -46,7 +44,6 @@ export function GestorCrearSorteo() {
                 paso1: {},
                 paso2: {},
                 paso3: {},
-                paso4: {},
             });
         }
     };
@@ -75,8 +72,6 @@ export function GestorCrearSorteo() {
                 return <Paso2FechasSorteo {...commonProps} />;
             case 3:
                 return <Paso3Placeholder {...commonProps} />;
-            case 4:
-                return <Paso4Placeholder {...commonProps} />;
             default:
                 return <Paso1InfoBasica {...commonProps} />;
         }

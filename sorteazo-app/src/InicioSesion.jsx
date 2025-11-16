@@ -3,7 +3,45 @@ import sorteazoLogo from "./assets/LogoSorteazo-B.svg";
 import { ToggleButtonText } from "./ToggleButtonText";
 import { InputForm } from "./form-components/InputForm";
 import { PasswordInput } from "./form-components/InputPassword";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { iniciarSesion } from "./controllers/UsuarioController";
+
 export function InicioSesion() {
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        email: "",
+        password: ""
+    });
+    const [loading, setLoading] = useState(false);
+
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const response = await iniciarSesion(formData);
+            
+            // Redirigir según el rol del usuario
+            const role = response.role?.toString().toLowerCase();
+            
+            if (role === "organizador") {
+                navigate("/DashboardOrganizador");
+            } else if (role === "cliente") {
+                navigate("/DashboardCliente");
+            } else {
+                // Si no hay rol definido, redirigir a cliente por defecto
+                navigate("/DashboardCliente");
+            }
+        } catch (err) {
+            console.error(err);
+            alert(err.message || "Hubo un error al iniciar sesión");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="grid grid-cols-3 h-screen ">
             <div className="fixed top-0 left-0 h-screen w-1/3">
@@ -28,20 +66,30 @@ export function InicioSesion() {
                             <ToggleButtonText isCrearCuenta={false} />
                         </div>
                         <div className="font-afacad mt-20 ">
-                            <form action="#" method="get">
+                            <form onSubmit={handleSubmit}>
                                 <fieldset className="flex flex-col mb-5">
-                                    <label htmlFor="#">Correo Electrónico</label>
+                                    <label>Correo Electrónico</label>
                                     <InputForm
                                         type="email"
+                                        name="email"
                                         placeholder="tucorreo@ejemplo.com"
+                                        value={formData.email}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, email: e.target.value })
+                                        }
+                                        required
                                     />
                                 </fieldset>
                                 <fieldset className="flex flex-col mb-5">
-                                    <label htmlFor="#">Contraseña</label>
+                                    <label>Contraseña</label>
                                     <PasswordInput
-
+                                        value={formData.password}
+                                        name="password"
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, password: e.target.value })
+                                        }
+                                        required
                                     />
-
                                 </fieldset>
 
                                 <button

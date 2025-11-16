@@ -40,7 +40,7 @@ export class UsersController {
     @Body() loginUserDto: LoginUserDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { access_token } = await this.usersService.login(loginUserDto);
+    const { access_token, role } = await this.usersService.login(loginUserDto);
 
     res.cookie('access_token', access_token, {
       httpOnly: true,
@@ -49,7 +49,7 @@ export class UsersController {
       maxAge: 3600000,
     });
 
-    return { message: 'Successful Login' };
+    return { message: 'Successful Login', role };
   }
 
   @UseGuards(AuthGuard('jwt'))

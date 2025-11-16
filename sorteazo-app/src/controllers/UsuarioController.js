@@ -1,4 +1,5 @@
 import { createUsuario } from "../services/SorteazoApi";
+import { obtenerUsuario } from "../services/SorteazoApi";
 
 export const registrarUsuario = async (formData) => {
     if (formData.password !== formData.confirmarPassword) {
@@ -8,12 +9,11 @@ export const registrarUsuario = async (formData) => {
     if (!formData.email || !formData.name) {
         throw new Error("El nombre y el correo son obligatorios");
     }
-    console.log(formData);
-
     try {
         const response = await createUsuario(formData);
         return response;
     } catch (error) {
+        console.log(error);
         if (error.response) {
             const status = error.response.status;
             const message =
@@ -23,6 +23,26 @@ export const registrarUsuario = async (formData) => {
                     : status === 409
                         ? "El usuario ya existe"
                         : "Error en el servidor");
+            throw new Error(message);
+        }
+
+        throw new Error("No se pudo conectar con el servidor");
+    }
+};
+
+export const iniciarSesion = async (formData) => {
+
+    try {
+        const response = await obtenerUsuario(formData);
+        console.log(response);
+        return response;
+    } catch (error) {
+        console.log(error);
+        if (error.response) {
+            const status = error.response.status;
+            const message =
+                error.response.data?.message ||
+                (status === 400 ? "Credenciales inválidas" : "Error al iniciar sesión");
             throw new Error(message);
         }
 

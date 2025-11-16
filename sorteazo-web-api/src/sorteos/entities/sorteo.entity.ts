@@ -36,7 +36,7 @@ export class Sorteo {
     @Column({ type: 'date' })
     saleEndDate: Date;
 
-    @Column({ type: 'timestamptz' })
+    @Column({ type: 'timestamp' })
     raffleDateTime: Date;
 
     @ManyToOne(() => Organizador, (organizador) => organizador.sorteos)
@@ -53,9 +53,9 @@ export class Sorteo {
     @JoinColumn({ name: 'winning_ticket_id' })
     winningTicket: Boleto;
 
-    @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+    @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
     createdAt: Date;
 
-    @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+    @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
     updatedAt: Date;
 }
