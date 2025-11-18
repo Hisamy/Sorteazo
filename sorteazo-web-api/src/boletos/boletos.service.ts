@@ -45,7 +45,9 @@ export class BoletosService {
       relations: [
         'boletos',
         'boletos.client',
-        'boletos.pago'
+        'boletos.client.user',
+        'boletos.pago',
+        'boletos.pago.comprobante'
       ],
     });
     
@@ -58,7 +60,12 @@ export class BoletosService {
       number: boleto.number,
       price: boleto.price,
       isReserved: boleto.isReserved,
-      client_id: boleto.client?.userId,
+      client: boleto.client 
+        ? { 
+            name: boleto.client.user?.name,
+            phoneNumber: boleto.client.user?.phone
+        } 
+        : null,
       payment: boleto.pago
     }));
   }

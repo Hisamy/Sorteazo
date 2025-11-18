@@ -40,10 +40,11 @@ export const ConsultaSorteoOrganizador = () => {
                 }
 
                 const boletosData = await obtenerBoletosPorSorteoOrganizador(id);
-                
+
                 const boletosMapeados = boletosData.map(b => ({
-                    ...b, 
+                    ...b,
                     numero: b.number, 
+                    price: b.price,
                     estado: b.isReserved ? 'apartado' : 'disponible' 
                 }));
                 setBoletos(boletosMapeados);
@@ -125,6 +126,10 @@ export const ConsultaSorteoOrganizador = () => {
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="w-5 h-5 bg-gray-400 rounded"></div>
+                                <span>Comprado</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-5 h-5 bg-yellow-400 rounded"></div>
                                 <span>Apartado</span>
                             </div>
                         </div>
@@ -147,13 +152,17 @@ export const ConsultaSorteoOrganizador = () => {
 
                         return (
                             <AccordionBoletos key={index} title={title} available={availableCount}>
-                                <BoletoGrid boletos={chunk} onBoletoClick={handleBoletoClick} />
+                                <BoletoGrid boletos={chunk} onBoletoClick={handleBoletoClick} isOrganizer={true} />
                             </AccordionBoletos>
                         );
                     })}
                 </div>
             </div>
-            <BoletoDetalleModal isOpen={isModalOpen} boleto={selectedBoleto} onClose={closeModal} />
+            <BoletoDetalleModal 
+                isOpen={isModalOpen} 
+                boleto={selectedBoleto} 
+                onClose={closeModal}
+            />
             <PremiosModal 
                 isOpen={isPremiosModalOpen}
                 premios={sorteo?.premios}
