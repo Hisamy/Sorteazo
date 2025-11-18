@@ -74,12 +74,36 @@ export class SorteosService {
     return savedSorteo;
   }
 
-  findAll() {
-    return `This action returns all sorteos`;
+  async findAll() {
+    return await this.sorteoRepository.find({
+      relations:['organizador', 'premios']
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} sorteo`;
+  async findAllByOrganizador(idOrganizador: string) {
+    const sorteos = await this.sorteoRepository.find({
+      where: {
+        organizador: {
+          userId: idOrganizador
+        }
+      },
+      relations: ['organizador', 'premios']
+    });
+
+    if (!sorteos) throw new NotFoundException(`Sorteos for organizador with id ${idOrganizador} not found.`);
+
+    return sorteos;
+  }
+
+  async findOne(id: string) {
+    const sorteo = await this.sorteoRepository.findOne({
+      where: { id },
+      relations: ['organizador', 'premios', 'boletos']
+    });
+
+    if (!sorteo) throw new NotFoundException(`Sorteo with id ${id} not found.`);
+
+    return sorteo;
   }
 
   update(id: number, updateSorteoDto: UpdateSorteoDto) {

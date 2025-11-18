@@ -1,27 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TopNavBar } from "./util-components/TopNavBar";
 import { EmptyStateCard } from "./util-components/EmptyStateCard";
 import CardSorteoCliente from "./consulta-sorteo-components/CardSorteoCliente";
 import sorteoImage from './assets/images/sorteo-placeholder.png';
 import { FaSearch } from 'react-icons/fa';
 import { useNavigate } from "react-router-dom";
+import { obtenerTodosLosSorteos } from "./services/SorteazoApi";
 
 export function DashboardCliente() {
     const navigate = useNavigate();
 
-    const [sorteos, setSorteos] = useState([
-        {
-            id: 1,
-            nombre: 'Sorteo Potro Millonario 2025',
-            precioBoleto: 50,
-            fechaSorteo: '2025-11-30',
-            imagen: sorteoImage
-        }
-    ]);
+    const [sorteos, setSorteos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
+    useEffect(() => {
+        const cargarSorteos = async () => {
+            try {
+                setLoading(true);
+                const data = await obtenerTodosLosSorteos();
+                const sorteosMapeados = data.map(sorteo => {
+                    const fullImageUrl = sorteo.imageUrl
+                        ? `${import.meta.env.VITE_API_URL}${sorteo.imageUrl}`
+                        : sorteoImage;
+
+                    return {
+                        id: sorteo.id,
+                        title: sorteo.title || '', 
+                        ticketPrice: sorteo.ticketPrice, 
+                        raffleDateTime: sorteo.raffleDateTime, 
+                        imageUrl: fullImageUrl 
+                    };
+                });
+                setSorteos(sorteosMapeados);
+            } catch (err) {
+                setError("No se pudieron cargar los sorteos. Inténtalo de nuevo más tarde.");
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        cargarSorteos();
+    }, []);
+
     const filteredSorteos = sorteos.filter(sorteo =>
-        sorteo.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+        sorteo.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -50,18 +75,22 @@ export function DashboardCliente() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-6">
-                    {filteredSorteos.length > 0 ? (
-                        filteredSorteos.map(sorteo => (
-                            <CardSorteoCliente
-                                key={sorteo.id}
-                                sorteo={sorteo}
-                                onClick={() => navigate(`/sorteo/cliente/${sorteo.id}`)}
+                    {loading && <p className="text-center text-gray-500">Cargando sorteos...</p>}
+                    {error && <EmptyStateCard message={error} />}
+                    {!loading && !error && (
+                        filteredSorteos.length > 0 ? (
+                            filteredSorteos.map(sorteo => (
+                                <CardSorteoCliente
+                                    key={sorteo.id}
+                                    sorteo={sorteo}
+                                    onClick={() => navigate(`/sorteos/cliente/${sorteo.id}`, { state: { sorteo } })}
+                                />
+                            ))
+                        ) : (
+                            <EmptyStateCard 
+                                message="No se encontraron sorteos disponibles."
                             />
-                        ))
-                    ) : (
-                        <EmptyStateCard 
-                            message="No se encontraron sorteos disponibles."
-                        />
+                        )
                     )}
                 </div>
             </div>
