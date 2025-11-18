@@ -4,7 +4,9 @@ import { FaTimes } from 'react-icons/fa';
 export const ConfirmacionApartadoModal = ({ isOpen, onClose, onConfirm, seleccionados, precioBoleto }) => {
     if (!isOpen) return null;
 
-    const total = (seleccionados.length * precioBoleto).toFixed(2);
+    const precio = parseFloat(precioBoleto) || 0;
+
+    const total = (seleccionados.length * precio).toFixed(2);
 
     return (
         <div 
@@ -46,7 +48,7 @@ export const ConfirmacionApartadoModal = ({ isOpen, onClose, onConfirm, seleccio
                         </div>
                         <div className="flex justify-between">
                             <span className="text-gray-500">Precio por boleto:</span>
-                            <span className="font-semibold text-gray-800">${precioBoleto.toFixed(2)}</span>
+                            <span className="font-semibold text-gray-800">${precio.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-xl">
                             <span className="font-bold text-gray-800">Total a Pagar:</span>
