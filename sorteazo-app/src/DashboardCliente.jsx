@@ -20,14 +20,19 @@ export function DashboardCliente() {
             try {
                 setLoading(true);
                 const data = await obtenerTodosLosSorteos();
-                // Mapea los datos del backend al formato que espera tu componente
-                const sorteosMapeados = data.map(sorteo => ({
-                    id: sorteo.id,
-                    nombre: sorteo.name, // Asumiendo que el campo es 'name'
-                    precioBoleto: sorteo.ticketPrice, // Asumiendo que el campo es 'ticketPrice'
-                    fechaSorteo: sorteo.drawDate, // Asumiendo que el campo es 'drawDate'
-                    imagen: sorteo.imageUrl || sorteoImage // Usa la imagen del back o un placeholder
-                }));
+                const sorteosMapeados = data.map(sorteo => {
+                    const fullImageUrl = sorteo.imageUrl
+                        ? `${import.meta.env.VITE_API_URL}${sorteo.imageUrl}`
+                        : sorteoImage;
+
+                    return {
+                        id: sorteo.id,
+                        title: sorteo.title || '', 
+                        ticketPrice: sorteo.ticketPrice, 
+                        raffleDateTime: sorteo.raffleDateTime, 
+                        imageUrl: fullImageUrl 
+                    };
+                });
                 setSorteos(sorteosMapeados);
             } catch (err) {
                 setError("No se pudieron cargar los sorteos. Inténtalo de nuevo más tarde.");
@@ -38,10 +43,10 @@ export function DashboardCliente() {
         };
 
         cargarSorteos();
-    }, []); // El array vacío asegura que se ejecute solo una vez
+    }, []);
 
     const filteredSorteos = sorteos.filter(sorteo =>
-        sorteo.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+        sorteo.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -78,7 +83,7 @@ export function DashboardCliente() {
                                 <CardSorteoCliente
                                     key={sorteo.id}
                                     sorteo={sorteo}
-                                    onClick={() => navigate(`/sorteo/cliente/${sorteo.id}`)}
+                                    onClick={() => navigate(`/sorteos/cliente/${sorteo.id}`, { state: { sorteo } })}
                                 />
                             ))
                         ) : (

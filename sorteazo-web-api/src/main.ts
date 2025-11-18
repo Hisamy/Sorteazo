@@ -16,10 +16,6 @@ console.log('DATABASE_NAME:', process.env.DATABASE_NAME);
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads/',
-  });
-
   app.enableCors({
     origin: 'http://localhost:5173',
     credentials: true

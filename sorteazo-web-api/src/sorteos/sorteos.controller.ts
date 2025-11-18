@@ -11,7 +11,7 @@ import { multerConfig } from '../configs/multer.config';
 export class SorteosController {
   constructor(private readonly sorteosService: SorteosService) {}
 
-  @Post('create')
+  @Post()
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'imagenSorteo', maxCount: 1 },
     { name: 'imagenesPremios', maxCount: 10 },
@@ -40,7 +40,7 @@ export class SorteosController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.sorteosService.findOne(+id);
+    return this.sorteosService.findOne(id);
   }
 
   @Patch(':id')

@@ -95,8 +95,15 @@ export class SorteosService {
     return sorteos;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} sorteo`;
+  async findOne(id: string) {
+    const sorteo = await this.sorteoRepository.findOne({
+      where: { id },
+      relations: ['organizador', 'premios', 'boletos']
+    });
+
+    if (!sorteo) throw new NotFoundException(`Sorteo with id ${id} not found.`);
+
+    return sorteo;
   }
 
   update(id: number, updateSorteoDto: UpdateSorteoDto) {
