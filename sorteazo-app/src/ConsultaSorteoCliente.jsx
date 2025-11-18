@@ -8,6 +8,8 @@ import { BoletoGrid } from './consulta-sorteo-components/BoletoGrid';
 import { obtenerSorteoPorId, obtenerBoletosPorSorteoCliente } from './services/SorteazoApi';
 import { EmptyStateCard } from './util-components/EmptyStateCard';
 import { PremiosModal } from './consulta-sorteo-components/PremiosModal';
+import { FloatingActionBar } from './consulta-sorteo-components/FloatingActionBar';
+import { ConfirmacionApartadoModal } from './consulta-sorteo-components/ConfirmacionApartadoModal';
 
 export const ConsultaSorteoCliente = () => {
     const { id } = useParams();
@@ -20,6 +22,7 @@ export const ConsultaSorteoCliente = () => {
     const [error, setError] = useState(null);
     const [seleccionados, setSeleccionados] = useState([]);
     const [isPremiosModalOpen, setIsPremiosModalOpen] = useState(false);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
     useEffect(() => {
         const cargarDatosSorteo = async () => {
@@ -76,6 +79,18 @@ export const ConsultaSorteoCliente = () => {
         );
     };
 
+    const handleConfirmarApartado = () => {
+        console.log('Apartando boletos:', seleccionados);
+        // Para el que le vaya a tocar esta parte,
+        // aquí iría la llamada a la API para apartar los boletos
+        setIsConfirmModalOpen(false);
+        setSeleccionados([]);
+        alert('¡Boletos apartados con éxito!');
+        // Despues de apartar, recargar la lista de boletos 
+        // para ver los cambios, o devolver al dashboard,
+        // como ustedes vean.
+    };
+
     const boletosParaMostrar = useMemo(() => {
         if (!boletos) return [];
         return boletos.map(boleto => {
@@ -108,8 +123,10 @@ export const ConsultaSorteoCliente = () => {
         return <div className="container mx-auto p-8"><EmptyStateCard message="Sorteo no encontrado." /></div>;
     }
 
+    const totalAPagar = seleccionados.length * sorteo.precioBoleto;
+
     return (
-        <div className="min-h-screen bg-[var(--color-background)]">
+        <div className="min-h-screen bg-[var(--color-background)] pb-32">
             <TopNavBar showLogout={true} />
             <div className="container mx-auto px-8 py-10 max-w-5xl">
                 <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-500 hover:text-gray-800 mb-6 font-afacad">
@@ -176,6 +193,20 @@ export const ConsultaSorteoCliente = () => {
                 isOpen={isPremiosModalOpen}
                 premios={sorteo?.premios}
                 onClose={() => setIsPremiosModalOpen(false)}
+            />
+            {seleccionados.length > 0 && (
+                <FloatingActionBar
+                    count={seleccionados.length}
+                    totalPrice={totalAPagar}
+                    onActionClick={() => setIsConfirmModalOpen(true)}
+                />
+            )}
+            <ConfirmacionApartadoModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={handleConfirmarApartado}
+                seleccionados={seleccionados}
+                precioBoleto={sorteo.precioBoleto}
             />
         </div>
     );
