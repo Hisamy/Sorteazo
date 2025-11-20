@@ -27,7 +27,7 @@ export class BoletosService {
       where: { id },
       relations: ['boletos'],
     });
-    
+
     if (!sorteo) {
       throw new NotFoundException('No existe un sorteo con ese ID');
     }
@@ -45,7 +45,7 @@ export class BoletosService {
   */
   async findAllBySorteoForOrganizador(idSorteo: string, idOrganizador: string) {
     const sorteo = await this.sorteoRepository.findOne({
-      where: { 
+      where: {
         id: idSorteo,
         organizador: { userId: idOrganizador }
       },
@@ -57,7 +57,7 @@ export class BoletosService {
         'boletos.pago.comprobante'
       ],
     });
-    
+
     if (!sorteo) {
       throw new NotFoundException('No existe un sorteo con ese ID o no cuentas con los permisos para acceder a él.');
     }
@@ -75,6 +75,10 @@ export class BoletosService {
         : null,
       payment: boleto.pago
     }));
+  }
+
+  findOne(id: number) {
+    return `This action returns a #${id} boleto`;
   }
 
   async reserveBoletos(reserveBoletoDto: ReserveBoletoDto, clientId: string) {
@@ -126,10 +130,6 @@ export class BoletosService {
       reservedNumbers: boletos.map(b => b.number),
       total: boletos.reduce((sum, b) => sum + b.price, 0),
     };
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} boleto`;
   }
 
   update(id: number, updateBoletoDto: UpdateBoletoDto) {
