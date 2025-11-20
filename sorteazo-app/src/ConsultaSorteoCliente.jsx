@@ -37,16 +37,7 @@ export const ConsultaSorteoCliente = () => {
                         ? `${import.meta.env.VITE_API_URL}${data.imageUrl}`
                         : prizeImage;
 
-                    sorteoData = {
-                        id: data.id,
-                        nombre: data.title,
-                        precioBoleto: data.ticketPrice,
-                        fechaSorteo: data.raffleDateTime,
-                        imagen: fullImageUrl,
-                        descripcion: data.description,
-                        premios: data.premios || [],
-                        startNumber: data.startNumber || 0
-                    };
+                    sorteoData = { ...data, imageUrl: fullImageUrl, premios: data.premios || [] };
                     setSorteo(sorteoData);
                 }
 
@@ -139,7 +130,8 @@ export const ConsultaSorteoCliente = () => {
         return <div className="container mx-auto p-8"><EmptyStateCard message="Sorteo no encontrado." /></div>;
     }
 
-    const totalAPagar = seleccionados.length * sorteo.precioBoleto;
+    const totalAPagar = seleccionados.length * sorteo.ticketPrice;
+    const numerosTotales = sorteo.numbersQuantity || boletos.length;
 
     return (
         <div className="min-h-screen bg-[var(--color-background)] pb-32">
@@ -151,16 +143,16 @@ export const ConsultaSorteoCliente = () => {
                 </button>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="md:col-span-2">
-                        <h1 className="font-afacad text-4xl font-bold text-[var(--color-dark-text)]">{sorteo.nombre}</h1>
-                        <p className="font-afacad text-lg text-[var(--color-gray-text)] mt-2 mb-6">{sorteo.descripcion}</p>
+                        <h1 className="font-afacad text-4xl font-bold text-[var(--color-dark-text)]">{sorteo.title}</h1>
+                        <p className="font-afacad text-lg text-[var(--color-gray-text)] mt-2 mb-6">{sorteo.description}</p>
                         <div className="flex gap-12 mb-6">
                             <div>
                                 <p className="font-afacad text-sm text-gray-500">Precio del boleto:</p>
-                                <p className="font-afacad text-2xl font-bold text-green-600">${sorteo.precioBoleto}</p>
+                                <p className="font-afacad text-2xl font-bold text-green-600">${sorteo.ticketPrice}</p>
                             </div>
                             <div>
                                 <p className="font-afacad text-sm text-gray-500">Números disponibles:</p>
-                                <p className="font-afacad text-2xl font-bold text-green-600">{boletos.filter(b => b.estado === 'disponible').length}/{boletos.length}</p>
+                                <p className="font-afacad text-2xl font-bold text-green-600">{boletos.filter(b => b.estado === 'disponible').length}/{numerosTotales}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-6 text-sm text-gray-600 font-afacad">
@@ -179,7 +171,7 @@ export const ConsultaSorteoCliente = () => {
                         </div>
                     </div>
                     <div className="flex flex-col items-center">
-                        <img src={sorteo.imagen} alt="Premio del sorteo" className="w-full max-w-xs rounded-lg shadow-md object-cover" />
+                        <img src={sorteo.imageUrl} alt="Premio del sorteo" className="w-full max-w-xs rounded-lg shadow-md object-cover" />
                         <button
                             onClick={() => setIsPremiosModalOpen(true)}
                             className="mt-4 bg-green-600 text-white font-afacad px-5 py-2 rounded-lg hover:bg-green-700 w-full max-w-xs">
@@ -224,7 +216,7 @@ export const ConsultaSorteoCliente = () => {
                 onClose={() => setIsConfirmModalOpen(false)}
                 onConfirm={handleConfirmarApartado}
                 seleccionados={seleccionados}
-                precioBoleto={sorteo.precioBoleto}
+                precioBoleto={sorteo.ticketPrice}
             />
         </div>
     );
