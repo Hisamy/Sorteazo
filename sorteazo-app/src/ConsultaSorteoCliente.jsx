@@ -5,11 +5,12 @@ import { FaArrowLeft } from 'react-icons/fa';
 import prizeImage from './assets/images/sorteo-placeholder.png';
 import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos';
 import { BoletoGrid } from './consulta-sorteo-components/BoletoGrid';
-import { obtenerSorteoPorId, obtenerBoletosPorSorteoCliente } from './services/SorteazoApi';
+import { obtenerSorteoPorId, obtenerBoletosPorSorteoCliente, apartarBoletosPorCliente } from './services/SorteazoApi';
 import { EmptyStateCard } from './util-components/EmptyStateCard';
 import { PremiosModal } from './consulta-sorteo-components/PremiosModal';
 import { FloatingActionBar } from './consulta-sorteo-components/FloatingActionBar';
 import { ConfirmacionApartadoModal } from './consulta-sorteo-components/ConfirmacionApartadoModal';
+
 
 export const ConsultaSorteoCliente = () => {
     const { id } = useParams();
@@ -79,7 +80,7 @@ export const ConsultaSorteoCliente = () => {
         );
     };
 
-    const handleConfirmarApartado = () => {
+    const handleConfirmarApartado = async () => {
         console.log('Apartando boletos:', seleccionados);
 
         setBoletos(prevBoletos => 
@@ -90,15 +91,15 @@ export const ConsultaSorteoCliente = () => {
                 return boleto;
             })
         );
-        
-        // Para el que le vaya a tocar esta parte,
-        // aquí iría la llamada a la API para apartar los boletos
-        setIsConfirmModalOpen(false);
-        setSeleccionados([]);
-        alert('¡Boletos apartados con éxito!');
-        // Despues de apartar, recargar la lista de boletos 
-        // para ver los cambios, o devolver al dashboard,
-        // como ustedes vean.
+
+        try {
+            const response = await apartarBoletosPorCliente(sorteo.id, seleccionados);
+            setIsConfirmModalOpen(false);
+            setSeleccionados([]);
+            alert(response.message);
+        } catch (err) {
+            alert(err);
+        }
     };
 
     const boletosParaMostrar = useMemo(() => {
