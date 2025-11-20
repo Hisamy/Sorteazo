@@ -1,15 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { CreateBoletoDto } from './dto/create-boleto.dto';
 import { UpdateBoletoDto } from './dto/update-boleto.dto';
+import { ReserveBoletoDto } from './dto/reserve-boleto.dto';
+
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
+
 import { Sorteo } from '../sorteos/entities/sorteo.entity';
+import { Boleto } from './entities/boleto.entity';
+import { Client } from './../users/entities/client.entity';
 
 @Injectable()
 export class BoletosService {
   constructor(
     @InjectRepository(Sorteo)
     private sorteoRepository: Repository <Sorteo>,
+    @InjectRepository(Boleto)
+    private boletoRepository: Repository<Boleto>
   ){}
   create(createBoletoDto: CreateBoletoDto) {
     return 'This action adds a new boleto';
@@ -68,6 +75,57 @@ export class BoletosService {
         : null,
       payment: boleto.pago
     }));
+  }
+
+  async reserveBoletos(reserveBoletoDto: ReserveBoletoDto, clientId: string) {
+    const { sorteoId, numbers } = reserveBoletoDto;
+
+    if (!numbers || numbers.length === 0) {
+      throw new BadRequestException('Debe seleccionar al menos un boleto');
+    }
+
+    const sorteo = await this.sorteoRepository.findOne({
+      where: { id: sorteoId },
+      relations: ['boletos'],
+    });
+
+    if (!sorteo) {
+      throw new NotFoundException('No existe un sorteo con ese ID');
+    }
+    const boletos = await this.boletoRepository.find({
+      where: {
+        sorteo: { id: sorteoId },
+        number: In(numbers),
+      },
+    });
+
+    if (boletos.length !== numbers.length) {
+      throw new BadRequestException('Algunos numeros no existen en este sorteo');
+    }
+
+    const alreadyReserved = boletos.filter(boleto => boleto.isReserved);
+    if (alreadyReserved.length > 0) {
+      throw new ConflictException(
+        `Los siguientes números ya están reservados: ${alreadyReserved.map(b => b.number).join(', ')}`
+      );
+    }
+
+    // Marcar como reservados y asignar cliente
+    const clientRef = new Client();
+    clientRef.userId = clientId;
+
+    boletos.forEach(boleto => {
+      boleto.isReserved = true;
+      boleto.client = clientRef;
+    });
+
+    await this.boletoRepository.save(boletos);
+
+    return {
+      message: 'Boletos reservados exitosamente',
+      reservedNumbers: boletos.map(b => b.number),
+      total: boletos.reduce((sum, b) => sum + b.price, 0),
+    };
   }
 
   findOne(id: number) {

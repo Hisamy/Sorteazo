@@ -14,6 +14,8 @@ import { BoletosService } from './boletos.service';
 import { CreateBoletoDto } from './dto/create-boleto.dto';
 import { UpdateBoletoDto } from './dto/update-boleto.dto';
 
+import { ReserveBoletoDto } from './dto/reserve-boleto.dto';
+
 @Controller('boletos')
 export class BoletosController {
   constructor(private readonly boletosService: BoletosService) {}
@@ -37,6 +39,16 @@ export class BoletosController {
     }
 
     return this.boletosService.findAllBySorteoForOrganizador(sorteoId, req.user.id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('reserve')
+  reserveBoletos(@Body() reserveBoletoDto: ReserveBoletoDto, @Request() req) {
+    if (!req.user || req.user.role !== 'client') {
+      throw new UnauthorizedException('Solo los clientes pueden reservar boletos');
+    }
+
+    return this.boletosService.reserveBoletos(reserveBoletoDto, req.user.id);
   }
 
   @Get('detalles/:id')

@@ -89,3 +89,17 @@ export const obtenerBoletosPorSorteoOrganizador = async (sorteoId) => {
         throw error;
     }
 };
+
+export const apartarBoletosPorCliente = async (sorteoId, seleccionados) => {
+    try {
+        const response = await api.patch("/boletos/reserve", {
+            sorteoId: sorteoId,
+            numbers: seleccionados
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ocurrió un error al apartar los números, intente de nuevo más tarde.`, error);
+        throw error;
+    }
+}
