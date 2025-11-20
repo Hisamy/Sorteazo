@@ -7,6 +7,7 @@ import { TypeOrmOptions } from './configs/typeorm.config';
 import { SorteosModule } from './sorteos/sorteos.module';
 import { PagosModule } from './pagos/pagos.module';
 import { BoletosModule } from './boletos/boletos.module';
+import { TestModule } from './test/test.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
@@ -16,6 +17,7 @@ import { ConfigModule } from '@nestjs/config';
     SorteosModule,
     BoletosModule,
     PagosModule,
+    TestModule,
   ],
   controllers: [AppController],
   providers: [AppService],

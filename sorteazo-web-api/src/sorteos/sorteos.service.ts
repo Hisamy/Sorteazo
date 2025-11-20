@@ -19,7 +19,8 @@ export class SorteosService {
   async create(
     createSorteoDto: CreateSorteoDto, 
     idOrganizador: string,
-    files?: { imagenSorteo?: Express.Multer.File[], imagenesPremios?: Express.Multer.File[] }
+    // usar tipo any temporalmente para evitar errores de tipado de Multer
+    files?: any
   ) {
     const organizador = await this.organizadorRepository.findOneBy({userId:idOrganizador});
     if(!organizador) throw new NotFoundException("There is not an Organizador at the database.")

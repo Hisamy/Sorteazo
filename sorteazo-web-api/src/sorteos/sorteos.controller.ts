@@ -18,7 +18,8 @@ export class SorteosController {
   ], multerConfig))
   create(
     @Body() createSorteoDto: CreateSorteoDto, 
-    @UploadedFiles() files: { imagenSorteo?: Express.Multer.File[], imagenesPremios?: Express.Multer.File[] },
+    // usar tipo any para evitar errores de tipos en tiempo de compilación
+    @UploadedFiles() files: any,
     @Req() req
   ) {
     const user = req.user;

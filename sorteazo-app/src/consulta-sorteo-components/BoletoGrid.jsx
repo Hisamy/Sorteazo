@@ -35,7 +35,7 @@ const Boleto = ({ boleto, onBoletoClick, isOrganizer }) => {
     };
 
     return (
-        <div onClick={handleClick} className={`${baseStyle} ${stateStyle}`}>
+        <div onClick={handleClick} data-numero={numero} data-testid={`boleto-${numero}`} className={`${baseStyle} ${stateStyle}`}>
             {numero}
         </div>
     );

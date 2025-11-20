@@ -6,6 +6,7 @@ export const AccordionBoletos = ({ title, available, children }) => {
     return (
         <div className="border border-gray-200 rounded-lg">
             <button
+                data-testid="accordion-toggle"
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-full flex justify-between items-center p-4 text-left bg-gray-50 hover:bg-gray-100"
             >
