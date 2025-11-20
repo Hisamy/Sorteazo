@@ -6,7 +6,7 @@ import { User } from './entities/user.entity';
 import { Client } from './entities/client.entity';
 import { Organizador } from './entities/organizador.entity';
 import { JwtModule } from '@nestjs/jwt';
-import { JWT_SECRET_KEY } from './configs/enviroment.config';
+import { JWT_SECRET_KEY } from '../configs/enviroment.config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({

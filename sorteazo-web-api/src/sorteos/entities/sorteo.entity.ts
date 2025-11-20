@@ -1,5 +1,5 @@
 import { Organizador } from "../../users/entities/organizador.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Premio } from "./premio.entity";
 import { Boleto } from "../../boletos/entities/boleto.entity";
 
@@ -49,9 +49,8 @@ export class Sorteo {
     @OneToMany(() => Boleto, (boleto) => boleto.sorteo, { cascade: true })
     boletos: Boleto[];
 
-    @OneToOne(() => Boleto, { nullable: true })
-    @JoinColumn({ name: 'winning_ticket_id' })
-    winningTicket: Boleto;
+    @Column({ type: 'uuid', nullable: true, name: 'winning_ticket_id' })
+    winningTicketId: string;
 
     @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
     createdAt: Date;

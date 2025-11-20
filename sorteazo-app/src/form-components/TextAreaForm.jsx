@@ -1,4 +1,4 @@
-export function TextAreaForm({ label, icon, placeholder, readOnly = false, value, onChange }) {
+export function TextAreaForm({ label, icon, placeholder, readOnly = false, value, onChange, name, defaultValue, required }) {
     return (
         <div className="flex flex-col mb-5">
             {label && (
@@ -12,10 +12,13 @@ export function TextAreaForm({ label, icon, placeholder, readOnly = false, value
                 </label>
             )}
             <textarea
+                name={name}
                 placeholder={placeholder}
                 value={value}
                 onChange={onChange}
+                defaultValue={defaultValue}
                 readOnly={readOnly}
+                required={required}
                 className={`w-full border ${readOnly
                         ? 'border-[var(--color-primary)] bg-[#F0F7F2]'
                         : 'border-[var(--color-light-gray)]'

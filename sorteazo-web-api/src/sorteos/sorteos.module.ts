@@ -15,4 +15,4 @@ import { Organizador } from '../users/entities/organizador.entity';
   controllers: [SorteosController],
   providers: [SorteosService],
 })
-export class SorteosModule {}
+export class SorteosModule { }
