@@ -36,8 +36,8 @@ export const ConsultaSorteoCliente = () => {
                     const fullImageUrl = data.imageUrl
                         ? `${import.meta.env.VITE_API_URL}${data.imageUrl}`
                         : prizeImage;
-                    
-                    sorteoData = { 
+
+                    sorteoData = {
                         id: data.id,
                         nombre: data.title,
                         precioBoleto: data.ticketPrice,
@@ -52,9 +52,14 @@ export const ConsultaSorteoCliente = () => {
 
                 const boletosData = await obtenerBoletosPorSorteoCliente(id);
                 const boletosMapeados = boletosData.map(b => ({
-                    numero: b.number,
-                    estado: b.isReserved ? 'apartado' : 'disponible',
+                    ...b,
+                    numero: Number(b.number),            // siempre número
+                    price: b.price,
+                    isReserved: !!b.isReserved,         // conservar para cálculos
+                    estado: b.isReserved ? 'apartado' : 'disponible'
                 }));
+                // ordenar por número ascendente antes de agrupar
+                boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
                 setBoletos(boletosMapeados);
 
             } catch (err) {
@@ -70,7 +75,7 @@ export const ConsultaSorteoCliente = () => {
     const handleBoletoClick = (numero) => {
         const boletoOriginal = boletos.find(b => b.numero === numero);
         if (boletoOriginal && boletoOriginal.estado === 'apartado') {
-            return; 
+            return;
         }
 
         setSeleccionados(prev =>
@@ -83,7 +88,7 @@ export const ConsultaSorteoCliente = () => {
     const handleConfirmarApartado = async () => {
         console.log('Apartando boletos:', seleccionados);
 
-        setBoletos(prevBoletos => 
+        setBoletos(prevBoletos =>
             prevBoletos.map(boleto => {
                 if (seleccionados.includes(boleto.numero)) {
                     return { ...boleto, estado: 'apartado' };
@@ -122,15 +127,15 @@ export const ConsultaSorteoCliente = () => {
         return chunks;
     }, [boletosParaMostrar]);
 
-    if (loading && !sorteo) { 
+    if (loading && !sorteo) {
         return <div className="flex justify-center items-center h-screen">Cargando sorteo...</div>;
     }
 
     if (error) {
         return <div className="container mx-auto p-8"><EmptyStateCard message={error} /></div>;
     }
-    
-    if (!sorteo) { 
+
+    if (!sorteo) {
         return <div className="container mx-auto p-8"><EmptyStateCard message="Sorteo no encontrado." /></div>;
     }
 
@@ -175,7 +180,7 @@ export const ConsultaSorteoCliente = () => {
                     </div>
                     <div className="flex flex-col items-center">
                         <img src={sorteo.imagen} alt="Premio del sorteo" className="w-full max-w-xs rounded-lg shadow-md object-cover" />
-                        <button 
+                        <button
                             onClick={() => setIsPremiosModalOpen(true)}
                             className="mt-4 bg-green-600 text-white font-afacad px-5 py-2 rounded-lg hover:bg-green-700 w-full max-w-xs">
                             Ver premios
@@ -184,8 +189,10 @@ export const ConsultaSorteoCliente = () => {
                 </div>
                 <div className="mt-12 space-y-4">
                     {boletosAgrupados.map((chunk, index) => {
-                        const startRange = (sorteo.startNumber || 0) + (index * CHUNK_SIZE);
-                        const endRange = startRange + CHUNK_SIZE - 1;
+                        const numeros = chunk.map(b => Number(b.numero)).filter(n => !Number.isNaN(n));
+                        const hasStart = typeof sorteo.startNumber === 'number' && !Number.isNaN(sorteo.startNumber);
+                        const startRange = hasStart ? (sorteo.startNumber + index * CHUNK_SIZE) : (numeros.length ? Math.min(...numeros) : 0);
+                        const endRange = hasStart ? (startRange + chunk.length - 1) : (numeros.length ? Math.max(...numeros) : startRange + chunk.length - 1);
                         const title = `Boletos ${startRange} - ${endRange}`;
                         const availableCount = chunk.filter(b => b.estado === 'disponible').length;
 
@@ -200,7 +207,7 @@ export const ConsultaSorteoCliente = () => {
                     })}
                 </div>
             </div>
-            <PremiosModal 
+            <PremiosModal
                 isOpen={isPremiosModalOpen}
                 premios={sorteo?.premios}
                 onClose={() => setIsPremiosModalOpen(false)}
