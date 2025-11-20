@@ -80,6 +80,7 @@ export function GestorCrearSorteo() {
 
     const handleSubmit = async () => {
         const finalStepData = extractFormData();
+        
         if (currentStep === 3 && paso3Ref.current) {
             finalStepData.premios = paso3Ref.current.getPrizes();
         }
@@ -108,12 +109,14 @@ export function GestorCrearSorteo() {
             formDataToSend.append('imageUrl', paso1.imagenUrl);
         }
 
-        const premios = (paso3.premios || []).map(({ name, place, description }) => ({
-            name,
-            place: parseInt(place),
-            description,
-            imageUrl: ''
-        }));
+        const premios = (paso3.premios || [])
+            .filter(p => p.name && p.name.trim() !== '')
+            .map(({ name, place, description }) => ({
+                name: name.trim(),
+                place: parseInt(place),
+                description: description || '',
+                imageUrl: ''
+            }));
 
         formDataToSend.append('premios', JSON.stringify(premios));
 

@@ -29,17 +29,17 @@ export const ConsultaSorteoCliente = () => {
         const cargarDatosSorteo = async () => {
             try {
                 setLoading(true);
-                let sorteoData = sorteo;
+                
+                // Siempre obtener los datos completos del sorteo para asegurar que tengamos los premios
+                const data = await obtenerSorteoPorId(id);
+                console.log("Datos del sorteo obtenidos:", data);
+                console.log("Premios del sorteo:", data.premios);
+                const fullImageUrl = data.imageUrl
+                    ? `${import.meta.env.VITE_API_URL}${data.imageUrl}`
+                    : prizeImage;
 
-                if (!sorteoData) {
-                    const data = await obtenerSorteoPorId(id);
-                    const fullImageUrl = data.imageUrl
-                        ? `${import.meta.env.VITE_API_URL}${data.imageUrl}`
-                        : prizeImage;
-
-                    sorteoData = { ...data, imageUrl: fullImageUrl, premios: data.premios || [] };
-                    setSorteo(sorteoData);
-                }
+                const sorteoData = { ...data, imageUrl: fullImageUrl, premios: data.premios || [] };
+                setSorteo(sorteoData);
 
                 const boletosData = await obtenerBoletosPorSorteoCliente(id);
                 const boletosMapeados = boletosData.map(b => ({

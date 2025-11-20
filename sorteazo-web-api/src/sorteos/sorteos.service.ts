@@ -39,19 +39,21 @@ export class SorteosService {
       ? `/uploads/${files.imagenSorteo[0].filename}`
       : createSorteoDto.imageUrl || '';
 
-    createSorteoDto.premios.forEach((p, index) => {
-      const imagenPremioUrl = files?.imagenesPremios?.[index]
-        ? `/uploads/${files.imagenesPremios[index].filename}`
-        : p.imageUrl || '';
+    if (createSorteoDto.premios && Array.isArray(createSorteoDto.premios)) {
+      createSorteoDto.premios.forEach((p, index) => {
+        const imagenPremioUrl = files?.imagenesPremios?.[index]
+          ? `/uploads/${files.imagenesPremios[index].filename}`
+          : p.imageUrl || '';
 
-      const premio: Premio = this.premioRepository.create({
-        name: p.name,
-        place: p.place,
-        imageUrl: imagenPremioUrl,
-        description: p.description
+        const premio: Premio = this.premioRepository.create({
+          name: p.name,
+          place: p.place,
+          imageUrl: imagenPremioUrl,
+          description: p.description || ''
+        })
+        premios.push(premio)
       })
-      premios.push(premio)
-    })
+    }
 
     const sorteo: Sorteo = this.sorteoRepository.create({
       title: createSorteoDto.title,
@@ -65,11 +67,30 @@ export class SorteosService {
       saleEndDate: createSorteoDto.saleEndDate,
       raffleDateTime: createSorteoDto.raffleDateTime,
       organizador: organizador,
-      premios: premios,
       boletos: boletos
     });
 
+    premios.forEach(premio => {
+      premio.sorteo = sorteo;
+    });
+    boletos.forEach(boleto => {
+      boleto.sorteo = sorteo;
+    });
+    
+    sorteo.premios = premios;
+
     const savedSorteo = await this.sorteoRepository.save(sorteo);
+
+    if (savedSorteo.premios) {
+      savedSorteo.premios.forEach(premio => {
+        delete premio.sorteo;
+      });
+    }
+    if (savedSorteo.boletos) {
+      savedSorteo.boletos.forEach(boleto => {
+        delete boleto.sorteo;
+      });
+    }
 
     return savedSorteo;
   }

@@ -4,10 +4,12 @@ import { ToggleButtonText } from "./ToggleButtonText.jsx";
 import { InputForm } from "./form-components/InputForm.jsx";
 import { PasswordInput } from "./form-components/InputPassword";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { registrarUsuario } from "./controllers/UsuarioController";
 
 
 export function CrearCuenta() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: "",
         lastName: "",
@@ -33,6 +35,7 @@ export function CrearCuenta() {
             const result = await registrarUsuario(formData);
             alert("Cuenta creada con éxito");
             console.log("Usuario creado:", result);
+            navigate("/");
         } catch (error) {
             alert(error.message || "Hubo un error al crear la cuenta");
             console.error(error);

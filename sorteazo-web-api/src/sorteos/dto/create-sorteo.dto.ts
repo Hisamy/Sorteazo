@@ -47,11 +47,13 @@ export class CreateSorteoDto {
     raffleDateTime: Date;
 
     @Transform(({ value }) => {
-        if (Array.isArray(value) && value.length > 0 && value[0]?.name) {
-            return value;
+        if (Array.isArray(value) && value.length > 0) {
+            if (value[0]?.name !== undefined) {
+                return value;
+            }
         }
         
-        if (typeof value === 'string') {
+        if (typeof value === 'string' && value.trim() !== '') {
             try {
                 return JSON.parse(value);
             } catch (error) {
@@ -63,8 +65,6 @@ export class CreateSorteoDto {
     })
     @IsArray()
     @IsOptional()
-    @ValidateNested({each: true})
-    @Type(()=>CreatePremioDto)
     premios: CreatePremioDto[];
 
 
