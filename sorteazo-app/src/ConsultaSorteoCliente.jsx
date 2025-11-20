@@ -81,6 +81,16 @@ export const ConsultaSorteoCliente = () => {
 
     const handleConfirmarApartado = () => {
         console.log('Apartando boletos:', seleccionados);
+
+        setBoletos(prevBoletos => 
+            prevBoletos.map(boleto => {
+                if (seleccionados.includes(boleto.numero)) {
+                    return { ...boleto, estado: 'apartado' };
+                }
+                return boleto;
+            })
+        );
+        
         // Para el que le vaya a tocar esta parte,
         // aquí iría la llamada a la API para apartar los boletos
         setIsConfirmModalOpen(false);

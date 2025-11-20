@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Boleto = ({ boleto, onBoletoClick }) => {
+const Boleto = ({ boleto, onBoletoClick, isOrganizer }) => {
     const { numero, estado } = boleto;
 
     const baseStyle = "w-10 h-10 flex items-center justify-center rounded-full font-bold border-2 transition-colors duration-200 text-xs";
@@ -9,7 +9,13 @@ const Boleto = ({ boleto, onBoletoClick }) => {
 
     switch (estado) {
         case 'apartado':
-            stateStyle = "bg-gray-400 border-gray-400 text-white cursor-not-allowed";
+            if (isOrganizer) {
+                stateStyle = "bg-yellow-400 border-yellow-400 text-white cursor-pointer hover:bg-yellow-500";
+                isClickable = true;
+            } else {
+                stateStyle = "bg-gray-400 border-gray-400 text-white cursor-not-allowed";
+                isClickable = false;
+            }
             break;
         case 'seleccionado':
             stateStyle = "bg-green-600 border-green-600 text-white cursor-pointer";
@@ -35,7 +41,7 @@ const Boleto = ({ boleto, onBoletoClick }) => {
     );
 };
 
-export const BoletoGrid = ({ boletos, onBoletoClick }) => {
+export const BoletoGrid = ({ boletos, onBoletoClick, isOrganizer = false }) => {
     if (!boletos || boletos.length === 0) {
         return <p className="text-center text-gray-500">No hay boletos para mostrar.</p>;
     }
@@ -43,7 +49,7 @@ export const BoletoGrid = ({ boletos, onBoletoClick }) => {
     return (
         <div className="grid grid-cols-10 gap-3 justify-items-center">
             {boletos.map((boleto) => (
-                <Boleto key={boleto.numero} boleto={boleto} onBoletoClick={onBoletoClick} />
+                <Boleto key={boleto.numero} boleto={boleto} onBoletoClick={onBoletoClick} isOrganizer={isOrganizer} />
             ))}
         </div>
     );
