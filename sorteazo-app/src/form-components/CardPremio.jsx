@@ -1,8 +1,8 @@
 import { InputForm } from './InputForm';
 import { TextAreaForm } from './TextAreaForm';
 
-export function CardPremio({ index, prize, totalPrizes, handleChange, handleRemove }) {
-    
+export function CardPremio({ index, prize, totalPrizes, handleChange, handleImageChange, handleRemove }) {
+
     const title = `Premio #${index + 1}`;
 
     const handleInputChange = (e) => {
@@ -11,7 +11,7 @@ export function CardPremio({ index, prize, totalPrizes, handleChange, handleRemo
 
     return (
         <div className="p-6 border border-[var(--color-light-gray)] rounded-xl bg-white shadow-sm animate-[slideIn_0.3s_ease-out]">
-            
+
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-afacad font-bold text-[var(--color-primary)]">{title}</h3>
                 {totalPrizes > 1 && (
@@ -25,16 +25,31 @@ export function CardPremio({ index, prize, totalPrizes, handleChange, handleRemo
                 )}
             </div>
 
-            <div className="mb-4">
-                <label className="block mb-2 text-[var(--color-dark-text)] font-semibold font-afacad">
-                    Nombre del premio:
-                </label>
-                <InputForm
-                    name="name"
-                    placeholder="Ej. LG Laptop"
-                    value={prize.name}
-                    onChange={handleInputChange}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label className="block mb-2 text-[var(--color-dark-text)] font-semibold font-afacad">
+                        Nombre del premio:
+                    </label>
+                    <InputForm
+                        name="name"
+                        placeholder="Ej. LG Laptop"
+                        value={prize.name}
+                        onChange={handleInputChange}
+                    />
+                </div>
+                <div>
+                    <label className="block mb-2 text-[var(--color-dark-text)] font-semibold font-afacad">
+                        Lugar (1er, 2do, 3er...):
+                    </label>
+                    <InputForm
+                        type="number"
+                        name="place"
+                        placeholder="Ej. 1"
+                        value={prize.place || ''}
+                        onChange={handleInputChange}
+                        min="1"
+                    />
+                </div>
             </div>
 
             <div className="mb-4">
@@ -51,12 +66,13 @@ export function CardPremio({ index, prize, totalPrizes, handleChange, handleRemo
 
             <div>
                 <label className="block mb-2 text-[var(--color-dark-text)] font-semibold font-afacad">
-                    Imagen:
+                    Imagen del premio:
                 </label>
                 <input
                     type="file"
-                    name={`image-${index}`}
+                    name={`imagenPremio-${index}`}
                     accept="image/*"
+                    onChange={(e) => handleImageChange(index, e)}
                     className="w-full border border-[var(--color-light-gray)] rounded-xl px-4 py-2 text-[var(--color-dark-text)] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--color-light-gray)] file:text-[var(--color-dark-text)] hover:file:bg-[var(--color-gray-text)] hover:file:text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
                 />
             </div>

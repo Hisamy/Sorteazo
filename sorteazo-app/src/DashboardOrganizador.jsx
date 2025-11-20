@@ -1,22 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TopNavBar } from "./util-components/TopNavBar";
 import { EmptyStateCard } from "./util-components/EmptyStateCard";
 import { useNavigate } from "react-router-dom";
 import CardSorteoOrganizador from "./consulta-sorteo-components/CardSorteoOrganizador"; 
 import sorteoImage from './assets/images/sorteo-placeholder.png'; 
+import { obtenerSorteosPorOrganizador } from "./services/SorteazoApi";
 
 export function DashboardOrganizador() {
     const navigate = useNavigate();
 
-    const [sorteos, setSorteos] = useState([
-        {
-            id: 1,
-            nombre: 'Sorteo Potro Millonario 2025',
-            precioBoleto: 50,
-            fechaSorteo: '2025-11-30',
-            imagen: sorteoImage
-        }
-    ]);
+    const [sorteos, setSorteos] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const cargarMisSorteos = async () => {
+            try {
+                setLoading(true);
+                const data = await obtenerSorteosPorOrganizador();
+                const sorteosMapeados = data.map(sorteo => {
+                    const fullImageUrl = sorteo.imageUrl 
+                        ? `${import.meta.env.VITE_API_URL}${sorteo.imageUrl}` 
+                        : sorteoImage;
+
+                    return {
+                        id: sorteo.id,
+                        title: sorteo.title || '',
+                        ticketPrice: sorteo.ticketPrice,
+                        raffleDateTime: sorteo.raffleDateTime,
+                        imageUrl: fullImageUrl 
+                    };
+                });
+                setSorteos(sorteosMapeados);
+            } catch (err) {
+                console.error("Error al cargar los sorteos:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        cargarMisSorteos();
+    }, []);
 
     const handleDelete = (id) => {
         setSorteos(sorteos.filter(s => s.id !== id));
@@ -45,19 +68,25 @@ export function DashboardOrganizador() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-6">
-                    {sorteos.length > 0 ? (
-                        sorteos.map(sorteo => (
-                            <CardSorteoOrganizador
-                                key={sorteo.id}
-                                sorteo={sorteo}
-                                onDelete={handleDelete}
-                                onClick={() => navigate(`/sorteo/organizador/${sorteo.id}`)}
-                            />
-                        ))
+                    {loading ? (
+                        <div className="flex justify-center items-center h-64">
+                            <p> cargando...</p>
+                        </div>
                     ) : (
-                        <EmptyStateCard 
-                            message="No tienes sorteos activos. ¡Crea uno para empezar!"
-                        />
+                        sorteos.length > 0 ? (
+                            sorteos.map(sorteo => (
+                                <CardSorteoOrganizador
+                                    key={sorteo.id}
+                                    sorteo={sorteo}
+                                    onDelete={handleDelete}
+                                    onClick={() => navigate(`/sorteos/organizador/${sorteo.id}`)}
+                                />
+                            ))
+                        ) : (
+                            <EmptyStateCard 
+                                message="No tienes sorteos activos. ¡Crea uno para empezar!"
+                            />
+                        )
                     )}
                 </div>
             </div>

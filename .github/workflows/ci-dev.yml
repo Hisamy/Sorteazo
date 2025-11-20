@@ -1,0 +1,58 @@
+name: CI for Sorteazo DEV
+
+on:
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  backend:
+    name: Backend – sorteazo-web-api
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install backend dependencies
+        run: |
+          cd sorteazo-web-api
+          npm ci
+
+      - name: Run backend tests
+        run: |
+          cd sorteazo-web-api
+          npm test
+
+      - name: Build backend
+        run: |
+          cd sorteazo-web-api
+          npm run build
+
+  frontend:
+    name: Frontend – sorteazo-app
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install frontend dependencies
+        run: |
+          cd sorteazo-app
+          npm ci
+
+      - name: Build frontend
+        run: |
+          cd sorteazo-app
+          npm run build

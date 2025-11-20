@@ -2,9 +2,10 @@ import React from 'react';
 import { FaTrash } from 'react-icons/fa';
 
 const CardSorteoOrganizador = ({ sorteo, onDelete, onClick }) => {
-    const { id, nombre, precioBoleto, fechaSorteo, imagen } = sorteo;
+    // Adaptado a los nombres de la entidad Sorteo
+    const { id, title, ticketPrice, raffleDateTime, imageUrl } = sorteo;
 
-    const date = new Date(fechaSorteo + 'T00:00:00');
+    const date = new Date(raffleDateTime);
     const formattedDate = !isNaN(date) ? date.toLocaleDateString('es-ES', {
         day: '2-digit',
         month: '2-digit',
@@ -27,13 +28,13 @@ const CardSorteoOrganizador = ({ sorteo, onDelete, onClick }) => {
 
     return (
         <div onClick={handleCardClick} className="flex items-center gap-6 bg-white border border-gray-200 rounded-lg p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
-            <img src={imagen} alt={nombre} className="w-28 h-20 object-cover rounded-md" />
+            <img src={imageUrl} alt={title} className="w-28 h-20 object-cover rounded-md" />
             <div className="flex-grow">
-                <h2 className="text-xl font-semibold text-gray-800 mb-3">{nombre}</h2>
+                <h2 className="text-xl font-semibold text-gray-800 mb-3">{title}</h2>
                 <div className="flex gap-10 text-sm text-gray-500">
                     <p>
                         Precio del boleto:
-                        <strong className="block text-base font-medium text-gray-900 mt-0.5">${precioBoleto}</strong>
+                        <strong className="block text-base font-medium text-gray-900 mt-0.5">${ticketPrice}</strong>
                     </p>
                     <p>
                         Fecha del sorteo:

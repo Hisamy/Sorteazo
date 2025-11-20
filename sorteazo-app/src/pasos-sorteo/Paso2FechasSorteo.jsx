@@ -12,16 +12,36 @@ export function Paso2FechasSorteo({ initialData }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                    <InputDate label="Inicio de venta:" />
+                    <InputDate 
+                        label="Inicio de venta:" 
+                        name="fechaInicioVenta"
+                        defaultValue={initialData?.fechaInicioVenta || ""}
+                        required
+                    />
                 </div>
                 <div>
-                    <InputDate label="Fin de venta:" />
+                    <InputDate 
+                        label="Fin de venta:" 
+                        name="fechaFinVenta"
+                        defaultValue={initialData?.fechaFinVenta || ""}
+                        required
+                    />
                 </div>
             </div>
 
-            <InputDate label="Fecha límite de pago del sorteo:" />
+            <InputDate 
+                label="Fecha límite de pago del sorteo:" 
+                name="fechaLimitePago"
+                defaultValue={initialData?.fechaLimitePago || ""}
+                required
+            />
 
-            <InputDate label="Fecha de realización sorteo:" />
+            <InputDate 
+                label="Fecha de realización sorteo:" 
+                name="fechaRealizacionSorteo"
+                defaultValue={initialData?.fechaRealizacionSorteo || ""}
+                required
+            />
         </>
     );
 }

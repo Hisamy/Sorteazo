@@ -1,4 +1,5 @@
-import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreatePremioDto {
 
@@ -6,15 +7,17 @@ export class CreatePremioDto {
     @IsNotEmpty()
     name: string;
 
+    @Transform(({ value }) => parseInt(value, 10))
     @IsNumber()
     @IsNotEmpty()
     place: number;
 
     @IsString()
-    @IsNotEmpty()
-    imageUrl: string;
+    @IsOptional()
+    imageUrl?: string;
 
     @IsString()
+    @IsOptional()
     description: string;
 
 }
