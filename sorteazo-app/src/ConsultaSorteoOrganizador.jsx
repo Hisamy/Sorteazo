@@ -34,7 +34,7 @@ export const ConsultaSorteoOrganizador = () => {
                     const fullImageUrl = data.imageUrl
                         ? `${import.meta.env.VITE_API_URL}${data.imageUrl}`
                         : prizeImage;
-                    
+
                     sorteoData = { ...data, imageUrl: fullImageUrl, premios: data.premios || [] };
                     setSorteo(sorteoData);
                 }
@@ -43,9 +43,9 @@ export const ConsultaSorteoOrganizador = () => {
 
                 const boletosMapeados = boletosData.map(b => ({
                     ...b,
-                    numero: b.number, 
+                    numero: b.number,
                     price: b.price,
-                    estado: b.isReserved ? 'apartado' : 'disponible' 
+                    estado: b.isReserved ? 'apartado' : 'disponible'
                 }));
                 setBoletos(boletosMapeados);
 
@@ -57,7 +57,7 @@ export const ConsultaSorteoOrganizador = () => {
             }
         };
         cargarDatosSorteo();
-    }, [id]); 
+    }, [id]);
 
     const handleBoletoClick = (numeroBoleto) => {
         const boletoSeleccionado = boletos.find(b => b.numero === numeroBoleto);
@@ -136,7 +136,7 @@ export const ConsultaSorteoOrganizador = () => {
                     </div>
                     <div className="flex flex-col items-center">
                         <img src={sorteo.imageUrl} alt="Premio del sorteo" className="w-full max-w-xs rounded-lg shadow-md object-cover" />
-                        <button 
+                        <button
                             onClick={() => setIsPremiosModalOpen(true)}
                             className="mt-4 bg-green-600 text-white font-afacad px-5 py-2 rounded-lg hover:bg-green-700 w-full max-w-xs">
                             Ver premios
@@ -158,16 +158,12 @@ export const ConsultaSorteoOrganizador = () => {
                     })}
                 </div>
             </div>
-            <BoletoDetalleModal 
-                isOpen={isModalOpen} 
-                boleto={selectedBoleto} 
-                onClose={closeModal}
-            />
-            <PremiosModal 
+            <BoletoDetalleModal isOpen={isModalOpen} boleto={selectedBoleto} onClose={closeModal} />
+            <PremiosModal
                 isOpen={isPremiosModalOpen}
                 premios={sorteo?.premios}
                 onClose={() => setIsPremiosModalOpen(false)}
             />
-        </div>
+        </div >
     );
 };

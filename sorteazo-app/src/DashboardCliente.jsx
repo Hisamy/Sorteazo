@@ -27,10 +27,10 @@ export function DashboardCliente() {
 
                     return {
                         id: sorteo.id,
-                        title: sorteo.title || '', 
-                        ticketPrice: sorteo.ticketPrice, 
-                        raffleDateTime: sorteo.raffleDateTime, 
-                        imageUrl: fullImageUrl 
+                        title: sorteo.title || '',
+                        ticketPrice: sorteo.ticketPrice,
+                        raffleDateTime: sorteo.raffleDateTime,
+                        imageUrl: fullImageUrl
                     };
                 });
                 setSorteos(sorteosMapeados);
@@ -52,7 +52,7 @@ export function DashboardCliente() {
     return (
         <div className="min-h-screen bg-[var(--color-background)]">
             <TopNavBar showLogout={true} />
-            
+
             <div className="container mx-auto px-8 py-10 max-w-4xl">
                 <div className="mb-8">
                     <h1 className="font-afacad text-4xl font-bold text-[var(--color-dark-text)] mb-2">
@@ -87,7 +87,7 @@ export function DashboardCliente() {
                                 />
                             ))
                         ) : (
-                            <EmptyStateCard 
+                            <EmptyStateCard
                                 message="No se encontraron sorteos disponibles."
                             />
                         )
