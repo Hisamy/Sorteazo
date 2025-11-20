@@ -11,6 +11,23 @@ export const Paso3Placeholder = forwardRef(({ initialData }, ref) => {
         getPrizes: () => prizes
     }));
 
+    const handleImageChange = (index, event) => {
+        const file = event.target.files[0];
+
+        if (!file) return;
+
+        const maxSize = 5 * 1024 * 1024;
+
+        if (file.size > maxSize) {
+            alert("La imagen es demasiado pesada. El máximo permitido es 5 MB.");
+            return;
+        }
+
+        const newPrizes = [...prizes];
+        newPrizes[index].imageFile = file;
+        setPrizes(newPrizes);
+    };
+
     const handleAddPrize = () => {
         const newPrize = {
             id: Date.now(),
@@ -66,6 +83,7 @@ export const Paso3Placeholder = forwardRef(({ initialData }, ref) => {
                         prize={prize}
                         totalPrizes={prizes.length}
                         handleChange={handleChangePrize}
+                        handleImageChange={handleImageChange}
                         handleRemove={handleRemovePrize}
                     />
                 ))}

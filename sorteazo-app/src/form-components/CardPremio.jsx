@@ -1,8 +1,8 @@
 import { InputForm } from './InputForm';
 import { TextAreaForm } from './TextAreaForm';
 
-export function CardPremio({ index, prize, totalPrizes, handleChange, handleRemove }) {
-    
+export function CardPremio({ index, prize, totalPrizes, handleChange, handleImageChange, handleRemove }) {
+
     const title = `Premio #${index + 1}`;
 
     const handleInputChange = (e) => {
@@ -11,7 +11,7 @@ export function CardPremio({ index, prize, totalPrizes, handleChange, handleRemo
 
     return (
         <div className="p-6 border border-[var(--color-light-gray)] rounded-xl bg-white shadow-sm animate-[slideIn_0.3s_ease-out]">
-            
+
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-afacad font-bold text-[var(--color-primary)]">{title}</h3>
                 {totalPrizes > 1 && (
@@ -72,11 +72,7 @@ export function CardPremio({ index, prize, totalPrizes, handleChange, handleRemo
                     type="file"
                     name={`imagenPremio-${index}`}
                     accept="image/*"
-                    onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                            handleChange(index, { target: { name: 'imageFile', value: e.target.files[0] } });
-                        }
-                    }}
+                    onChange={(e) => handleImageChange(index, e)}
                     className="w-full border border-[var(--color-light-gray)] rounded-xl px-4 py-2 text-[var(--color-dark-text)] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--color-light-gray)] file:text-[var(--color-dark-text)] hover:file:bg-[var(--color-gray-text)] hover:file:text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
                 />
             </div>
