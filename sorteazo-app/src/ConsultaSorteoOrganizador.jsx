@@ -43,10 +43,13 @@ export const ConsultaSorteoOrganizador = () => {
 
                 const boletosMapeados = boletosData.map(b => ({
                     ...b,
-                    numero: b.number,
+                    numero: Number(b.number),            // siempre número
                     price: b.price,
+                    isReserved: !!b.isReserved,         // conservar para cálculos
                     estado: b.isReserved ? 'apartado' : 'disponible'
                 }));
+                // ordenar por número ascendente antes de agrupar
+                boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
                 setBoletos(boletosMapeados);
 
             } catch (err) {
@@ -145,8 +148,10 @@ export const ConsultaSorteoOrganizador = () => {
                 </div>
                 <div className="mt-12 space-y-4">
                     {boletosAgrupados.map((chunk, index) => {
-                        const startRange = (sorteo.startNumber || 0) + (index * CHUNK_SIZE);
-                        const endRange = startRange + CHUNK_SIZE - 1;
+                        const numeros = chunk.map(b => Number(b.numero)).filter(n => !Number.isNaN(n));
+                        const hasStart = typeof sorteo.startNumber === 'number' && !Number.isNaN(sorteo.startNumber);
+                        const startRange = hasStart ? (sorteo.startNumber + index * CHUNK_SIZE) : (numeros.length ? Math.min(...numeros) : 0);
+                        const endRange = hasStart ? (startRange + chunk.length - 1) : (numeros.length ? Math.max(...numeros) : startRange + chunk.length - 1);
                         const title = `Boletos ${startRange} - ${endRange}`;
                         const availableCount = chunk.filter(b => b.estado === 'disponible').length;
 
