@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import CardSorteoOrganizador from "./consulta-sorteo-components/CardSorteoOrganizador";
 import sorteoImage from './assets/images/sorteo-placeholder.png';
 import { obtenerSorteosPorOrganizador } from "./services/SorteazoApi";
+import { eliminaSorteo } from "./controllers/SorteoController";
+import Swal from 'sweetalert2';
 
 export function DashboardOrganizador() {
     const navigate = useNavigate();
@@ -41,8 +43,43 @@ export function DashboardOrganizador() {
         cargarMisSorteos();
     }, []);
 
-    const handleDelete = (id) => {
-        setSorteos(sorteos.filter(s => s.id !== id));
+    const handleDelete = async (id) => {
+        const sorteoEliminar = sorteos.find(s => s.id === id);
+        const nombreSorteo = sorteoEliminar ? sorteoEliminar.title : "este sorteo";
+
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: `¿Desea eliminar el sorteo "${nombreSorteo}"? Esta acción no se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33', // Rojo para indicar peligro/borrar
+            cancelButtonColor: '#6B8E78', // Tu verde para cancelar (o gris si prefieres)
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await eliminaSorteo(id);
+                    setSorteos(prevSorteos => prevSorteos.filter(s => s.id !== id));
+
+                    Swal.fire({
+                        title: '¡Eliminado!',
+                        text: `El sorteo "${nombreSorteo}" ha sido eliminado correctamente.`,
+                        icon: 'success',
+                        confirmButtonColor: '#6B8E78'
+                    });
+
+                } catch (error) {
+                    console.error("Error al eliminar:", error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Hubo un problema al intentar eliminar el sorteo.',
+                        icon: 'error',
+                        confirmButtonColor: '#6B8E78'
+                    });
+                }
+            }
+        });
     };
 
     return (

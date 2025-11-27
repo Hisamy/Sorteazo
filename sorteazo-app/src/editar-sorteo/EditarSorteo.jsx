@@ -243,7 +243,7 @@ export function EditarSorteo() {
                             type="submit"
                             className="px-6 py-2 rounded-lg bg-[#6B8E78] text-white font-afacad font-semibold hover:bg-[#5a7a66] transition-colors shadow-sm"
                         >
-                            Siguiente
+                            Guardar
                         </button>
                     </div>
                 </form>

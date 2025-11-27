@@ -103,3 +103,25 @@ export const apartarBoletosPorCliente = async (sorteoId, seleccionados) => {
         throw error;
     }
 }
+
+export const editarSorteo = async (sorteoId, datosActualizados) => {
+    try {
+        const response = await api.patch(`/sorteos/${sorteoId}`, datosActualizados);
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ocurrió un error al editar sorteo, intentelo más tarde`, error);
+        throw error;
+    }
+}
+
+export const eliminarSorteo = async (sorteoId) => {
+    try {
+        const response = await api.delete(`/sorteos/${sorteoId}`);
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ocurrió un error al eliminar sorteo, intentelo más tarde`, error);
+        throw error;
+    }
+}
