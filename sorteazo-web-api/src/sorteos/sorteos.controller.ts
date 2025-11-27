@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UnauthorizedException, UseGuards, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UnauthorizedException, UseGuards, UseInterceptors, UploadedFiles, ConflictException } from '@nestjs/common';
 import { SorteosService } from './sorteos.service';
 import { CreateSorteoDto } from './dto/create-sorteo.dto';
 import { UpdateSorteoDto } from './dto/update-sorteo.dto';
@@ -34,7 +34,9 @@ export class SorteosController {
   @Get('organizador/mis-sorteos')
   findSorteosByOrganizador(@Req() req) {
     const user = req.user;
-    if(user.role != "organizador") throw new UnauthorizedException("Organizador rol required, not authorized.");
+    console.log(user);
+    //console.log()
+    if(user.role != "organizador") throw new UnauthorizedException("No tienes permiso para ver esto.");
     return this.sorteosService.findAllByOrganizador(user.sub);
   }
 
@@ -49,7 +51,14 @@ export class SorteosController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.sorteosService.remove(+id);
+  async remove(@Param('id') id: string, @Req() req) {
+    const user = req.user;
+
+    if(user.role != "organizador") {
+        throw new UnauthorizedException("No tienes permisos para realizar esta acción.");
+    }
+
+    await this.sorteosService.remove(id, user.id); 
+    return { "message": "Se eliminó el sorteo con éxito." };
   }
 }
