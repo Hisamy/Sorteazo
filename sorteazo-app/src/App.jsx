@@ -6,6 +6,9 @@ import { DashboardOrganizador } from "./DashboardOrganizador";
 import { DashboardCliente } from "./DashboardCliente";
 import { ConsultaSorteoOrganizador } from "./ConsultaSorteoOrganizador";
 import { ConsultaSorteoCliente } from "./ConsultaSorteoCliente";
+import { EditarSorteo } from "./editar-sorteo/EditarSorteo";
+import { EditarSorteoBoletos } from "./editar-sorteo/EditarSorteoBoletos";
+import { EditarSorteoPremios } from "./editar-sorteo/EditarSorteoPremios";
 
 
 function App() {
@@ -19,6 +22,9 @@ function App() {
         <Route path="/sorteos/organizador" element={<DashboardOrganizador />} />
         <Route path="/sorteos/cliente" element={<DashboardCliente />} />
         <Route path="/sorteos/organizador/:id" element={<ConsultaSorteoOrganizador />} />
+        <Route path="/sorteos/organizador/editar/:id" element={<EditarSorteo />} />
+        <Route path="/sorteos/organizador/editar-boletos/:id" element={<EditarSorteoBoletos />} />
+        <Route path="/sorteos/organizador/editar-premios/:id" element={<EditarSorteoPremios />} />
         <Route path="/sorteos/cliente/:id" element={<ConsultaSorteoCliente />} />
         <Route path="/" element={<InicioSesion />} />
       </Routes>
