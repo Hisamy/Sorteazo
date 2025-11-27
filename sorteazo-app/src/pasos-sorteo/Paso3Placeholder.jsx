@@ -1,9 +1,11 @@
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import { CardPremio } from '../form-components/CardPremio';
+import Swal from "sweetalert2";
 
-export const Paso3Placeholder = forwardRef(({ initialData }, ref) => {
+export const Paso3Placeholder = forwardRef(({ initialData, errors = {} }, ref) => {
 
-    const [prizes, setPrizes] = useState(initialData?.prizes || [
+    const initialPrizes = initialData?.prizes || initialData?.premios;
+    const [prizes, setPrizes] = useState(initialPrizes?.length ? initialPrizes : [
         { id: 1, name: '', place: 1, description: '', imageFile: null }
     ]);
 
@@ -19,7 +21,11 @@ export const Paso3Placeholder = forwardRef(({ initialData }, ref) => {
         const maxSize = 5 * 1024 * 1024;
 
         if (file.size > maxSize) {
-            alert("La imagen es demasiado pesada. El máximo permitido es 5 MB.");
+            Swal.fire({
+                icon: "warning",
+                title: "Imagen demasiado pesada",
+                text: "La imagen es demasiado pesada. El máximo permitido es 5 MB."
+            });
             return;
         }
 
@@ -70,10 +76,13 @@ export const Paso3Placeholder = forwardRef(({ initialData }, ref) => {
                 </button>
             </div>
 
-            <p className="text-[var(--color-gray-text)] mb-8 font-afacad">
+            <p className="text-[var(--color-gray-text)] mb-4 font-afacad">
                 Define los premios que se llevarán tus participantes
             </p>
 
+            {errors?.general && (
+                <p className="text-sm text-red-600 font-afacad mb-4">{errors.general}</p>
+            )}
 
             <div className="space-y-4">
                 {prizes.map((prize, index) => (
@@ -85,6 +94,7 @@ export const Paso3Placeholder = forwardRef(({ initialData }, ref) => {
                         handleChange={handleChangePrize}
                         handleImageChange={handleImageChange}
                         handleRemove={handleRemovePrize}
+                        errors={errors?.premios?.[index]}
                     />
                 ))}
             </div>

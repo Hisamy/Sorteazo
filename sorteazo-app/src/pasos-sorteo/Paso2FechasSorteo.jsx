@@ -1,6 +1,7 @@
 import { InputDate } from "../form-components/InputDate";
+import { InputForm } from "../form-components/InputForm";
 
-export function Paso2FechasSorteo({ initialData }) {
+export function Paso2FechasSorteo({ initialData, errors = {} }) {
     return (
         <>
             <h2 className="text-2xl font-afacad font-semibold text-[var(--color-dark-text)] mb-2">
@@ -16,7 +17,7 @@ export function Paso2FechasSorteo({ initialData }) {
                         label="Inicio de venta:" 
                         name="fechaInicioVenta"
                         defaultValue={initialData?.fechaInicioVenta || ""}
-                        required
+                        error={errors?.fechaInicioVenta}
                     />
                 </div>
                 <div>
@@ -24,24 +25,34 @@ export function Paso2FechasSorteo({ initialData }) {
                         label="Fin de venta:" 
                         name="fechaFinVenta"
                         defaultValue={initialData?.fechaFinVenta || ""}
-                        required
+                        error={errors?.fechaFinVenta}
                     />
                 </div>
             </div>
 
-            <InputDate 
-                label="Fecha límite de pago del sorteo:" 
-                name="fechaLimitePago"
-                defaultValue={initialData?.fechaLimitePago || ""}
-                required
-            />
+            <div className="mb-6">
+                <label className="block mb-2 text-[var(--color-primary)] font-semibold font-afacad">
+                    Días límite para pagar (1-60):
+                </label>
+                <InputForm
+                    type="number"
+                    name="fechaLimitePago"
+                    placeholder="Ej. 7"
+                    defaultValue={initialData?.fechaLimitePago || ""}
+                    error={errors?.fechaLimitePago}
+                />
+            </div>
 
             <InputDate 
                 label="Fecha de realización sorteo:" 
                 name="fechaRealizacionSorteo"
                 defaultValue={initialData?.fechaRealizacionSorteo || ""}
-                required
+                error={errors?.fechaRealizacionSorteo}
             />
+
+            {errors?.general && (
+                <p className="text-sm text-red-600 font-afacad mt-2">{errors.general}</p>
+            )}
         </>
     );
 }

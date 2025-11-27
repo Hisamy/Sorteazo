@@ -1,4 +1,15 @@
-export function TextAreaForm({ label, icon, placeholder, readOnly = false, value, onChange, name, defaultValue, required }) {
+export function TextAreaForm({
+    label,
+    icon,
+    placeholder,
+    readOnly = false,
+    value,
+    onChange,
+    name,
+    defaultValue,
+    required,
+    error
+}) {
     return (
         <div className="flex flex-col mb-5">
             {label && (
@@ -19,12 +30,18 @@ export function TextAreaForm({ label, icon, placeholder, readOnly = false, value
                 defaultValue={defaultValue}
                 readOnly={readOnly}
                 required={required}
+                aria-invalid={Boolean(error)}
                 className={`w-full border ${readOnly
                         ? 'border-[var(--color-primary)] bg-[#F0F7F2]'
-                        : 'border-[var(--color-light-gray)]'
-                    } rounded-xl px-4 py-3 text-[var(--color-dark-text)] placeholder-[var(--color-gray-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200 resize-none`}
+                        : error
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-[var(--color-light-gray)] focus:ring-[var(--color-primary)]'
+                    } rounded-xl px-4 py-3 text-[var(--color-dark-text)] placeholder-[var(--color-gray-text)] focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 resize-none`}
                 rows={3}
             />
+            {error && (
+                <p className="mt-1 text-sm text-red-600 font-afacad">{error}</p>
+            )}
         </div>
     );
 }

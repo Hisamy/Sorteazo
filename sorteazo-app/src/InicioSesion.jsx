@@ -6,6 +6,7 @@ import { PasswordInput } from "./form-components/InputPassword";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { iniciarSesion } from "./controllers/UsuarioController";
+import Swal from "sweetalert2";
 
 export function InicioSesion() {
     const navigate = useNavigate();
@@ -36,7 +37,11 @@ export function InicioSesion() {
             }
         } catch (err) {
             console.error(err);
-            alert(err.message || "Hubo un error al iniciar sesión");
+            await Swal.fire({
+                icon: "error",
+                title: "Error al iniciar sesión",
+                text: err.message || "Hubo un error al iniciar sesión"
+            });
         } finally {
             setLoading(false);
         }

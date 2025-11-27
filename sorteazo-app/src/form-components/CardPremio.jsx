@@ -1,19 +1,20 @@
 import { InputForm } from './InputForm';
 import { TextAreaForm } from './TextAreaForm';
 
-export function CardPremio({ index, prize, totalPrizes, handleChange, handleImageChange, handleRemove }) {
+export function CardPremio({ index, prize, totalPrizes, handleChange, handleImageChange, handleRemove, errors = {} }) {
 
     const title = `Premio #${index + 1}`;
+    const hasErrors = Boolean(errors && Object.keys(errors).length);
 
     const handleInputChange = (e) => {
         handleChange(index, e);
     };
 
     return (
-        <div className="p-6 border border-[var(--color-light-gray)] rounded-xl bg-white shadow-sm animate-[slideIn_0.3s_ease-out]">
+        <div className={`p-6 border rounded-xl bg-white shadow-sm animate-[slideIn_0.3s_ease-out] ${hasErrors ? 'border-red-200 ring-1 ring-red-200' : 'border-[var(--color-light-gray)]'}`}>
 
             <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-afacad font-bold text-[var(--color-primary)]">{title}</h3>
+                <h3 className={`text-lg font-afacad font-bold ${hasErrors ? 'text-red-600' : 'text-[var(--color-primary)]'}`}>{title}</h3>
                 {totalPrizes > 1 && (
                     <button
                         type="button"
@@ -35,6 +36,7 @@ export function CardPremio({ index, prize, totalPrizes, handleChange, handleImag
                         placeholder="Ej. LG Laptop"
                         value={prize.name}
                         onChange={handleInputChange}
+                        error={errors?.name}
                     />
                 </div>
                 <div>
@@ -48,6 +50,7 @@ export function CardPremio({ index, prize, totalPrizes, handleChange, handleImag
                         value={prize.place || ''}
                         onChange={handleInputChange}
                         min="1"
+                        error={errors?.place}
                     />
                 </div>
             </div>
@@ -61,6 +64,7 @@ export function CardPremio({ index, prize, totalPrizes, handleChange, handleImag
                     placeholder="Describe los detalles del premio."
                     value={prize.description}
                     onChange={handleInputChange}
+                    error={errors?.description}
                 />
             </div>
 
@@ -73,8 +77,11 @@ export function CardPremio({ index, prize, totalPrizes, handleChange, handleImag
                     name={`imagenPremio-${index}`}
                     accept="image/*"
                     onChange={(e) => handleImageChange(index, e)}
-                    className="w-full border border-[var(--color-light-gray)] rounded-xl px-4 py-2 text-[var(--color-dark-text)] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--color-light-gray)] file:text-[var(--color-dark-text)] hover:file:bg-[var(--color-gray-text)] hover:file:text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
+                    className={`w-full border rounded-xl px-4 py-2 text-[var(--color-dark-text)] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--color-light-gray)] file:text-[var(--color-dark-text)] hover:file:bg-[var(--color-gray-text)] hover:file:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${errors?.imageFile ? 'border-red-500 focus:ring-red-500' : 'border-[var(--color-light-gray)] focus:ring-[var(--color-primary)]'}`}
                 />
+                {errors?.imageFile && (
+                    <p className="mt-1 text-sm text-red-600 font-afacad">{errors.imageFile}</p>
+                )}
             </div>
         </div>
     );

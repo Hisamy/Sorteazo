@@ -6,6 +6,7 @@ import { PasswordInput } from "./form-components/InputPassword";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registrarUsuario } from "./controllers/UsuarioController";
+import Swal from "sweetalert2";
 
 
 export function CrearCuenta() {
@@ -33,11 +34,19 @@ export function CrearCuenta() {
         e.preventDefault();
         try {
             const result = await registrarUsuario(formData);
-            alert("Cuenta creada con éxito");
+            await Swal.fire({
+                icon: "success",
+                title: "Cuenta creada con éxito",
+                text: "Ya puedes iniciar sesión con tus credenciales."
+            });
             console.log("Usuario creado:", result);
             navigate("/");
         } catch (error) {
-            alert(error.message || "Hubo un error al crear la cuenta");
+            await Swal.fire({
+                icon: "error",
+                title: "No se pudo crear la cuenta",
+                text: error.message || "Hubo un error al crear la cuenta"
+            });
             console.error(error);
         }
     };

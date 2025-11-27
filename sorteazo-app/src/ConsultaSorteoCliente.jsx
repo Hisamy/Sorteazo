@@ -10,6 +10,7 @@ import { EmptyStateCard } from './util-components/EmptyStateCard';
 import { PremiosModal } from './consulta-sorteo-components/PremiosModal';
 import { FloatingActionBar } from './consulta-sorteo-components/FloatingActionBar';
 import { ConfirmacionApartadoModal } from './consulta-sorteo-components/ConfirmacionApartadoModal';
+import Swal from "sweetalert2";
 
 
 export const ConsultaSorteoCliente = () => {
@@ -92,9 +93,17 @@ export const ConsultaSorteoCliente = () => {
             const response = await apartarBoletosPorCliente(sorteo.id, seleccionados);
             setIsConfirmModalOpen(false);
             setSeleccionados([]);
-            alert(response.message);
+            await Swal.fire({
+                icon: "success",
+                title: "Apartado exitoso",
+                text: response.message
+            });
         } catch (err) {
-            alert(err);
+            await Swal.fire({
+                icon: "error",
+                title: "No se pudo apartar",
+                text: err?.message || "Intenta nuevamente más tarde."
+            });
         }
     };
 
