@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { CreateSorteoDto } from './dto/create-sorteo.dto';
 import { UpdateSorteoDto } from './dto/update-sorteo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +6,8 @@ import { Sorteo } from './entities/sorteo.entity';
 import { Boleto } from '../boletos/entities/boleto.entity';
 import { Organizador } from '../users/entities/organizador.entity';
 import { Premio } from './entities/premio.entity';
+import { relative } from 'path';
+import { Not } from 'typeorm';
 
 @Injectable()
 export class SorteosService {
@@ -131,7 +133,35 @@ export class SorteosService {
     return `This action updates a #${id} sorteo`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} sorteo`;
+  async remove(idSorteo: string, idOrganizador: string) {
+
+    const sorteo = await this.sorteoRepository.findOne({
+      where: { id: idSorteo },
+      relations: ['organizador']
+    });
+
+    if (!sorteo) {
+      throw new NotFoundException(`El sorteo con id ${idSorteo} no existe.`);
+    }
+
+    console.log(sorteo.organizador.userId);
+    console.log(idOrganizador);
+
+    if (sorteo.organizador.userId !== idOrganizador) {
+        throw new NotFoundException(`No tienes permisos para modificar este recurso.`);
+    }
+
+    const boletosVendidos = await this.boletoRepository.count({
+      where: {
+        sorteo: { id: idSorteo },
+        isReserved: true 
+      }
+    });
+
+    if (boletosVendidos > 0) {
+      throw new ConflictException(`No se puede eliminar el sorteo debido a que cuenta con ${boletosVendidos} boletos comprados o reservados.`);
+    }
+
+    await this.sorteoRepository.remove(sorteo);
   }
 }
