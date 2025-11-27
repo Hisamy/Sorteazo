@@ -2,6 +2,8 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn
 import { Sorteo } from "../../sorteos/entities/sorteo.entity";
 import { Client } from "../../users/entities/client.entity";
 import { Pago } from "../../pagos/entities/pago.entity";
+import { EstadoBoleto } from "../enums/boleto.enum";
+
 
 @Entity('boletos')
 export class Boleto {
@@ -10,6 +12,9 @@ export class Boleto {
 
     @Column()
     number: string;
+
+    @Column({ type: 'enum', enum: EstadoBoleto, default: EstadoBoleto.AVAILABLE })
+    status: EstadoBoleto;
 
     @Column({ type: 'float' })
     price: number;
@@ -23,7 +28,7 @@ export class Boleto {
 
     @ManyToOne(() => Client, (client) => client.boletos, { nullable: true })
     @JoinColumn({ name: 'client_id' })
-    client: Client;
+    client: Client | null;
 
     @OneToOne(() => Pago, (pago) => pago.boleto, { nullable: true, cascade: true })
     pago: Pago;
