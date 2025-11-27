@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { CreateSorteoDto } from './dto/create-sorteo.dto';
 import { UpdateSorteoDto } from './dto/update-sorteo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -78,7 +78,7 @@ export class SorteosService {
     boletos.forEach(boleto => {
       boleto.sorteo = sorteo;
     });
-    
+
     sorteo.premios = premios;
 
     const savedSorteo = await this.sorteoRepository.save(sorteo);
@@ -99,7 +99,7 @@ export class SorteosService {
 
   async findAll() {
     return await this.sorteoRepository.find({
-      relations:['organizador', 'premios']
+      relations: ['organizador', 'premios']
     });
   }
 
@@ -129,9 +129,70 @@ export class SorteosService {
     return sorteo;
   }
 
-  update(id: number, updateSorteoDto: UpdateSorteoDto) {
-    return `This action updates a #${id} sorteo`;
+
+  /*
+  TODO: Arreglar el error al momento de actualizar informacion del sorteo se quita la imagen del sorteo...
+  */
+  async update(idSorteo: string, updateSorteoDto: UpdateSorteoDto, idOrganizador: string) {
+
+    const existingSorteo = await this.sorteoRepository.findOne({
+      where: { id: idSorteo },
+      relations: ['organizador']
+    });
+
+    if (!existingSorteo) {
+      throw new NotFoundException(`Sorteo con ID ${idSorteo} no encontrado.`);
+    }
+
+    if (existingSorteo.organizador.userId !== idOrganizador) {
+      throw new UnauthorizedException('No tienes permisos para modificar este sorteo.');
+    }
+
+    if (updateSorteoDto.ticketPrice !== undefined) {
+      const boletosVendidos = await this.boletoRepository.count({
+        where: {
+          sorteo: { id: idSorteo },
+          isReserved: true
+        }
+      });
+
+      if (boletosVendidos > 0) {
+        throw new ConflictException(
+          `No se puede modificar el precio del boleto debido a que el sorteo cuenta ya con ${boletosVendidos} boletos comprados o reservados.`
+        );
+      }
+    }
+
+    const allowedUpdates: Partial<Sorteo> = {};
+
+    if (updateSorteoDto.title !== undefined) {
+      allowedUpdates.title = updateSorteoDto.title;
+    }
+    if (updateSorteoDto.description !== undefined) {
+      allowedUpdates.description = updateSorteoDto.description;
+    }
+    if (updateSorteoDto.raffleDateTime !== undefined) {
+      allowedUpdates.raffleDateTime = new Date(updateSorteoDto.raffleDateTime);
+    }
+
+    if (updateSorteoDto.ticketPrice !== undefined) {
+      allowedUpdates.ticketPrice = updateSorteoDto.ticketPrice;
+    }
+
+    const sorteoToUpdate = this.sorteoRepository.merge(
+      existingSorteo,
+      allowedUpdates
+    );
+
+    sorteoToUpdate.imageUrl = existingSorteo.imageUrl;
+
+    const updatedSorteo = await this.sorteoRepository.save(sorteoToUpdate);
+
+    delete updatedSorteo.organizador;
+
+    return updatedSorteo;
   }
+
 
   async remove(idSorteo: string, idOrganizador: string) {
 
@@ -148,13 +209,13 @@ export class SorteosService {
     console.log(idOrganizador);
 
     if (sorteo.organizador.userId !== idOrganizador) {
-        throw new NotFoundException(`No tienes permisos para modificar este recurso.`);
+      throw new NotFoundException(`No tienes permisos para modificar este recurso.`);
     }
 
     const boletosVendidos = await this.boletoRepository.count({
       where: {
         sorteo: { id: idSorteo },
-        isReserved: true 
+        isReserved: true
       }
     });
 
