@@ -1,12 +1,26 @@
 import sorteazoLogo from "../assets/LogoSorteazo-W.svg";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 export function TopNavBar({ showLogout = false }) {
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        navigate("/");
+    const handleLogout = async () => {
+        const result = await Swal.fire({
+            title: "¿Cerrar sesión?",
+            text: "Tendrás que iniciar sesión de nuevo para continuar.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Sí, salir",
+            cancelButtonText: "Cancelar"
+        });
+
+        if (result.isConfirmed) {
+            navigate("/");
+        }
     };
 
     return (

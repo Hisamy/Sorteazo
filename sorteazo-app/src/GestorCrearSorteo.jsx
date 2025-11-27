@@ -7,6 +7,7 @@ import { Paso2FechasSorteo } from "./pasos-sorteo/Paso2FechasSorteo";
 import { Paso3Placeholder } from "./pasos-sorteo/Paso3Placeholder";
 import { Paso4Resumen } from "./pasos-sorteo/Paso4Resumen";
 import { crearSorteo } from './controllers/SorteoController.js';
+import Swal from "sweetalert2";
 
 export function GestorCrearSorteo() {
     const navigate = useNavigate();
@@ -333,8 +334,19 @@ export function GestorCrearSorteo() {
         }
     };
 
-    const handleCancel = () => {
-        if (window.confirm("¿Estás seguro de que deseas cancelar? Se perderán todos los cambios.")) {
+    const handleCancel = async () => {
+        const result = await Swal.fire({
+            title: "¿Cancelar creación?",
+            text: "Se perderán todos los cambios realizados.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Sí, cancelar",
+            cancelButtonText: "Seguir editando"
+        });
+
+        if (result.isConfirmed) {
             setCurrentStep(1);
             setFormData({
                 paso1: {},
@@ -348,6 +360,7 @@ export function GestorCrearSorteo() {
                 paso3: {},
                 paso4: {},
             });
+            navigate('/sorteos/organizador');
         }
     };
 
@@ -387,7 +400,11 @@ export function GestorCrearSorteo() {
         }
         const paymentDeadlineIso = formatDateToISO(paymentDeadlineDate);
         if (!paymentDeadlineIso) {
-            alert("No se pudo calcular la fecha límite de pago. Revisa los datos del paso 2.");
+            await Swal.fire({
+                icon: "error",
+                title: "Fecha límite inválida",
+                text: "No se pudo calcular la fecha límite de pago. Revisa los datos del paso 2."
+            });
             setCurrentStep(2);
             return;
         }
@@ -423,11 +440,20 @@ export function GestorCrearSorteo() {
         try {
             await crearSorteo(formDataToSend);
             
-            alert("¡Sorteo creado exitosamente!");
+            await Swal.fire({
+                icon: "success",
+                title: "¡Sorteo creado exitosamente!",
+                text: "Tu sorteo ya está listo para mostrarse.",
+                confirmButtonText: "Ir al dashboard"
+            });
             navigate('/sorteos/organizador');
         } catch (error) {
             console.error("Error al crear sorteo:", error);
-            alert(error.response?.data?.message || error.message || "Hubo un error al crear el sorteo. Por favor intenta de nuevo.");
+            await Swal.fire({
+                icon: "error",
+                title: "No se pudo crear el sorteo",
+                text: error.response?.data?.message || error.message || "Hubo un error al crear el sorteo. Por favor intenta de nuevo."
+            });
         }
     };
 

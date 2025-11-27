@@ -1,5 +1,6 @@
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import { CardPremio } from '../form-components/CardPremio';
+import Swal from "sweetalert2";
 
 export const Paso3Placeholder = forwardRef(({ initialData, errors = {} }, ref) => {
 
@@ -20,7 +21,11 @@ export const Paso3Placeholder = forwardRef(({ initialData, errors = {} }, ref) =
         const maxSize = 5 * 1024 * 1024;
 
         if (file.size > maxSize) {
-            alert("La imagen es demasiado pesada. El máximo permitido es 5 MB.");
+            Swal.fire({
+                icon: "warning",
+                title: "Imagen demasiado pesada",
+                text: "La imagen es demasiado pesada. El máximo permitido es 5 MB."
+            });
             return;
         }
 
