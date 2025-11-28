@@ -106,7 +106,11 @@ export const apartarBoletosPorCliente = async (sorteoId, seleccionados) => {
 
 export const editarSorteo = async (sorteoId, datosActualizados) => {
     try {
-        const response = await api.patch(`/sorteos/${sorteoId}`, datosActualizados);
+        const response = await api.patch(`/sorteos/${sorteoId}`, datosActualizados, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
 
         return response.data;
     } catch (error) {
