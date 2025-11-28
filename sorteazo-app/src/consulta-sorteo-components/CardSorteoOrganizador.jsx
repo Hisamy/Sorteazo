@@ -1,9 +1,10 @@
 import React from 'react';
 import { FaTrash } from 'react-icons/fa';
 import { FaEdit } from "react-icons/fa";
+import { IoNotificationsSharp } from "react-icons/io5";
 
-const CardSorteoOrganizador = ({ sorteo, onDelete, onClick, onEdit }) => {
-    // Adaptado a los nombres de la entidad Sorteo
+
+const CardSorteoOrganizador = ({ sorteo, onDelete, onClick, onEdit, onNotification }) => {
     const { id, title, ticketPrice, raffleDateTime, imageUrl } = sorteo;
 
     const date = new Date(raffleDateTime);
@@ -20,6 +21,10 @@ const CardSorteoOrganizador = ({ sorteo, onDelete, onClick, onEdit }) => {
         if (onClick) {
             onClick();
         }
+    };
+
+    const handleNotificationsClick = (e) => {
+        onNotification(id);
     };
 
     const handleEditClick = (e) => {
@@ -49,15 +54,22 @@ const CardSorteoOrganizador = ({ sorteo, onDelete, onClick, onEdit }) => {
             </div>
             <div>
                 <button
+                    onClick={handleNotificationsClick}
+                    className="text-gray-500  hover:text-red-600 text-lg p-2 z-10"
+                    aria-label="Notification"
+                >
+                    <IoNotificationsSharp />
+                </button>
+                <button
                     onClick={handleEditClick}
                     className="text-gray-500 hover:text-red-600 text-lg p-2 z-10"
-                    aria-label="Eliminar sorteo"
+                    aria-label="Edit sorteo"
                 >
                     <FaEdit />
                 </button>
                 <button
                     onClick={handleDeleteClick}
-                    className="text-gray-500 hover:text-red-600 text-lg p-2 z-10"
+                    className="text-gray-500 hover:text-red-600 text-lg p-1 z-10"
                     aria-label="Eliminar sorteo"
                 >
                     <FaTrash />

@@ -118,6 +118,7 @@ export function DashboardOrganizador() {
                                     onDelete={handleDelete}
                                     onClick={() => navigate(`/sorteos/organizador/${sorteo.id}`)}
                                     onEdit={() => navigate(`/sorteos/organizador/editar/${sorteo.id}`)}
+                                    onNotification={() => navigate(`/sorteos/organizador/configurar-notificaciones/${sorteo.id}`)}
                                 />
                             ))
                         ) : (
