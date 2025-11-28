@@ -383,33 +383,26 @@ export function GestorCrearSorteo() {
         }
         
         const { paso1, paso2, paso3 } = completeData;
-        const formDataToSend = new FormData();
-
-        formDataToSend.append('title', paso1.titulo);
-        formDataToSend.append('ticketPrice', parseFloat(paso1.precioBoleto));
-        formDataToSend.append('numbersQuantity', parseInt(paso1.cantidadBoletos));
-        formDataToSend.append('startNumber', parseInt(paso1.inicioNumeracion));
-        formDataToSend.append('description', paso1.descripcion);
-
         const saleStartDate = parseDateInput(paso2.fechaInicioVenta);
         const diasLimite = Number(paso2.fechaLimitePago);
-        let paymentDeadlineDate = null;
-        if (saleStartDate && Number.isInteger(diasLimite)) {
-            paymentDeadlineDate = new Date(saleStartDate);
-            paymentDeadlineDate.setDate(paymentDeadlineDate.getDate() + diasLimite);
-        }
-        const paymentDeadlineIso = formatDateToISO(paymentDeadlineDate);
-        if (!paymentDeadlineIso) {
+
+        if (!Number.isInteger(diasLimite) || diasLimite < 1 || diasLimite > 60) {
             await Swal.fire({
                 icon: "error",
-                title: "Fecha límite inválida",
-                text: "No se pudo calcular la fecha límite de pago. Revisa los datos del paso 2."
+                title: "Días límite inválidos",
+                text: "El campo de días límite debe ser un entero entre 1 y 60."
             });
             setCurrentStep(2);
             return;
         }
 
-        formDataToSend.append('paymentDeadline', paymentDeadlineIso);
+        const formDataToSend = new FormData();
+        formDataToSend.append('title', paso1.titulo);
+        formDataToSend.append('ticketPrice', parseFloat(paso1.precioBoleto));
+        formDataToSend.append('numbersQuantity', parseInt(paso1.cantidadBoletos));
+        formDataToSend.append('startNumber', parseInt(paso1.inicioNumeracion));
+        formDataToSend.append('description', paso1.descripcion);
+        formDataToSend.append('paymentDeadlineDays', String(diasLimite));
         formDataToSend.append('saleStartDate', paso2.fechaInicioVenta);
         formDataToSend.append('saleEndDate', paso2.fechaFinVenta);
         formDataToSend.append('raffleDateTime', paso2.fechaRealizacionSorteo);
@@ -428,9 +421,7 @@ export function GestorCrearSorteo() {
                 description: description || '',
                 imageUrl: ''
             }));
-
         formDataToSend.append('premios', JSON.stringify(premios));
-
         (paso3.premios || []).forEach(({ imageFile }) => {
             if (imageFile instanceof File) {
                 formDataToSend.append('imagenesPremios', imageFile);
