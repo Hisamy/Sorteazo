@@ -1,0 +1,6 @@
+export enum EstadoBoleto {
+  AVAILABLE = 'DISPONIBLE',
+  RESERVED = 'RESERVADO',
+  PENDING_PAYMENT = 'PAGO_PENDIENTE',
+  PAID = 'PAGADO',
+}

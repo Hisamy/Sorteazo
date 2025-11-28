@@ -21,7 +21,12 @@ export class Premio {
     @Column({ type: 'int', nullable: true })
     winningNumber: number;
 
-    @ManyToOne(() => Sorteo, (sorteo) => sorteo.premios)
+    @ManyToOne(() => Sorteo, (sorteo) => sorteo.premios, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'sorteo_id' })
     sorteo: Sorteo;
+
+    /*
+    @ManyToOne(() => Sorteo, (sorteo) => sorteo.premios)
+    @JoinColumn({ name: 'sorteo_id' })
+    sorteo: Sorteo;*/
 }

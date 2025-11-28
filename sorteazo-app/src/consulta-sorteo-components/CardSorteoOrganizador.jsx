@@ -1,7 +1,8 @@
 import React from 'react';
 import { FaTrash } from 'react-icons/fa';
+import { FaEdit } from "react-icons/fa";
 
-const CardSorteoOrganizador = ({ sorteo, onDelete, onClick }) => {
+const CardSorteoOrganizador = ({ sorteo, onDelete, onClick, onEdit }) => {
     // Adaptado a los nombres de la entidad Sorteo
     const { id, title, ticketPrice, raffleDateTime, imageUrl } = sorteo;
 
@@ -21,8 +22,12 @@ const CardSorteoOrganizador = ({ sorteo, onDelete, onClick }) => {
         }
     };
 
+    const handleEditClick = (e) => {
+        onEdit(id);
+    };
+
     const handleDeleteClick = (e) => {
-        e.stopPropagation(); 
+        e.stopPropagation();
         onDelete(id);
     };
 
@@ -42,13 +47,24 @@ const CardSorteoOrganizador = ({ sorteo, onDelete, onClick }) => {
                     </p>
                 </div>
             </div>
-            <button
-                onClick={handleDeleteClick}
-                className="text-gray-500 hover:text-red-600 text-lg p-2 z-10"
-                aria-label="Eliminar sorteo"
-            >
-                <FaTrash />
-            </button>
+            <div>
+                <button
+                    onClick={handleEditClick}
+                    className="text-gray-500 hover:text-red-600 text-lg p-2 z-10"
+                    aria-label="Eliminar sorteo"
+                >
+                    <FaEdit />
+                </button>
+                <button
+                    onClick={handleDeleteClick}
+                    className="text-gray-500 hover:text-red-600 text-lg p-2 z-10"
+                    aria-label="Eliminar sorteo"
+                >
+                    <FaTrash />
+                </button>
+
+            </div>
+
         </div>
     );
 };
