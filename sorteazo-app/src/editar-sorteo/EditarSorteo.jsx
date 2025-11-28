@@ -6,6 +6,8 @@ import { InputDate } from '../form-components/InputDate';
 import { FaLock, FaTicketAlt, FaGift, FaArrowLeft } from "react-icons/fa";
 import Swal from 'sweetalert2';
 import { obtenerSorteoId, editaSorteo } from '../controllers/SorteoController';
+import { gestorEditarSorteo } from './GestorEditarSorteo';
+
 
 export function EditarSorteo() {
     const { id } = useParams();
@@ -33,6 +35,7 @@ export function EditarSorteo() {
                     startDate: formatDate(data.saleStartDate),
                     endDate: formatDate(data.saleEndDate),
                     raffleDate: formatDate(data.raffleDateTime),
+                    paymentDeadline: (data.paymentDeadlineDays),
                     imageName: data.imageUrl ? data.imageUrl.split('/').pop() : "imagen-actual.jpg"
                 });
 
@@ -51,9 +54,10 @@ export function EditarSorteo() {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const formData = new FormData(e.target);
+        const formData = gestorEditarSorteo(e.target, initialData);
 
-        const nombreSorteo = initialData?.title || "el sorteo";
+        const formDataRaw = new FormData(e.target);
+        const nombreSorteo = formDataRaw.get('title') || "el sorteo";
 
         Swal.fire({
             title: 'Guardar cambios',
@@ -67,7 +71,6 @@ export function EditarSorteo() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    // 4. Llamamos al controlador pasando ID y FormData
                     await editaSorteo(id, formData);
 
                     Swal.fire({
@@ -80,10 +83,11 @@ export function EditarSorteo() {
                     });
 
                 } catch (error) {
-                    console.error(error);
+                    console.error("Error al actualizar:", error);
+                    const msg = error.response?.data?.message || 'Hubo un problema al guardar los cambios.';
                     Swal.fire({
                         title: 'Error',
-                        text: 'Hubo un problema al guardar los cambios.',
+                        text: Array.isArray(msg) ? msg[0] : msg,
                         icon: 'error',
                         confirmButtonColor: '#6B8E78'
                     });
@@ -96,8 +100,8 @@ export function EditarSorteo() {
         return <div className="p-10 text-center font-afacad">Cargando datos del sorteo...</div>;
     }
 
-    // Validación para bloquear botones (asumiendo que totalVentas viene del backend)
-    const canEditSensitiveData = initialData.totalVentas === 0;
+    const hayVentas = initialData?.boletos?.some(boleto => boleto.status === 'PAGADO');
+    const canEditSensitiveData = !hayVentas;
 
     return (
         <div className="min-h-screen bg-[var(--color-background)] p-8">
@@ -201,17 +205,7 @@ export function EditarSorteo() {
                             />
                         </div>
 
-                        {/* Info Fechas */}
-                        <div className="border border-[var(--color-primary)] rounded-lg p-4 mt-2">
-                            <label className="flex items-center gap-2 text-[var(--color-primary)] font-bold font-afacad mb-2">
-                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                                </svg> Información de fechas
-                            </label>
-                            <p className="text-gray-500 font-afacad text-sm">
-                                Duración total: (Cálculo automático...)
-                            </p>
-                        </div>
+
                     </div>
 
                     {/* --- BOTONES PREMIOS Y BOLETOS --- */}
