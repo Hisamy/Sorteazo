@@ -1,4 +1,12 @@
-export function InputDate({ label, placeholder = "dd/mm/aaaa", value, onChange, name, defaultValue, required }) {
+export function InputDate({
+    label,
+    placeholder = "dd/mm/aaaa",
+    value,
+    onChange,
+    name,
+    defaultValue,
+    error
+}) {
     return (
         <div className="flex flex-col mb-5">
             <label className="flex items-center gap-2 mb-2 text-[var(--color-primary)] font-semibold">
@@ -15,10 +23,13 @@ export function InputDate({ label, placeholder = "dd/mm/aaaa", value, onChange, 
                     value={value}
                     onChange={onChange}
                     defaultValue={defaultValue}
-                    required={required}
-                    className="w-full border border-[var(--color-light-gray)] rounded-xl px-4 py-2 text-[var(--color-gray-text)] placeholder-[var(--color-gray-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
+                    aria-invalid={Boolean(error)}
+                    className={`w-full border rounded-xl px-4 py-2 text-[var(--color-gray-text)] placeholder-[var(--color-gray-text)] focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${error ? 'border-red-500 focus:ring-red-500' : 'border-[var(--color-light-gray)] focus:ring-[var(--color-primary)]'}`}
                 />
             </div>
+            {error && (
+                <p className="mt-1 text-sm text-red-600 font-afacad">{error}</p>
+            )}
         </div>
     );
 }

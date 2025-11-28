@@ -1,7 +1,7 @@
 import { InputForm } from "../form-components/InputForm";
 import { TextAreaForm } from "../form-components/TextAreaForm";
 
-export function Paso1InfoBasica({ initialData }) {
+export function Paso1InfoBasica({ initialData, errors = {} }) {
     return (
         <>
             <h2 className="text-2xl font-afacad font-semibold text-[var(--color-dark-text)] mb-2">
@@ -20,23 +20,21 @@ export function Paso1InfoBasica({ initialData }) {
                         placeholder="Ej. Sorteo San Valentín"
                         name="titulo"
                         defaultValue={initialData?.titulo || ""}
-                        required
+                        error={errors?.titulo}
                     />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className="block mb-2 text-[var(--color-primary)] font-semibold font-afacad">
-                            Cantidad de boletos (1-1000):
+                            Cantidad de boletos (1-1,000):
                         </label>
                         <InputForm
                             type="number"
                             placeholder="Ej. 100"
                             name="cantidadBoletos"
                             defaultValue={initialData?.cantidadBoletos || ""}
-                            required
-                            min="1"
-                            max="1000"
+                            error={errors?.cantidadBoletos}
                         />
                     </div>
                     <div>
@@ -48,8 +46,7 @@ export function Paso1InfoBasica({ initialData }) {
                             placeholder="Ej. 1"
                             name="inicioNumeracion"
                             defaultValue={initialData?.inicioNumeracion || ""}
-                            required
-                            min="0"
+                            error={errors?.inicioNumeracion}
                         />
                     </div>
                 </div>
@@ -63,9 +60,8 @@ export function Paso1InfoBasica({ initialData }) {
                         placeholder="Ej. 50.00"
                         name="precioBoleto"
                         step="0.01"
-                        min="0"
                         defaultValue={initialData?.precioBoleto || ""}
-                        required
+                        error={errors?.precioBoleto}
                     />
                 </div>
 
@@ -77,7 +73,7 @@ export function Paso1InfoBasica({ initialData }) {
                         placeholder="Describe los detalles de tu sorteo."
                         name="descripcion"
                         defaultValue={initialData?.descripcion || ""}
-                        required
+                        error={errors?.descripcion}
                     />
                 </div>
 
@@ -89,9 +85,11 @@ export function Paso1InfoBasica({ initialData }) {
                         type="file"
                         name="imagenSorteo"
                         accept="image/*"
-                        required
-                        className="w-full border border-[var(--color-light-gray)] rounded-xl px-4 py-2 text-[var(--color-dark-text)] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--color-light-gray)] file:text-[var(--color-dark-text)] hover:file:bg-[var(--color-gray-text)] hover:file:text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
+                        className={`w-full border rounded-xl px-4 py-2 text-[var(--color-dark-text)] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--color-light-gray)] file:text-[var(--color-dark-text)] hover:file:bg-[var(--color-gray-text)] hover:file:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${errors?.imagenSorteo ? 'border-red-500 focus:ring-red-500' : 'border-[var(--color-light-gray)] focus:ring-[var(--color-primary)]'}`}
                     />
+                    {errors?.imagenSorteo && (
+                        <p className="mt-1 text-sm text-red-600 font-afacad">{errors.imagenSorteo}</p>
+                    )}
                 </div>
             </div>
         </>

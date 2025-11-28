@@ -22,7 +22,13 @@ export class Boleto {
     @Column({ default: false })
     isReserved: boolean;
 
+    /*
     @ManyToOne(() => Sorteo, (sorteo) => sorteo.boletos)
+    @JoinColumn({ name: 'sorteo_id' })
+    sorteo: Sorteo;
+    */
+
+    @ManyToOne(() => Sorteo, (sorteo) => sorteo.boletos, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'sorteo_id' })
     sorteo: Sorteo;
 
@@ -30,6 +36,7 @@ export class Boleto {
     @JoinColumn({ name: 'client_id' })
     client: Client | null;
 
+    
     @OneToOne(() => Pago, (pago) => pago.boleto, { nullable: true, cascade: true })
     pago: Pago;
 }

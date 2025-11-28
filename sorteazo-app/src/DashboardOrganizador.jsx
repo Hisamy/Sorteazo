@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { TopNavBar } from "./util-components/TopNavBar";
 import { EmptyStateCard } from "./util-components/EmptyStateCard";
 import { useNavigate } from "react-router-dom";
-import CardSorteoOrganizador from "./consulta-sorteo-components/CardSorteoOrganizador"; 
-import sorteoImage from './assets/images/sorteo-placeholder.png'; 
+import CardSorteoOrganizador from "./consulta-sorteo-components/CardSorteoOrganizador";
+import sorteoImage from './assets/images/sorteo-placeholder.png';
 import { obtenerSorteosPorOrganizador } from "./services/SorteazoApi";
 
 export function DashboardOrganizador() {
@@ -18,8 +18,8 @@ export function DashboardOrganizador() {
                 setLoading(true);
                 const data = await obtenerSorteosPorOrganizador();
                 const sorteosMapeados = data.map(sorteo => {
-                    const fullImageUrl = sorteo.imageUrl 
-                        ? `${import.meta.env.VITE_API_URL}${sorteo.imageUrl}` 
+                    const fullImageUrl = sorteo.imageUrl
+                        ? `${import.meta.env.VITE_API_URL}${sorteo.imageUrl}`
                         : sorteoImage;
 
                     return {
@@ -27,7 +27,7 @@ export function DashboardOrganizador() {
                         title: sorteo.title || '',
                         ticketPrice: sorteo.ticketPrice,
                         raffleDateTime: sorteo.raffleDateTime,
-                        imageUrl: fullImageUrl 
+                        imageUrl: fullImageUrl
                     };
                 });
                 setSorteos(sorteosMapeados);
@@ -48,7 +48,7 @@ export function DashboardOrganizador() {
     return (
         <div className="min-h-screen bg-[var(--color-background)]">
             <TopNavBar showLogout={true} />
-            
+
             <div className="container mx-auto px-8 py-10 max-w-4xl">
                 <div className="flex justify-between items-center mb-8">
                     <div>
@@ -80,10 +80,11 @@ export function DashboardOrganizador() {
                                     sorteo={sorteo}
                                     onDelete={handleDelete}
                                     onClick={() => navigate(`/sorteos/organizador/${sorteo.id}`)}
+                                    onEdit={() => navigate(`/sorteos/organizador/editar/${sorteo.id}`)}
                                 />
                             ))
                         ) : (
-                            <EmptyStateCard 
+                            <EmptyStateCard
                                 message="No tienes sorteos activos. ¡Crea uno para empezar!"
                             />
                         )

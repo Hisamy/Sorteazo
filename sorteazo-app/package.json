@@ -8,7 +8,6 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "serve -s dist -l 5173"
-
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.16",
@@ -18,6 +17,7 @@
     "react-dom": "^19.1.1",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.9.5",
+    "sweetalert2": "^11.26.3",
     "tailwindcss": "^4.1.16"
   },
   "devDependencies": {
