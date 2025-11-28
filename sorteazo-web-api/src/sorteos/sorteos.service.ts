@@ -64,7 +64,7 @@ export class SorteosService {
       startNumber: createSorteoDto.startNumber,
       imageUrl: imagenSorteoUrl,
       description: createSorteoDto.description,
-      paymentDeadline: createSorteoDto.paymentDeadline,
+      paymentDeadlineDays: createSorteoDto.paymentDeadlineDays,
       saleStartDate: createSorteoDto.saleStartDate,
       saleEndDate: createSorteoDto.saleEndDate,
       raffleDateTime: createSorteoDto.raffleDateTime,

@@ -22,6 +22,12 @@ export class Boleto {
     @Column({ default: false })
     isReserved: boolean;
 
+    @Column({ type: 'timestamp', nullable: true })
+    fechaReserva: Date;
+
+    @Column({ type: 'timestamp', nullable: true })
+    paymentDeadline: Date;
+
     /*
     @ManyToOne(() => Sorteo, (sorteo) => sorteo.boletos)
     @JoinColumn({ name: 'sorteo_id' })

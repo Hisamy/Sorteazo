@@ -27,8 +27,8 @@ export class Sorteo {
     @Column({ type: 'text' })
     description: string;
 
-    @Column({ type: 'date' })
-    paymentDeadline: Date;
+    @Column({ type: 'int' })
+    paymentDeadlineDays: number;
 
     @Column({ type: 'date' })
     saleStartDate: Date;

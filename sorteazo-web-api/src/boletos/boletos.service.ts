@@ -14,10 +14,10 @@ import { Client } from './../users/entities/client.entity';
 export class BoletosService {
   constructor(
     @InjectRepository(Sorteo)
-    private sorteoRepository: Repository <Sorteo>,
+    private sorteoRepository: Repository<Sorteo>,
     @InjectRepository(Boleto)
     private boletoRepository: Repository<Boleto>
-  ){}
+  ) { }
   create(createBoletoDto: CreateBoletoDto) {
     return 'This action adds a new boleto';
   }
@@ -67,11 +67,11 @@ export class BoletosService {
       number: boleto.number,
       price: boleto.price,
       isReserved: boleto.isReserved,
-      client: boleto.client 
-        ? { 
-            name: boleto.client.user?.name,
-            phoneNumber: boleto.client.user?.phone
-        } 
+      client: boleto.client
+        ? {
+          name: boleto.client.user?.name,
+          phoneNumber: boleto.client.user?.phone
+        }
         : null,
       payment: boleto.pago
     }));
@@ -118,9 +118,26 @@ export class BoletosService {
     const clientRef = new Client();
     clientRef.userId = clientId;
 
+    const now = new Date();
+
+    const paymentDeadline = new Date(now.getTime() + sorteo.paymentDeadlineDays * 24 * 60 * 60 * 1000);
+
+    const saleEndDate = typeof sorteo.saleEndDate === 'string'
+      ? new Date(sorteo.saleEndDate + 'T23:59:59.999')  // Agregar hora para forzar interpretación local
+      : new Date(
+        sorteo.saleEndDate.getFullYear(),
+        sorteo.saleEndDate.getMonth(),
+        sorteo.saleEndDate.getDate(),
+        23, 59, 59, 999
+      );
+
+    const finalDeadline = paymentDeadline < saleEndDate ? paymentDeadline : saleEndDate;
+
     boletos.forEach(boleto => {
       boleto.isReserved = true;
       boleto.client = clientRef;
+      boleto.fechaReserva = now;
+      boleto.paymentDeadline = finalDeadline;
     });
 
     await this.boletoRepository.save(boletos);
