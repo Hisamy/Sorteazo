@@ -1,4 +1,4 @@
-import { IsArray, IsDate, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsDate, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested, Min, Max } from 'class-validator';
 import { Timestamp } from 'typeorm';
 import { Type, Transform } from 'class-transformer';
 import { CreatePremioDto } from './create-premio.dto';
@@ -30,9 +30,14 @@ export class CreateSorteoDto {
     @IsOptional()
     description: string;
 
-    @IsDateString()
-    @IsNotEmpty()
-    paymentDeadline: Date;
+    @Transform(({ value }) => {
+        const val = parseInt(value);
+        return isNaN(val) ? undefined : val;
+    })
+    @IsNumber()
+    @Min(1)
+    @Max(60)
+    paymentDeadlineDays: number;
 
     @IsDateString()
     @IsNotEmpty()
