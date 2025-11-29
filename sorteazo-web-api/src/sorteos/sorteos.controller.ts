@@ -3,7 +3,7 @@ import { SorteosService } from './sorteos.service';
 import { CreateSorteoDto } from './dto/create-sorteo.dto';
 import { UpdateSorteoDto } from './dto/update-sorteo.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../configs/multer.config';
 
 @UseGuards(AuthGuard("jwt"))
@@ -46,9 +46,13 @@ export class SorteosController {
   }
 
   @Patch(':id')
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'imagenSorteo', maxCount: 1 }
+  ], multerConfig))
   async update(
     @Param('id') id: string,
     @Body() updateSorteoDto: UpdateSorteoDto,
+    @UploadedFiles() files: { imagenSorteo?: Express.Multer.File[] },
     @Req() req
   ) {
     const user = req.user;
@@ -57,7 +61,7 @@ export class SorteosController {
       throw new UnauthorizedException("No tienes permisos para realizar esta acción.");
     }
 
-    return this.sorteosService.update(id, updateSorteoDto, user.id);
+    return this.sorteosService.update(id, updateSorteoDto, user.id, files);
   }
 
   @Delete(':id')
