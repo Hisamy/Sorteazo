@@ -9,6 +9,9 @@ import { Premio } from './entities/premio.entity';
 import { relative } from 'path';
 import { Not } from 'typeorm';
 
+import { assignSorteoImage } from './utils/sorteo-image.upload';
+import { assignPremioImage } from './utils/premio-image.upload';
+
 @Injectable()
 export class SorteosService {
   constructor(
@@ -36,25 +39,28 @@ export class SorteosService {
       })
       boletos.push(boleto);
     }
-
-    const imagenSorteoUrl = files?.imagenSorteo?.[0]
-      ? `/uploads/${files.imagenSorteo[0].filename}`
-      : createSorteoDto.imageUrl || '';
+    
+    const imagenSorteoUrl = assignSorteoImage(
+      files?.imagenSorteo?.[0],
+      createSorteoDto.imageUrl
+    );
 
     if (createSorteoDto.premios && Array.isArray(createSorteoDto.premios)) {
       createSorteoDto.premios.forEach((p, index) => {
-        const imagenPremioUrl = files?.imagenesPremios?.[index]
-          ? `/uploads/${files.imagenesPremios[index].filename}`
-          : p.imageUrl || '';
+        const imagenPremioUrl = assignPremioImage(
+          files?.imagenesPremios?.[index],
+          p.imageUrl
+        );
 
         const premio: Premio = this.premioRepository.create({
           name: p.name,
           place: p.place,
           imageUrl: imagenPremioUrl,
           description: p.description || ''
-        })
-        premios.push(premio)
-      })
+        });
+
+        premios.push(premio);
+      });
     }
 
     const sorteo: Sorteo = this.sorteoRepository.create({
@@ -175,9 +181,26 @@ export class SorteosService {
       allowedUpdates.raffleDateTime = new Date(updateSorteoDto.raffleDateTime);
     }
 
+    if (updateSorteoDto.saleStartDate !== undefined) {
+      allowedUpdates.saleStartDate = new Date(updateSorteoDto.saleStartDate);
+    }
+
+    if (updateSorteoDto.saleStartDate !== undefined) {
+      allowedUpdates.saleStartDate = new Date(updateSorteoDto.saleStartDate);
+    }
+
+    if (updateSorteoDto.saleEndDate !== undefined) {
+      allowedUpdates.saleEndDate = new Date(updateSorteoDto.saleEndDate);
+    }
+
+    if (updateSorteoDto.paymentDeadlineDays !== undefined) {
+      allowedUpdates.paymentDeadlineDays = updateSorteoDto.paymentDeadlineDays;
+    }
+
+    /*
     if (updateSorteoDto.ticketPrice !== undefined) {
       allowedUpdates.ticketPrice = updateSorteoDto.ticketPrice;
-    }
+    }*/
 
     const sorteoToUpdate = this.sorteoRepository.merge(
       existingSorteo,
