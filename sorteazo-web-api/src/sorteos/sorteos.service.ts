@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { CreateSorteoDto } from './dto/create-sorteo.dto';
 import { UpdateSorteoDto } from './dto/update-sorteo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,9 +8,6 @@ import { Organizador } from '../users/entities/organizador.entity';
 import { Premio } from './entities/premio.entity';
 import { relative } from 'path';
 import { Not } from 'typeorm';
-
-import { assignSorteoImage } from './utils/sorteo-image.upload';
-import { assignPremioImage } from './utils/premio-image.upload';
 
 @Injectable()
 export class SorteosService {
@@ -39,28 +36,25 @@ export class SorteosService {
       })
       boletos.push(boleto);
     }
-    
-    const imagenSorteoUrl = assignSorteoImage(
-      files?.imagenSorteo?.[0],
-      createSorteoDto.imageUrl
-    );
+
+    const imagenSorteoUrl = files?.imagenSorteo?.[0]
+      ? `/uploads/${files.imagenSorteo[0].filename}`
+      : createSorteoDto.imageUrl || '';
 
     if (createSorteoDto.premios && Array.isArray(createSorteoDto.premios)) {
       createSorteoDto.premios.forEach((p, index) => {
-        const imagenPremioUrl = assignPremioImage(
-          files?.imagenesPremios?.[index],
-          p.imageUrl
-        );
+        const imagenPremioUrl = files?.imagenesPremios?.[index]
+          ? `/uploads/${files.imagenesPremios[index].filename}`
+          : p.imageUrl || '';
 
         const premio: Premio = this.premioRepository.create({
           name: p.name,
           place: p.place,
           imageUrl: imagenPremioUrl,
           description: p.description || ''
-        });
-
-        premios.push(premio);
-      });
+        })
+        premios.push(premio)
+      })
     }
 
     const sorteo: Sorteo = this.sorteoRepository.create({
@@ -135,85 +129,85 @@ export class SorteosService {
     return sorteo;
   }
 
-
-  /*
-  TODO: Arreglar el error al momento de actualizar informacion del sorteo se quita la imagen del sorteo...
-  */
-  async update(idSorteo: string, updateSorteoDto: UpdateSorteoDto, idOrganizador: string) {
+  async update(
+    idSorteo: string,
+    updateSorteoDto: UpdateSorteoDto,
+    idOrganizador: string,
+    files?: { imagenSorteo?: Express.Multer.File[] } // <<-- ACEPTA EL ARCHIVO
+  ) {
 
     const existingSorteo = await this.sorteoRepository.findOne({
       where: { id: idSorteo },
-      relations: ['organizador']
-    });
+      relations: ['organizador'],
+    }); 
+    
+    const saleStart: Date = updateSorteoDto.saleStartDate
+      ? new Date(updateSorteoDto.saleStartDate)
+      : existingSorteo.saleStartDate;
 
-    if (!existingSorteo) {
-      throw new NotFoundException(`Sorteo con ID ${idSorteo} no encontrado.`);
+    const saleEnd: Date = updateSorteoDto.saleEndDate
+      ? new Date(updateSorteoDto.saleEndDate)
+      : existingSorteo.saleEndDate;
+
+    const raffleDT: Date = updateSorteoDto.raffleDateTime
+      ? new Date(updateSorteoDto.raffleDateTime)
+      : existingSorteo.raffleDateTime;
+
+
+    if (saleStart >= saleEnd) {
+      throw new BadRequestException("La fecha de inicio NO puede ser posterior o igual a la fecha fin.");
     }
 
-    if (existingSorteo.organizador.userId !== idOrganizador) {
-      throw new UnauthorizedException('No tienes permisos para modificar este sorteo.');
+    if (saleEnd >= raffleDT) {
+      throw new BadRequestException("La fecha de fin de venta debe ser ANTES del sorteo.");
     }
 
-    if (updateSorteoDto.ticketPrice !== undefined) {
-      const boletosVendidos = await this.boletoRepository.count({
-        where: {
-          sorteo: { id: idSorteo },
-          isReserved: true
-        }
-      });
-
-      if (boletosVendidos > 0) {
-        throw new ConflictException(
-          `No se puede modificar el precio del boleto debido a que el sorteo cuenta ya con ${boletosVendidos} boletos comprados o reservados.`
-        );
-      }
-    }
-
+    // ------------------------
+    // Armamos solo los campos permitidos
+    // ------------------------
     const allowedUpdates: Partial<Sorteo> = {};
 
-    if (updateSorteoDto.title !== undefined) {
+    if (updateSorteoDto.title !== undefined)
       allowedUpdates.title = updateSorteoDto.title;
-    }
-    if (updateSorteoDto.description !== undefined) {
+    
+    if (updateSorteoDto.description !== undefined)
       allowedUpdates.description = updateSorteoDto.description;
-    }
-    if (updateSorteoDto.raffleDateTime !== undefined) {
-      allowedUpdates.raffleDateTime = new Date(updateSorteoDto.raffleDateTime);
-    }
 
-    if (updateSorteoDto.saleStartDate !== undefined) {
-      allowedUpdates.saleStartDate = new Date(updateSorteoDto.saleStartDate);
-    }
-
-    if (updateSorteoDto.saleStartDate !== undefined) {
-      allowedUpdates.saleStartDate = new Date(updateSorteoDto.saleStartDate);
-    }
-
-    if (updateSorteoDto.saleEndDate !== undefined) {
-      allowedUpdates.saleEndDate = new Date(updateSorteoDto.saleEndDate);
-    }
-
-    if (updateSorteoDto.paymentDeadlineDays !== undefined) {
+    if (updateSorteoDto.paymentDeadlineDays !== undefined)
       allowedUpdates.paymentDeadlineDays = updateSorteoDto.paymentDeadlineDays;
+
+    // Lógica de Imagen (Similar a CREATE)
+    const imagenSorteoFile = files?.imagenSorteo?.[0]; // Obtener el archivo
+
+    if (imagenSorteoFile) {
+      // Si se subió un nuevo archivo, usamos su URL
+      allowedUpdates.imageUrl = `/uploads/${imagenSorteoFile.filename}`;
+    } else if (updateSorteoDto.imageUrl !== undefined) {
+      // Si el DTO tiene un valor explícito (para limpiar o mantener una URL)
+      allowedUpdates.imageUrl = updateSorteoDto.imageUrl;
     }
 
-    /*
-    if (updateSorteoDto.ticketPrice !== undefined) {
-      allowedUpdates.ticketPrice = updateSorteoDto.ticketPrice;
-    }*/
+    // Asignamos las fechas convertidas solo si se proporcionaron en el DTO
+    if (updateSorteoDto.saleStartDate !== undefined)
+      allowedUpdates.saleStartDate = saleStart;
 
+    if (updateSorteoDto.saleEndDate !== undefined)
+      allowedUpdates.saleEndDate = saleEnd;
+
+    if (updateSorteoDto.raffleDateTime !== undefined)
+      allowedUpdates.raffleDateTime = raffleDT;
+
+    // MERGE y SAVE...
     const sorteoToUpdate = this.sorteoRepository.merge(
       existingSorteo,
-      allowedUpdates
+      allowedUpdates,
     );
 
-    sorteoToUpdate.imageUrl = existingSorteo.imageUrl;
+    const updated = await this.sorteoRepository.save(sorteoToUpdate);
 
-    const updatedSorteo = await this.sorteoRepository.save(sorteoToUpdate);
+    delete updated.organizador;
 
-    delete updatedSorteo.organizador;
-
-    return updatedSorteo;
+    return updated;
   }
 
 
