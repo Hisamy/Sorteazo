@@ -7,6 +7,7 @@ import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express
 import { multerConfig } from '../configs/multer.config';
 
 import { UpdateBoletosInfoDto } from './dto/update-boletos.dto';
+import { UpdatePremiosDto } from './dto/update-premios.dto';
 
 @UseGuards(AuthGuard("jwt"))
 @Controller('sorteos')
@@ -63,7 +64,7 @@ export class SorteosController {
       throw new UnauthorizedException("No tienes permisos para realizar esta acción.");
     }
 
-    return this.sorteosService.update(id, updateSorteoDto, user.id, files);
+    return this.sorteosService.updateBasicInfo(id, updateSorteoDto, user.id, files);
   }
 
   @Patch('/:id/boletos')
@@ -82,6 +83,25 @@ export class SorteosController {
     }
 
     return this.sorteosService.updateBoletosInfo(id, updateBoletosInfoDto, user.id);
+  }
+
+  @Patch('/:id/premios')
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'imagenesPremios', maxCount: 10 }
+  ], multerConfig))
+  async updatePremios(
+    @Param('id') id: string,
+    @Body() updatePremiosDto: UpdatePremiosDto,
+    @UploadedFiles() files: { imagenesPremios?: Express.Multer.File[] },
+    @Req() req
+  ) {
+    const user = req.user;
+
+    if (user.role !== "organizador") {
+      throw new UnauthorizedException("No tienes permisos para realizar esta acción.");
+    }
+
+    return this.sorteosService.updatePremios(id, updatePremiosDto, user.id, files);
   }
 
   @Delete(':id')

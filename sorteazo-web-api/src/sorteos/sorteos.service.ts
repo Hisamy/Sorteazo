@@ -8,7 +8,9 @@ import { Organizador } from '../users/entities/organizador.entity';
 import { Premio } from './entities/premio.entity';
 import { relative } from 'path';
 import { Not } from 'typeorm';
+
 import { UpdateBoletosInfoDto } from './dto/update-boletos.dto';
+import { UpdatePremiosDto } from './dto/update-premios.dto';
 
 @Injectable()
 export class SorteosService {
@@ -130,11 +132,19 @@ export class SorteosService {
     return sorteo;
   }
 
-  async update(
+  /**
+   * Actualiza la informacion basica de un sorteo (fechas, titulo, descripcion y dias para para pagar).
+   * @param idSorteo ID del sorteo a modificar.
+   * @param updateSorteoDto Objeto que contiene la informacion nueva para el sorteo.
+   * @param idOrganizador ID del organizador del sorteo. (usado para validacion).
+   * @param files Imagen representativa del sorteo.
+   * @returns 
+   */
+  async updateBasicInfo(
     idSorteo: string,
     updateSorteoDto: UpdateSorteoDto,
     idOrganizador: string,
-    files?: { imagenSorteo?: Express.Multer.File[] } // <<-- ACEPTA EL ARCHIVO
+    files?: { imagenSorteo?: Express.Multer.File[] }
   ) {
 
     const existingSorteo = await this.sorteoRepository.findOne({
@@ -163,9 +173,6 @@ export class SorteosService {
       throw new BadRequestException("La fecha de fin de venta debe ser ANTES del sorteo.");
     }
 
-    // ------------------------
-    // Armamos solo los campos permitidos
-    // ------------------------
     const allowedUpdates: Partial<Sorteo> = {};
 
     if (updateSorteoDto.title !== undefined)
@@ -177,18 +184,14 @@ export class SorteosService {
     if (updateSorteoDto.paymentDeadlineDays !== undefined)
       allowedUpdates.paymentDeadlineDays = updateSorteoDto.paymentDeadlineDays;
 
-    // Lógica de Imagen (Similar a CREATE)
-    const imagenSorteoFile = files?.imagenSorteo?.[0]; // Obtener el archivo
+    const imagenSorteoFile = files?.imagenSorteo?.[0]; 
 
     if (imagenSorteoFile) {
-      // Si se subió un nuevo archivo, usamos su URL
       allowedUpdates.imageUrl = `/uploads/${imagenSorteoFile.filename}`;
     } else if (updateSorteoDto.imageUrl !== undefined) {
-      // Si el DTO tiene un valor explícito (para limpiar o mantener una URL)
       allowedUpdates.imageUrl = updateSorteoDto.imageUrl;
     }
 
-    // Asignamos las fechas convertidas solo si se proporcionaron en el DTO
     if (updateSorteoDto.saleStartDate !== undefined)
       allowedUpdates.saleStartDate = saleStart;
 
@@ -198,7 +201,6 @@ export class SorteosService {
     if (updateSorteoDto.raffleDateTime !== undefined)
       allowedUpdates.raffleDateTime = raffleDT;
 
-    // MERGE y SAVE...
     const sorteoToUpdate = this.sorteoRepository.merge(
       existingSorteo,
       allowedUpdates,
@@ -211,6 +213,13 @@ export class SorteosService {
     return updated;
   }
 
+  /**
+   * Actualiza los boletos del sorteo (cantidad de boletos, precio por unidad y numero de inicio de los mismos)
+   * @param idSorteo ID del sorteo con los boletos a modificar.
+   * @param updateBoletosInfoDto Objeto con los datos necesarios para la actualizacion.
+   * @param idOrganizador ID del organizador del sorteo (usado para validacion).
+   * @returns 
+   */
   async updateBoletosInfo(
     idSorteo: string,
     updateBoletosInfoDto: UpdateBoletosInfoDto,
@@ -252,7 +261,6 @@ export class SorteosService {
 
       const newBoletos: Boleto[] = [];
 
-      // Usamos los nuevos valores calculados arriba
       let maxNumber: number = newStartNumber + newNumbersQuantity;
 
       for (let i = newStartNumber; i < maxNumber; i++) {
@@ -264,7 +272,6 @@ export class SorteosService {
         newBoletos.push(boleto);
       }
 
-      // A.3 Guardar los nuevos boletos en la base de datos
       await this.boletoRepository.save(newBoletos);
 
     } else if (updateBoletosInfoDto.ticketPrice !== undefined && updateBoletosInfoDto.ticketPrice !== existingSorteo.ticketPrice) {
@@ -287,6 +294,80 @@ export class SorteosService {
     delete updated.organizador;
 
     return updated;
+  }
+
+  /**
+   * Actualiza los premios del sorteo si el mismo no cuenta ya con boletos vendidos.
+   * @param idSorteo ID del sorteo con los boletos a modificar.
+   * @param updatePremiosDto Objeto con la informacion de los premios.
+   * @param idOrganizador ID del organizador del sorteo (usado para validacion).
+   * @param files Imagenes de los premios a guardar.
+   * @returns 
+   */
+  async updatePremios(
+    idSorteo: string,
+    updatePremiosDto: UpdatePremiosDto,
+    idOrganizador: string,
+    files?: { imagenesPremios?: Express.Multer.File[] }
+  ) {
+    const existingSorteo = await this.sorteoRepository.findOne({
+      where: { id: idSorteo },
+      relations: ['organizador', 'premios'],
+    });
+
+    if (!existingSorteo) {
+      throw new NotFoundException(`Sorteo con ID ${idSorteo} no encontrado.`);
+    }
+
+    if (existingSorteo.organizador.userId !== idOrganizador) {
+      throw new UnauthorizedException('No tienes permisos para modificar este sorteo.');
+    }
+
+    const boletosVendidos = await this.boletoRepository.count({
+      where: {
+        sorteo: { id: idSorteo },
+        isReserved: true
+      }
+    });
+
+    if (boletosVendidos > 0) {
+      throw new ConflictException(`No se pueden actualizar los premios. Ya hay ${boletosVendidos} boletos vendidos o apartados.`);
+    }
+
+    await this.premioRepository.delete({ sorteo: { id: idSorteo } });
+
+    const newPremios: Premio[] = [];
+    const premiosData = updatePremiosDto.premios || [];
+
+    premiosData.forEach((p, index) => {
+      const imagenPremioUrl = files?.imagenesPremios?.[index]
+        ? `/uploads/${files.imagenesPremios[index].filename}`
+        : p.imageUrl || ''; 
+
+      const premio: Premio = this.premioRepository.create({
+        name: p.name,
+        place: p.place,
+        imageUrl: imagenPremioUrl,
+        description: p.description || '',
+        sorteo: existingSorteo 
+      });
+      newPremios.push(premio);
+    });
+
+    const savedPremios = await this.premioRepository.save(newPremios);
+
+    existingSorteo.premios = savedPremios;
+    const updatedSorteo = await this.sorteoRepository.save(existingSorteo);
+    
+    if (updatedSorteo.premios) {
+      updatedSorteo.premios.forEach(premio => {
+        delete premio.sorteo;
+      });
+    }
+
+    delete updatedSorteo.organizador;
+
+    return updatedSorteo;
   }
 
   async remove(idSorteo: string, idOrganizador: string) {

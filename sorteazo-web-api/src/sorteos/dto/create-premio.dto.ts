@@ -2,7 +2,6 @@ import { Transform } from 'class-transformer';
 import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreatePremioDto {
-
     @IsString()
     @IsNotEmpty()
     name: string;
@@ -19,5 +18,4 @@ export class CreatePremioDto {
     @IsString()
     @IsOptional()
     description: string;
-
 }
