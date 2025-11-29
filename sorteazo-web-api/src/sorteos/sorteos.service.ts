@@ -8,6 +8,7 @@ import { Organizador } from '../users/entities/organizador.entity';
 import { Premio } from './entities/premio.entity';
 import { relative } from 'path';
 import { Not } from 'typeorm';
+import { UpdateBoletosInfoDto } from './dto/update-boletos.dto';
 
 @Injectable()
 export class SorteosService {
@@ -139,8 +140,8 @@ export class SorteosService {
     const existingSorteo = await this.sorteoRepository.findOne({
       where: { id: idSorteo },
       relations: ['organizador'],
-    }); 
-    
+    });
+
     const saleStart: Date = updateSorteoDto.saleStartDate
       ? new Date(updateSorteoDto.saleStartDate)
       : existingSorteo.saleStartDate;
@@ -169,7 +170,7 @@ export class SorteosService {
 
     if (updateSorteoDto.title !== undefined)
       allowedUpdates.title = updateSorteoDto.title;
-    
+
     if (updateSorteoDto.description !== undefined)
       allowedUpdates.description = updateSorteoDto.description;
 
@@ -210,6 +211,83 @@ export class SorteosService {
     return updated;
   }
 
+  async updateBoletosInfo(
+    idSorteo: string,
+    updateBoletosInfoDto: UpdateBoletosInfoDto,
+    idOrganizador: string
+  ) {
+    const existingSorteo = await this.sorteoRepository.findOne({
+      where: { id: idSorteo },
+      relations: ['organizador'],
+    });
+
+    if (!existingSorteo) {
+      throw new NotFoundException(`Sorteo con ID ${idSorteo} no encontrado.`);
+    }
+
+    if (existingSorteo.organizador.userId !== idOrganizador) {
+      throw new UnauthorizedException('No tienes permisos para modificar este sorteo.');
+    }
+
+    const boletosVendidos = await this.boletoRepository.count({
+      where: {
+        sorteo: { id: idSorteo },
+        isReserved: true
+      }
+    });
+
+    if (boletosVendidos > 0) {
+      throw new ConflictException(`No se pueden regenerar los boletos. Ya hay ${boletosVendidos} boletos vendidos o apartados.`);
+    }
+
+    const newTicketPrice = updateBoletosInfoDto.ticketPrice ?? existingSorteo.ticketPrice;
+    const newNumbersQuantity = updateBoletosInfoDto.numbersQuantity ?? existingSorteo.numbersQuantity;
+    const newStartNumber = updateBoletosInfoDto.startNumber ?? existingSorteo.startNumber;
+
+    const structureChanged = (updateBoletosInfoDto.numbersQuantity !== undefined && updateBoletosInfoDto.numbersQuantity !== existingSorteo.numbersQuantity) ||
+      (updateBoletosInfoDto.startNumber !== undefined && updateBoletosInfoDto.startNumber !== existingSorteo.startNumber);
+
+    if (structureChanged) {
+      await this.boletoRepository.delete({ sorteo: { id: idSorteo } });
+
+      const newBoletos: Boleto[] = [];
+
+      // Usamos los nuevos valores calculados arriba
+      let maxNumber: number = newStartNumber + newNumbersQuantity;
+
+      for (let i = newStartNumber; i < maxNumber; i++) {
+        const boleto: Boleto = this.boletoRepository.create({
+          number: i.toString(),
+          price: newTicketPrice,
+          sorteo: existingSorteo
+        });
+        newBoletos.push(boleto);
+      }
+
+      // A.3 Guardar los nuevos boletos en la base de datos
+      await this.boletoRepository.save(newBoletos);
+
+    } else if (updateBoletosInfoDto.ticketPrice !== undefined && updateBoletosInfoDto.ticketPrice !== existingSorteo.ticketPrice) {
+
+      await this.boletoRepository.update(
+        { sorteo: { id: idSorteo } },
+        { price: newTicketPrice }
+      );
+    }
+
+    const updates: Partial<Sorteo> = {
+      ticketPrice: newTicketPrice,
+      numbersQuantity: newNumbersQuantity,
+      startNumber: newStartNumber
+    };
+
+    const sorteoToUpdate = this.sorteoRepository.merge(existingSorteo, updates);
+    const updated = await this.sorteoRepository.save(sorteoToUpdate);
+
+    delete updated.organizador;
+
+    return updated;
+  }
 
   async remove(idSorteo: string, idOrganizador: string) {
 

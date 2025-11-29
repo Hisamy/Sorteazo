@@ -6,6 +6,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../configs/multer.config';
 
+import { UpdateBoletosInfoDto } from './dto/update-boletos.dto';
+
 @UseGuards(AuthGuard("jwt"))
 @Controller('sorteos')
 export class SorteosController {
@@ -22,7 +24,7 @@ export class SorteosController {
     @Req() req
   ) {
     const user = req.user;
-    if (user.role != "organizador") throw new UnauthorizedException("Organizador rol required, not authorized.");
+    if (user.role != "organizador") throw new UnauthorizedException("No tienes permisos para realizar esta acción.");
     return this.sorteosService.create(createSorteoDto, user.sub, files);
   }
 
@@ -36,7 +38,7 @@ export class SorteosController {
     const user = req.user;
     console.log(user);
     //console.log()
-    if (user.role != "organizador") throw new UnauthorizedException("No tienes permiso para ver esto.");
+    if (user.role != "organizador") throw new UnauthorizedException("No tienes permisos para ver este recurso.");
     return this.sorteosService.findAllByOrganizador(user.sub);
   }
 
@@ -62,6 +64,24 @@ export class SorteosController {
     }
 
     return this.sorteosService.update(id, updateSorteoDto, user.id, files);
+  }
+
+  @Patch('/:id/boletos')
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'imagenSorteo', maxCount: 1 }
+  ], multerConfig))
+  async updateBoletosInfo(
+    @Param('id') id: string,
+    @Body() updateBoletosInfoDto: UpdateBoletosInfoDto,
+    @Req() req
+  ) {
+    const user = req.user;
+
+    if (user.role !== "organizador") {
+      throw new UnauthorizedException("No tienes permisos para realizar esta acción.");
+    }
+
+    return this.sorteosService.updateBoletosInfo(id, updateBoletosInfoDto, user.id);
   }
 
   @Delete(':id')
