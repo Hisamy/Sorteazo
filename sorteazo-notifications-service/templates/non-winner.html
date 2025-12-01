@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Afacad:wght@400;700&display=swap');
+
+        body {
+            font-family: "Afacad", sans-serif;
+            background: #F1F1F1;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            background: #FFFFFF;
+            margin: 30px auto;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #175B43;
+            text-align: center;
+        }
+
+        .divider {
+            width: 100px;
+            height: 3px;
+            background: #579460;
+            margin: 10px auto 25px;
+            border-radius: 8px;
+        }
+
+        .text {
+            color: #363636;
+            font-size: 17px;
+            line-height: 1.5;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #B3B3B3;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">Resultado del Sorteo</div>
+        <div class="divider"></div>
+
+        <p class="text">
+            El sorteo <strong>{{sorteo}}</strong> ha finalizado.
+        </p>
+
+        <p class="text">
+            Esta vez no resultaste ganador, pero agradecemos tu participación.
+        </p>
+
+        <p class="text">
+            ¡Te deseamos mucha suerte en futuros sorteos!
+        </p>
+
+        <div class="footer">© 2025 Sorteazo — Todos los derechos reservados.</div>
+    </div>
+</body>
+
+</html>
