@@ -10,6 +10,7 @@ import { EmptyStateCard } from './util-components/EmptyStateCard';
 import { PremiosModal } from './consulta-sorteo-components/PremiosModal';
 import { FloatingActionBar } from './consulta-sorteo-components/FloatingActionBar';
 import { ConfirmacionApartadoModal } from './consulta-sorteo-components/ConfirmacionApartadoModal';
+import { PagarBoletosModal } from './consulta-sorteo-components/PagarBoletosModal';
 import Swal from "sweetalert2";
 
 
@@ -25,6 +26,8 @@ export const ConsultaSorteoCliente = () => {
     const [seleccionados, setSeleccionados] = useState([]);
     const [isPremiosModalOpen, setIsPremiosModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [isPagoModalOpen, setIsPagoModalOpen] = useState(false);
+    const [boletosApartados, setBoletosApartados] = useState([]);
 
     useEffect(() => {
         const cargarDatosSorteo = async () => {
@@ -105,6 +108,27 @@ export const ConsultaSorteoCliente = () => {
                 text: err?.message || "Intenta nuevamente más tarde."
             });
         }
+    };
+
+    const handleConfirmarPago = async ({ metodoPago, comprobanteFile, boletos: numerosAPagar }) => {
+        console.log('Procesando pago (MOCK - sin integración):', { 
+            metodoPago, 
+            numerosAPagar,
+            comprobanteFile: comprobanteFile?.name 
+        });
+
+        // TODO: Aquí irá la integración con el backend
+        // Cerrar modal de pago
+        setIsPagoModalOpen(false);
+        setBoletosApartados([]);
+
+        // Mostrar mensaje de éxito temporal
+        await Swal.fire({
+            icon: "info",
+            title: "Modal de Pago (Demo)",
+            text: `Método seleccionado: ${metodoPago}. La integración con el backend se realizará posteriormente.`,
+            confirmButtonText: "Entendido"
+        });
     };
 
     const boletosParaMostrar = useMemo(() => {
@@ -225,6 +249,16 @@ export const ConsultaSorteoCliente = () => {
                 onClose={() => setIsConfirmModalOpen(false)}
                 onConfirm={handleConfirmarApartado}
                 seleccionados={seleccionados}
+                precioBoleto={sorteo.ticketPrice}
+            />
+            <PagarBoletosModal
+                isOpen={isPagoModalOpen}
+                onClose={() => {
+                    setIsPagoModalOpen(false);
+                    setBoletosApartados([]);
+                }}
+                onConfirm={handleConfirmarPago}
+                boletos={boletosApartados}
                 precioBoleto={sorteo.ticketPrice}
             />
         </div>
