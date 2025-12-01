@@ -40,14 +40,34 @@ export const ConsultaSorteoOrganizador = () => {
                 }
 
                 const boletosData = await obtenerBoletosPorSorteoOrganizador(id);
+                console.log("Boletos del organizador:", boletosData);
 
-                const boletosMapeados = boletosData.map(b => ({
-                    ...b,
-                    numero: Number(b.number),            // siempre número
-                    price: b.price,
-                    isReserved: !!b.isReserved,         // conservar para cálculos
-                    estado: b.isReserved ? 'apartado' : 'disponible'
-                }));
+                const boletosMapeados = boletosData.map(b => {
+                    let estadoFrontend = 'disponible';
+                    
+                    switch(b.status) {
+                        case 'DISPONIBLE':
+                            estadoFrontend = 'disponible';
+                            break;
+                        case 'RESERVADO':
+                        case 'PAGO_PENDIENTE':
+                            estadoFrontend = 'apartado';
+                            break;
+                        case 'PAGADO':
+                            estadoFrontend = 'pagado';
+                            break;
+                        default:
+                            estadoFrontend = 'disponible';
+                    }
+                    
+                    return {
+                        ...b,
+                        numero: Number(b.number),
+                        price: b.price,
+                        estado: estadoFrontend
+                    };
+                });
+                
                 // ordenar por número ascendente antes de agrupar
                 boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
                 setBoletos(boletosMapeados);
@@ -97,7 +117,7 @@ export const ConsultaSorteoOrganizador = () => {
         return <div className="container mx-auto p-8"><EmptyStateCard message="Sorteo no encontrado." /></div>;
     }
 
-    const numerosDisponibles = boletos.filter(b => !b.isReserved).length;
+    const numerosDisponibles = boletos.filter(b => b.estado === 'disponible').length;
     const numerosTotales = sorteo.numbersQuantity || boletos.length;
 
     return (
@@ -122,18 +142,18 @@ export const ConsultaSorteoOrganizador = () => {
                                 <p className="font-afacad text-2xl font-bold text-green-600">{numerosDisponibles}/{numerosTotales}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-6 text-sm text-gray-600 font-afacad">
+                        <div className="flex items-center gap-4 text-sm text-gray-600 font-afacad flex-wrap">
                             <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 border border-gray-400 rounded"></div>
+                                <div className="w-5 h-5 border-2 border-gray-400 rounded-full bg-white"></div>
                                 <span>Disponible</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 bg-gray-400 rounded"></div>
-                                <span>Comprado</span>
+                                <div className="w-5 h-5 bg-yellow-400 rounded-full"></div>
+                                <span>Apartado</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 bg-yellow-400 rounded"></div>
-                                <span>Apartado</span>
+                                <div className="w-5 h-5 bg-blue-500 rounded-full"></div>
+                                <span>Pagado</span>
                             </div>
                         </div>
                     </div>

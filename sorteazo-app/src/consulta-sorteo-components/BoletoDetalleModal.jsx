@@ -6,10 +6,15 @@ export const BoletoDetalleModal = ({ isOpen, boleto, onClose }) => {
         return null;
     }
 
-    const { number, price, isReserved, client, payment: pago } = boleto;
+    const { number, price, estado, status, client, payment: pago } = boleto;
     
     const hasClientInfo = !!client; 
     const hasPaymentInfo = !!pago;
+    
+    // Determinar si está reservado basado en el estado o status
+    const isReserved = estado === 'apartado' || estado === 'apartadoMio' || estado === 'apartadoOtro' || 
+                       status === 'PAGO_PENDIENTE' || status === 'RESERVADO';
+    const isPagado = estado === 'pagado' || status === 'PAGADO';
 
     const getImageUrl = (path) => {
         if (!path) return null;
@@ -21,8 +26,17 @@ export const BoletoDetalleModal = ({ isOpen, boleto, onClose }) => {
         ? getImageUrl(pago.comprobante.imageUrl) 
         : null;
 
-    const statusText = isReserved ? "Apartado" : "Disponible";
-    const statusColor = isReserved ? "text-red-600" : "text-green-600";
+    // Determinar texto y color del estado
+    let statusText = "Disponible";
+    let statusColor = "text-green-600";
+    
+    if (isPagado) {
+        statusText = "Pagado";
+        statusColor = "text-blue-600";
+    } else if (isReserved) {
+        statusText = "Apartado";
+        statusColor = "text-yellow-600";
+    }
 
     return (
         <div className="fixed inset-0 bg-black/50 z-[9999] flex justify-center items-center p-4">
