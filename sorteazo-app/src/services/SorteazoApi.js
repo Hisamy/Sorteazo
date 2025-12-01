@@ -26,6 +26,17 @@ export const obtenerUsuario = async (usuarioData) => {
     }
 };
 
+// Obtener el usuario actual autenticado (desde JWT en cookies)
+export const obtenerUsuarioActual = async () => {
+    try {
+        const response = await api.get("/users/profile/me");
+        return response.data;
+    } catch (error) {
+        console.error("Error al obtener usuario actual:", error);
+        return null;
+    }
+};
+
 export const obtenerTodosLosSorteos = async () => {
     try {
         const response = await api.get("/sorteos");

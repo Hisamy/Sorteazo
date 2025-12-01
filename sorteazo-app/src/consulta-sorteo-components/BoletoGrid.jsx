@@ -8,7 +8,28 @@ const Boleto = ({ boleto, onBoletoClick, isOrganizer }) => {
     let isClickable = false;
 
     switch (estado) {
+        case 'disponible':
+            stateStyle = "bg-white border-gray-400 text-gray-600 hover:bg-green-100 hover:border-green-500 cursor-pointer";
+            isClickable = true;
+            break;
+        case 'apartadoMio':
+            stateStyle = "bg-yellow-400 border-yellow-400 text-white cursor-pointer hover:bg-yellow-500";
+            isClickable = true;
+            break;
+        case 'apartadoOtro':
+            stateStyle = "bg-gray-400 border-gray-400 text-white cursor-not-allowed";
+            isClickable = false;
+            break;
+        case 'pagado':
+            stateStyle = "bg-blue-500 border-blue-500 text-white cursor-not-allowed";
+            isClickable = false;
+            break;
+        case 'seleccionado':
+            stateStyle = "bg-green-600 border-green-600 text-white cursor-pointer";
+            isClickable = true;
+            break;
         case 'apartado':
+            // Legacy: mantener compatibilidad con vista organizador
             if (isOrganizer) {
                 stateStyle = "bg-yellow-400 border-yellow-400 text-white cursor-pointer hover:bg-yellow-500";
                 isClickable = true;
@@ -17,11 +38,6 @@ const Boleto = ({ boleto, onBoletoClick, isOrganizer }) => {
                 isClickable = false;
             }
             break;
-        case 'seleccionado':
-            stateStyle = "bg-green-600 border-green-600 text-white cursor-pointer";
-            isClickable = true;
-            break;
-        case 'disponible':
         default:
             stateStyle = "bg-white border-gray-400 text-gray-600 hover:bg-green-100 hover:border-green-500 cursor-pointer";
             isClickable = true;

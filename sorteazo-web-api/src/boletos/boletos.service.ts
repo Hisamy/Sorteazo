@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, ConflictException }
 import { CreateBoletoDto } from './dto/create-boleto.dto';
 import { UpdateBoletoDto } from './dto/update-boleto.dto';
 import { ReserveBoletoDto } from './dto/reserve-boleto.dto';
+import { EstadoBoleto } from './enums/boleto.enum';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
@@ -25,7 +26,7 @@ export class BoletosService {
   async findAllBySorteoForClient(id: string) {
     const sorteo = await this.sorteoRepository.findOne({
       where: { id },
-      relations: ['boletos'],
+      relations: ['boletos', 'boletos.client'],
     });
 
     if (!sorteo) {
@@ -36,7 +37,8 @@ export class BoletosService {
       id: boleto.id,
       number: boleto.number,
       price: boleto.price,
-      isReserved: boleto.isReserved,
+      status: boleto.status,
+      clientId: boleto.client?.userId || null,
     }));
   }
 
@@ -66,7 +68,7 @@ export class BoletosService {
       id: boleto.id,
       number: boleto.number,
       price: boleto.price,
-      isReserved: boleto.isReserved,
+      status: boleto.status,
       client: boleto.client
         ? {
           name: boleto.client.user?.name,
@@ -107,7 +109,9 @@ export class BoletosService {
       throw new BadRequestException('Algunos numeros no existen en este sorteo');
     }
 
-    const alreadyReserved = boletos.filter(boleto => boleto.isReserved);
+    const alreadyReserved = boletos.filter(boleto => 
+      boleto.status !== EstadoBoleto.AVAILABLE
+    );
     if (alreadyReserved.length > 0) {
       throw new ConflictException(
         `Los siguientes números ya están reservados: ${alreadyReserved.map(b => b.number).join(', ')}`
@@ -134,7 +138,7 @@ export class BoletosService {
     const finalDeadline = paymentDeadline < saleEndDate ? paymentDeadline : saleEndDate;
 
     boletos.forEach(boleto => {
-      boleto.isReserved = true;
+      boleto.status = EstadoBoleto.PENDING_PAYMENT;
       boleto.client = clientRef;
       boleto.fechaReserva = now;
       boleto.paymentDeadline = finalDeadline;

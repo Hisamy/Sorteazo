@@ -82,14 +82,18 @@ export const PagarBoletosModal = ({ isOpen, onClose, onConfirm, boletos, precioB
                         <p className="text-gray-600 mb-3 font-afacad">Estás a punto de pagar los siguientes boletos:</p>
                         <div className="max-h-32 overflow-y-auto bg-gray-50 p-3 rounded-lg border">
                             <div className="flex flex-wrap gap-2">
-                                {boletos.sort((a, b) => a - b).map(numero => (
-                                    <span 
-                                        key={numero} 
-                                        className="bg-blue-100 text-blue-800 font-mono text-sm font-semibold px-3 py-1 rounded-full"
-                                    >
-                                        {numero}
-                                    </span>
-                                ))}
+                                {boletos
+                                    .map(b => typeof b === 'number' ? b : b.numero)
+                                    .sort((a, b) => a - b)
+                                    .map(numero => (
+                                        <span 
+                                            key={numero} 
+                                            className="bg-blue-100 text-blue-800 font-mono text-sm font-semibold px-3 py-1 rounded-full"
+                                        >
+                                            {numero}
+                                        </span>
+                                    ))
+                                }
                             </div>
                         </div>
                     </div>
