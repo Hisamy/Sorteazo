@@ -110,7 +110,62 @@ export const apartarBoletosPorCliente = async (sorteoId, seleccionados) => {
 
         return response.data;
     } catch (error) {
-        console.error(`Ocurrió un error al apartar los números, intente de nuevo más tarde.`, error);
+        console.error("Ocurrió un error al apartar los números, intente de nuevo más tarde.", error);
         throw error;
     }
-}
+};
+
+// Pagar boletos por transferencia
+export const pagarBoletosTransferencia = async (boletoIds, comprobanteFile) => {
+    try {
+        const formData = new FormData();
+
+        // El backend espera un solo boletoId por pago
+        // Por ahora, vamos a crear un pago por cada boleto
+        const pagos = [];
+
+        for (const boletoId of boletoIds) {
+            const formDataPago = new FormData();
+            formDataPago.append('boletoId', boletoId);
+            formDataPago.append('paymentMethod', 'TRANSFERENCIA');
+            formDataPago.append('comprobantePago', comprobanteFile);
+
+            const response = await api.post('/pagos/transfer', formDataPago, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            pagos.push(response.data);
+        }
+
+        return {
+            message: `Se registraron ${pagos.length} pago(s) exitosamente`,
+            pagos
+        };
+    } catch (error) {
+        console.error("Error al pagar boletos por transferencia:", error);
+        throw error;
+    }
+};
+
+// Pagar boletos en línea (simulado)
+export const pagarBoletosEnLinea = async (boletoIds) => {
+    try {
+        const pagos = [];
+
+        for (const boletoId of boletoIds) {
+            const response = await api.post('/pagos/simulate-online', {
+                boletoId
+            });
+            pagos.push(response.data);
+        }
+
+        return {
+            message: `Se procesaron ${pagos.length} pago(s) en línea exitosamente`,
+            pagos
+        };
+    } catch (error) {
+        console.error("Error al pagar boletos en línea:", error);
+        throw error;
+    }
+};

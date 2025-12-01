@@ -5,7 +5,7 @@ import { FaArrowLeft } from 'react-icons/fa';
 import prizeImage from './assets/images/sorteo-placeholder.png';
 import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos';
 import { BoletoGrid } from './consulta-sorteo-components/BoletoGrid';
-import { obtenerSorteoPorId, obtenerBoletosPorSorteoCliente, apartarBoletosPorCliente, obtenerUsuarioActual } from './services/SorteazoApi';
+import { obtenerSorteoPorId, obtenerBoletosPorSorteoCliente, apartarBoletosPorCliente, obtenerUsuarioActual, pagarBoletosTransferencia, pagarBoletosEnLinea } from './services/SorteazoApi';
 import { EmptyStateCard } from './util-components/EmptyStateCard';
 import { PremiosModal } from './consulta-sorteo-components/PremiosModal';
 import { FloatingActionBar } from './consulta-sorteo-components/FloatingActionBar';
@@ -182,34 +182,104 @@ export const ConsultaSorteoCliente = () => {
         }
     };
 
-    const handleConfirmarPago = async ({ metodoPago, comprobanteFile, boletos: numerosAPagar }) => {
-        console.log('Procesando pago (MOCK - sin integración):', { 
+    const handleConfirmarPago = async ({ metodoPago, comprobanteFile, boletos: boletosAPagar }) => {
+        console.log('Procesando pago:', { 
             metodoPago, 
-            numerosAPagar,
+            boletosAPagar,
             comprobanteFile: comprobanteFile?.name 
         });
 
-        // Actualizar estado local optimistamente: marcar como pagados
-        setBoletos(prevBoletos =>
-            prevBoletos.map(boleto => {
-                if (seleccionados.includes(boleto.numero)) {
-                    return { ...boleto, estado: 'pagado', status: 'PAGADO' };
+        try {
+            // Obtener los IDs de los boletos seleccionados
+            const boletoIds = seleccionados
+                .map(num => boletos.find(b => b.numero === num))
+                .filter(Boolean)
+                .map(b => b.id);
+
+            console.log('IDs de boletos a pagar:', boletoIds);
+
+            let resultado;
+            
+            if (metodoPago === 'TRANSFERENCIA') {
+                if (!comprobanteFile) {
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Archivo requerido",
+                        text: "Debes subir un comprobante de pago para transferencias."
+                    });
+                    return;
                 }
-                return boleto;
-            })
-        );
+                resultado = await pagarBoletosTransferencia(boletoIds, comprobanteFile);
+            } else if (metodoPago === 'PAGO EN LINEA') {
+                resultado = await pagarBoletosEnLinea(boletoIds);
+            }
 
-        // TODO: Aquí irá la integración con el backend
-        setIsPagoModalOpen(false);
-        setSeleccionados([]);
+            // Cerrar modal
+            setIsPagoModalOpen(false);
+            setSeleccionados([]);
 
-        // Mostrar mensaje de éxito temporal
-        await Swal.fire({
-            icon: "success",
-            title: "Pago Registrado",
-            text: `Se ha registrado tu pago por ${seleccionados.length} boleto(s). El organizador verificará tu comprobante.`,
-            confirmButtonText: "Entendido"
-        });
+            // Recargar los boletos para obtener el estado actualizado
+            const boletosData = await obtenerBoletosPorSorteoCliente(id);
+            const usuarioActual = await obtenerUsuarioActual();
+            const currentUserId = usuarioActual?.id || usuarioActual?.userId;
+            
+            const boletosMapeados = boletosData.map(b => {
+                let estadoFrontend = 'disponible';
+                const numeroActual = Number(b.number);
+                
+                switch(b.status) {
+                    case 'DISPONIBLE':
+                        estadoFrontend = 'disponible';
+                        break;
+                    case 'RESERVADO':
+                        estadoFrontend = 'apartadoOtro';
+                        break;
+                    case 'PAGO_PENDIENTE':
+                        const boletoClientId = String(b.clientId || '');
+                        const usuarioId = String(currentUserId || '');
+                        estadoFrontend = (boletoClientId && usuarioId && boletoClientId === usuarioId) 
+                            ? 'apartadoMio' 
+                            : 'apartadoOtro';
+                        break;
+                    case 'PAGADO':
+                        estadoFrontend = 'pagado';
+                        break;
+                    default:
+                        estadoFrontend = 'disponible';
+                }
+                
+                return {
+                    ...b,
+                    numero: numeroActual,
+                    price: b.price,
+                    estado: estadoFrontend
+                };
+            });
+            
+            boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
+            setBoletos(boletosMapeados);
+
+            // Mostrar mensaje de éxito
+            await Swal.fire({
+                icon: "success",
+                title: "Pago Registrado",
+                text: metodoPago === 'TRANSFERENCIA' 
+                    ? `Se ha registrado tu pago por ${boletoIds.length} boleto(s). El organizador verificará tu comprobante.`
+                    : `Se ha procesado tu pago en línea por ${boletoIds.length} boleto(s) exitosamente.`,
+                confirmButtonText: "Entendido"
+            });
+
+        } catch (error) {
+            console.error('Error al procesar pago:', error);
+            setIsPagoModalOpen(false);
+            
+            await Swal.fire({
+                icon: "error",
+                title: "Error al procesar pago",
+                text: error?.response?.data?.message || error?.message || "No se pudo procesar el pago. Intenta nuevamente.",
+                confirmButtonText: "Entendido"
+            });
+        }
     };
 
     const boletosParaMostrar = useMemo(() => {

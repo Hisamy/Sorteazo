@@ -199,16 +199,16 @@ export const PagarBoletosModal = ({ isOpen, onClose, onConfirm, boletos, precioB
                     )}
 
                     {metodoPago === 'PAGO EN LINEA' && (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
                             <div className="flex items-start gap-2">
-                                <FaInfoCircle className="text-yellow-600 mt-1" />
+                                <FaInfoCircle className="text-green-600 mt-1" />
                                 <div>
-                                    <h3 className="font-afacad font-bold text-yellow-900 mb-2">
-                                        Pago en Línea
+                                    <h3 className="font-afacad font-bold text-green-900 mb-2">
+                                        Pago en Línea (Simulado)
                                     </h3>
-                                    <p className="text-sm text-yellow-800 font-afacad">
-                                        Al confirmar, se procesará tu pago de manera automática a través de nuestra pasarela de pagos segura.
-                                        Esta funcionalidad será habilitada próximamente.
+                                    <p className="text-sm text-green-800 font-afacad">
+                                        Al confirmar, tu pago se procesará automáticamente y tus boletos serán marcados como pagados de inmediato.
+                                        Esta es una versión simulada del pago en línea.
                                     </p>
                                 </div>
                             </div>
