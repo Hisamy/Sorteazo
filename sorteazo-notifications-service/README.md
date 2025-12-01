@@ -19,7 +19,23 @@ Notifications are enqueued via a REST API endpoint and processed asynchronously 
 
 ## 📁 Project Structure
 
-/ ├── server.js # Express API server (starts worker automatically) ├── worker/ │ └── notifications.worker.js # BullMQ worker process (handles sending email) ├── queues/ │ └── notifications.queue.js # BullMQ queue instance definition ├── utils/ │ └── render-template.js # Utility to load and replace variables in HTML templates ├── templates/ │ ├── generic.html # Standard template for general messages │ ├── winner.html # Template for prize winners │ ├── non-winner.html # Template for non-winners/participants │ └── reminder.html # Template for deadline reminders └── README.md
+* `/`
+    * `server.js` (API server, starts worker)
+    * `queues/`
+        * `notifications.queue.js` (Queue definition)
+        * `notifications.worker.js` (BullMQ worker)
+    * `utils/`
+        * `render-template.js` (Template renderer)
+    * `services/`
+        * `email.service.js` (Email Service)
+    * `factory/`
+        * `email-transporter.factory.js` (Email Transporter Factory)
+    * `templates/`
+        * `generic.html`
+        * `winner.html`
+        * `non-winner.html`
+        * `reminder.html`
+    * `README.md`
 
 
 ---
@@ -38,8 +54,6 @@ Create a `.env` file or set the following environment variables:
 | :--- | :--- |
 | `EMAIL_USER` | Your full Gmail address (e.g., `your_gmail@gmail.com`) |
 | `EMAIL_PASS` | The **App Password** generated from your Google account |
-| `REDIS_HOST` | Redis server address (e.g., `localhost`) |
-| `REDIS_PORT` | Redis port (e.g., `6379`) |
 
 ---
 
@@ -74,9 +88,9 @@ All templates accept any dynamic variables. Variables in the payload will replac
 | Template | Required Custom Fields | Example Payload |
 | :--- | :--- | :--- |
 | **`generic.html`** | `titulo`, `descripcion` | **1. generic.html**<br>```json{ "template": "generic", "destinatarios": "example@gmail.com", "titulo": "Generic Notification", "descripcion": "This is a general-purpose message.", "extraNote": "Optional field example", "fechaEnvio": "2025-01-01T00:00:10Z"}``` |
-| **`winner.html`** | `titulo`, `username`, `prize`, `claimLimit` | **2. winner.html**<br>```json{ "template": "winner", "destinatarios": "example@gmail.com", "titulo": "Congratulations!", "username": "John Doe", "prize": "MacBook Pro 16”", "claimLimit": "48 hours", "fechaEnvio": "2025-01-01T00:00:10Z"}``` |
-| **`non-winner.html`** | `titulo`, `username`, `eventName` | **3. non-winner.html**<br>```json{ "template": "non-winner", "destinatarios": "example@gmail.com", "titulo": "Thank You for Participating", "username": "John Doe", "eventName": "Holiday Giveaway", "fechaEnvio": "2025-01-01T00:00:10Z"}``` |
-| **`reminder.html`** | `titulo`, `task`, `deadline` | **4. reminder.html**<br>```json{ "template": "reminder", "destinatarios": "example@gmail.com", "titulo": "Reminder", "task": "Complete your profile", "deadline": "2025-02-10", "fechaEnvio": "2025-01-01T00:00:10Z"}``` |
+| **`winner.html`** | `sorteo`, `premio` | **2. winner.html**<br>```json{ "template": "winner", "destinatarios": "example@gmail.com", "titulo": "Congratulations, You Won!", "sorteo": "Sorteo Vacacional 2025", "premio": "MacBook Pro 16”", "fechaEnvio": "2025-01-01T00:00:10Z"}``` |
+| **`non-winner.html`** | `sorteo` | **3. non-winner.html**<br>```json{ "template": "non-winner", "destinatarios": "example@gmail.com", "titulo": "Contest Result", "sorteo": "Sorteo Navideño 2024", "fechaEnvio": "2025-01-01T00:00:10Z"}``` |
+| **`reminder.html`** | `nombre`, `sorteo`, `fecha_limite`, `URL_PAGO` | **4. reminder.html**<br>```json{ "template": "reminder", "destinatarios": "example@gmail.com", "titulo": "Reminder", "nombre": "John Doe", "sorteo": "Sorteo Express", "fecha_limite": "2025-02-10", "URL_PAGO": "[https://example.com/pay](https://example.com/pay)", "fechaEnvio": "2025-01-01T00:00:10Z"}``` |
 
 ### 🎯 Example cURL Commands
 
@@ -84,7 +98,7 @@ These examples send a job that is scheduled to be processed **10 seconds** from 
 
 **Generic**
 
-```bash
+````bash
 curl -X POST http://localhost:3000/notify \
   -H "Content-Type: application/json" \
   -d '{
@@ -94,9 +108,11 @@ curl -X POST http://localhost:3000/notify \
     "descripcion": "Testing generic template",
     "fechaEnvio": "'"$(date -u -d '+10 seconds' --iso-8601=seconds)"'"
   }'
-Winner
+`````
 
-Bash
+**Winner**
+
+````bash
 
 curl -X POST http://localhost:3000/notify \
   -H "Content-Type: application/json" \
@@ -104,14 +120,15 @@ curl -X POST http://localhost:3000/notify \
     "template": "winner",
     "destinatarios": "you@example.com",
     "titulo": "You Won!",
-    "username": "Tester",
-    "prize": "PS5",
-    "claimLimit": "24 hours",
+    "sorteo": "Christmas Raffle",
+    "premio": "PS5",
     "fechaEnvio": "'"$(date -u -d '+10 seconds' --iso-8601=seconds)"'"
   }'
-Non-Winner
+`````
 
-Bash
+**Non-Winner**
+
+````bash
 
 curl -X POST http://localhost:3000/notify \
   -H "Content-Type: application/json" \
@@ -119,13 +136,14 @@ curl -X POST http://localhost:3000/notify \
     "template": "non-winner",
     "destinatarios": "you@example.com",
     "titulo": "Not This Time",
-    "username": "Tester",
-    "eventName": "Big Giveaway",
+    "sorteo": "Big Giveaway",
     "fechaEnvio": "'"$(date -u -d '+10 seconds' --iso-8601=seconds)"'"
   }'
+`````
+
 Reminder
 
-Bash
+````bash
 
 curl -X POST http://localhost:3000/notify \
   -H "Content-Type: application/json" \
@@ -133,32 +151,29 @@ curl -X POST http://localhost:3000/notify \
     "template": "reminder",
     "destinatarios": "you@example.com",
     "titulo": "Reminder",
-    "task": "Submit your report",
-    "deadline": "Tomorrow",
+    "nombre": "Tester",
+    "sorteo": "Submit your report",
+    "fecha_limite": "2025-12-05",
+    "URL_PAGO": "[https://example.com/pay/pending](https://example.com/pay/pending)",
     "fechaEnvio": "'"$(date -u -d '+10 seconds' --iso-8601=seconds)"'"
   }'
-⏳ Queue Behavior (Redis Explained)
-BullMQ utilizes Redis as a lightweight message broker to manage job states (waiting, active, completed, failed, delayed).
+`````
 
-Jobs exist only while they are queued, being processed, or delayed.
+⏳ How the Queue Works (Redis Explained)
 
-By default, once a job is completed successfully, it is removed from Redis immediately (unless a specific retention period is configured).
+BullMQ uses Redis as a powerful and lightweight message broker to manage jobs.
 
-Redis will not accumulate unnecessary data from completed jobs, keeping the queue system clean and efficient.
+It tracks various job states: waiting, active, completed, failed, and delayed.
 
-📬 Worker Output
-When the notification worker processes a job, you will see output like this in the console:
+Jobs only exist in the queue while they are being processed or are scheduled for a future time.
 
-Job 1 completed
-Notification sent to: example@gmail.com
-If a failure occurs (e.g., template not found, SMTP error), the job status is updated, and an error message is logged:
+Automatic Cleanup: By default, successfully completed jobs are removed immediately from Redis. This keeps the queue system efficient and prevents data from accumulating unnecessarily.
 
-Job 1 failed Error: Template not found
-📘 Notes
-The worker automatically processes only the variables that exist in the template file.
+📬 Worker Console Output
+The worker provides real-time feedback in the console as it processes jobs.
 
-If a variable is present in the JSON payload but missing in the template, it is ignored.
+✅ Success
+When a notification is sent successfully, you will see a confirmation message:
 
-If a variable placeholder ({{variableName}}) is in the template but missing in the JSON payload, the placeholder will simply remain unreplaced in the final email body. Ensure all required variables have correct names and are provided in the payload.
-
-You are free to add custom fields to your templates and JSON payloads as needed.
+❌ Failure
+If an error occurs (e.g., an invalid template name or an SMTP issue), the job's status is updated, and a descriptive error is logged.
