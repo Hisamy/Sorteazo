@@ -1,7 +1,9 @@
 import { Organizador } from "../../users/entities/organizador.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Premio } from "./premio.entity";
 import { Boleto } from "../../boletos/entities/boleto.entity";
+import { RecordatorioConfig } from "src/recordatorio/entities/recordatorio-config.entity";
+
 
 @Entity('sorteos')
 export class Sorteo {
@@ -57,4 +59,10 @@ export class Sorteo {
 
     @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
     updatedAt: Date;
+
+    @OneToOne(() => RecordatorioConfig, (config) => config.sorteo, {
+  cascade: true,
+})
+recordatorioConfig: RecordatorioConfig;
+
 }

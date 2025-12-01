@@ -71,4 +71,5 @@ export class SorteosController {
     await this.sorteosService.remove(id, user.id);
     return { "message": "Se eliminó el sorteo con éxito." };
   }
+  
 }
