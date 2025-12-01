@@ -97,13 +97,16 @@ export class PagosService {
       throw new ConflictException('This payment has already been processed.');
     }
 
+    // Actualizar estado del pago
     pago.status = EstadoPago.PAID;
-    
     await this.pagoRepository.save(pago);
 
-    await this.boletoRepository.update(pago.boleto.id, { 
-      status: EstadoBoleto.PAID 
-    });
+    // Actualizar estado del boleto
+    const boleto = await this.boletoRepository.findOne({ where: { id: pago.boleto.id } });
+    if (boleto) {
+      boleto.status = EstadoBoleto.PAID;
+      await this.boletoRepository.save(boleto);
+    }
 
     return pago;
   }
@@ -132,13 +135,17 @@ export class PagosService {
       throw new ConflictException('This payment has already been processed.');
     }
 
+    // Actualizar estado del pago
     pago.status = EstadoPago.REJECTED;
     await this.pagoRepository.save(pago);
 
-    await this.boletoRepository.update(pago.boleto.id, { 
-      status: EstadoBoleto.AVAILABLE,
-      client: null 
-    });
+    // Actualizar estado del boleto - volver a disponible y quitar cliente
+    const boleto = await this.boletoRepository.findOne({ where: { id: pago.boleto.id } });
+    if (boleto) {
+      boleto.status = EstadoBoleto.AVAILABLE;
+      boleto.client = null;
+      await this.boletoRepository.save(boleto);
+    }
 
     return pago;
   }

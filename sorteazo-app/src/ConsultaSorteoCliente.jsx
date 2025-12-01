@@ -5,7 +5,8 @@ import { FaArrowLeft } from 'react-icons/fa';
 import prizeImage from './assets/images/sorteo-placeholder.png';
 import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos';
 import { BoletoGrid } from './consulta-sorteo-components/BoletoGrid';
-import { obtenerSorteoPorId, obtenerBoletosPorSorteoCliente, apartarBoletosPorCliente, obtenerUsuarioActual, pagarBoletosTransferencia, pagarBoletosEnLinea } from './services/SorteazoApi';
+import { obtenerSorteoPorId, obtenerBoletosPorSorteoCliente, apartarBoletosPorCliente, obtenerUsuarioActual } from './services/SorteazoApi';
+import { procesarPagoTransferencia, procesarPagoEnLinea } from './controllers/PagosController';
 import { EmptyStateCard } from './util-components/EmptyStateCard';
 import { PremiosModal } from './consulta-sorteo-components/PremiosModal';
 import { FloatingActionBar } from './consulta-sorteo-components/FloatingActionBar';
@@ -66,7 +67,8 @@ export const ConsultaSorteoCliente = () => {
                             estadoFrontend = 'apartadoOtro';
                             break;
                         case 'PAGO_PENDIENTE':
-                            // Convertir ambos a string para comparación segura
+                            // Amarillo si es mío (pago pendiente de aprobación)
+                            // Gris si es de otro
                             const boletoClientId = String(b.clientId || '');
                             const usuarioId = String(currentUserId || '');
                             
@@ -77,6 +79,7 @@ export const ConsultaSorteoCliente = () => {
                             }
                             break;
                         case 'PAGADO':
+                            // Azul para todos - Ya está pagado y confirmado
                             estadoFrontend = 'pagado';
                             break;
                         default:
@@ -201,17 +204,9 @@ export const ConsultaSorteoCliente = () => {
             let resultado;
             
             if (metodoPago === 'TRANSFERENCIA') {
-                if (!comprobanteFile) {
-                    await Swal.fire({
-                        icon: "error",
-                        title: "Archivo requerido",
-                        text: "Debes subir un comprobante de pago para transferencias."
-                    });
-                    return;
-                }
-                resultado = await pagarBoletosTransferencia(boletoIds, comprobanteFile);
+                resultado = await procesarPagoTransferencia(boletoIds, comprobanteFile);
             } else if (metodoPago === 'PAGO EN LINEA') {
-                resultado = await pagarBoletosEnLinea(boletoIds);
+                resultado = await procesarPagoEnLinea(boletoIds);
             }
 
             // Cerrar modal

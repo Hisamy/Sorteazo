@@ -7,8 +7,10 @@ import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos'
 import { BoletoGrid } from './consulta-sorteo-components/BoletoGrid';
 import { BoletoDetalleModal } from './consulta-sorteo-components/BoletoDetalleModal';
 import { obtenerSorteoPorId, obtenerBoletosPorSorteoOrganizador } from './services/SorteazoApi';
+import { aprobarPago, denegarPago } from './controllers/PagosController';
 import { EmptyStateCard } from './util-components/EmptyStateCard';
 import { PremiosModal } from './consulta-sorteo-components/PremiosModal';
+import Swal from 'sweetalert2';
 
 export const ConsultaSorteoOrganizador = () => {
     const { id } = useParams();
@@ -50,10 +52,14 @@ export const ConsultaSorteoOrganizador = () => {
                             estadoFrontend = 'disponible';
                             break;
                         case 'RESERVADO':
+                            estadoFrontend = 'apartado';
+                            break;
                         case 'PAGO_PENDIENTE':
+                            // Amarillo - Pago pendiente de aprobación
                             estadoFrontend = 'apartado';
                             break;
                         case 'PAGADO':
+                            // Azul - Ya pagado y confirmado
                             estadoFrontend = 'pagado';
                             break;
                         default:
@@ -93,6 +99,126 @@ export const ConsultaSorteoOrganizador = () => {
     const closeModal = () => {
         setIsModalOpen(false);
         setSelectedBoleto(null);
+    };
+
+    const handleConfirmarPago = async (pagoId) => {
+        try {
+            await aprobarPago(pagoId);
+            
+            await Swal.fire({
+                icon: 'success',
+                title: 'Pago Aprobado',
+                text: 'El pago ha sido confirmado exitosamente.',
+                confirmButtonText: 'Entendido'
+            });
+
+            // Recargar boletos
+            const boletosData = await obtenerBoletosPorSorteoOrganizador(id);
+            const boletosMapeados = boletosData.map(b => {
+                let estadoFrontend = 'disponible';
+                
+                switch(b.status) {
+                    case 'DISPONIBLE':
+                        estadoFrontend = 'disponible';
+                        break;
+                    case 'RESERVADO':
+                        estadoFrontend = 'apartado';
+                        break;
+                    case 'PAGO_PENDIENTE':
+                        estadoFrontend = 'apartado';
+                        break;
+                    case 'PAGADO':
+                        estadoFrontend = 'pagado';
+                        break;
+                    default:
+                        estadoFrontend = 'disponible';
+                }
+                
+                return {
+                    ...b,
+                    numero: Number(b.number),
+                    price: b.price,
+                    estado: estadoFrontend
+                };
+            });
+            
+            boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
+            setBoletos(boletosMapeados);
+            
+        } catch (error) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'No se pudo aprobar el pago',
+                confirmButtonText: 'Entendido'
+            });
+        }
+    };
+
+    const handleRechazarPago = async (pagoId) => {
+        const result = await Swal.fire({
+            icon: 'warning',
+            title: '¿Rechazar pago?',
+            text: 'El boleto volverá a estar disponible. Esta acción no se puede deshacer.',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, rechazar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#dc2626'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            await denegarPago(pagoId);
+            
+            await Swal.fire({
+                icon: 'success',
+                title: 'Pago Rechazado',
+                text: 'El pago ha sido rechazado y el boleto está disponible nuevamente.',
+                confirmButtonText: 'Entendido'
+            });
+
+            // Recargar boletos
+            const boletosData = await obtenerBoletosPorSorteoOrganizador(id);
+            const boletosMapeados = boletosData.map(b => {
+                let estadoFrontend = 'disponible';
+                
+                switch(b.status) {
+                    case 'DISPONIBLE':
+                        estadoFrontend = 'disponible';
+                        break;
+                    case 'RESERVADO':
+                        estadoFrontend = 'apartado';
+                        break;
+                    case 'PAGO_PENDIENTE':
+                        estadoFrontend = 'apartado';
+                        break;
+                    case 'PAGADO':
+                        estadoFrontend = 'pagado';
+                        break;
+                    default:
+                        estadoFrontend = 'disponible';
+                }
+                
+                return {
+                    ...b,
+                    numero: Number(b.number),
+                    price: b.price,
+                    estado: estadoFrontend
+                };
+            });
+            
+            boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
+            setBoletos(boletosMapeados);
+            
+        } catch (error) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'No se pudo rechazar el pago',
+                confirmButtonText: 'Entendido'
+            });
+        }
     };
 
     const CHUNK_SIZE = 100;
@@ -183,7 +309,14 @@ export const ConsultaSorteoOrganizador = () => {
                     })}
                 </div>
             </div>
-            <BoletoDetalleModal isOpen={isModalOpen} boleto={selectedBoleto} onClose={closeModal} />
+            <BoletoDetalleModal 
+                isOpen={isModalOpen} 
+                boleto={selectedBoleto} 
+                onClose={closeModal}
+                isOrganizer={true}
+                onConfirmarPago={handleConfirmarPago}
+                onRechazarPago={handleRechazarPago}
+            />
             <PremiosModal
                 isOpen={isPremiosModalOpen}
                 premios={sorteo?.premios}

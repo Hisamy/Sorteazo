@@ -115,57 +115,51 @@ export const apartarBoletosPorCliente = async (sorteoId, seleccionados) => {
     }
 };
 
-// Pagar boletos por transferencia
 export const pagarBoletosTransferencia = async (boletoIds, comprobanteFile) => {
-    try {
+    const pagos = [];
+
+    for (const boletoId of boletoIds) {
         const formData = new FormData();
+        formData.append('boletoId', boletoId);
+        formData.append('paymentMethod', 'TRANSFERENCIA');
+        formData.append('comprobantePago', comprobanteFile);
 
-        // El backend espera un solo boletoId por pago
-        // Por ahora, vamos a crear un pago por cada boleto
-        const pagos = [];
-
-        for (const boletoId of boletoIds) {
-            const formDataPago = new FormData();
-            formDataPago.append('boletoId', boletoId);
-            formDataPago.append('paymentMethod', 'TRANSFERENCIA');
-            formDataPago.append('comprobantePago', comprobanteFile);
-
-            const response = await api.post('/pagos/transfer', formDataPago, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            pagos.push(response.data);
-        }
-
-        return {
-            message: `Se registraron ${pagos.length} pago(s) exitosamente`,
-            pagos
-        };
-    } catch (error) {
-        console.error("Error al pagar boletos por transferencia:", error);
-        throw error;
+        const response = await api.post('/pagos/transfer', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        pagos.push(response.data);
     }
+
+    return {
+        message: `Se registraron ${pagos.length} pago(s) exitosamente`,
+        pagos
+    };
 };
 
-// Pagar boletos en línea (simulado)
 export const pagarBoletosEnLinea = async (boletoIds) => {
-    try {
-        const pagos = [];
+    const pagos = [];
 
-        for (const boletoId of boletoIds) {
-            const response = await api.post('/pagos/simulate-online', {
-                boletoId
-            });
-            pagos.push(response.data);
-        }
-
-        return {
-            message: `Se procesaron ${pagos.length} pago(s) en línea exitosamente`,
-            pagos
-        };
-    } catch (error) {
-        console.error("Error al pagar boletos en línea:", error);
-        throw error;
+    for (const boletoId of boletoIds) {
+        const response = await api.post('/pagos/simulate-online', {
+            boletoId
+        });
+        pagos.push(response.data);
     }
+
+    return {
+        message: `Se procesaron ${pagos.length} pago(s) en línea exitosamente`,
+        pagos
+    };
+};
+
+export const confirmarPago = async (pagoId) => {
+    const response = await api.patch(`/pagos/${pagoId}/confirm`);
+    return response.data;
+};
+
+export const rechazarPago = async (pagoId) => {
+    const response = await api.patch(`/pagos/${pagoId}/reject`);
+    return response.data;
 };
