@@ -1,0 +1,80 @@
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sorteazo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sorteazo
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - sorteazo
+
+  sorteazo-web-api:
+    build: ./sorteazo-web-api
+    container_name: sorteazo-web-api
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: sorteazo
+      JWT_SECRET_KEY: mi_super_secreto_seguro
+      JWT_EXPIRES_IN: 3600s
+    ports:
+      - "3000:3000"
+    networks:
+      - sorteazo
+    depends_on:
+      - postgres
+      - redis
+
+  sorteazo-web-app:
+    build: ./sorteazo-app
+    container_name: sorteazo-web-app
+    environment:
+      VITE_API_URL: http://localhost:3000
+    ports:
+      - "5173:5173"
+    networks:
+      - sorteazo
+    depends_on:
+      - sorteazo-web-api
+
+  sorteazo-notificaciones:
+    build: ./sorteazo-notifications-service
+    container_name: sorteazo-notificaciones
+    depends_on:
+      - redis
+    environment:
+      EMAIL_USER: compaoliwebtest@gmail.com
+      EMAIL_PASS: wrnjpmmpeaadgjie
+      REDIS_URL: "redis://redis:6379"
+    ports:
+      - "3001:3001"
+    networks:
+      - sorteazo
+
+networks:
+  sorteazo:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
