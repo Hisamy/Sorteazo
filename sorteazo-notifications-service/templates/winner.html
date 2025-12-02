@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Afacad:wght@400;700&display=swap');
+
+        body {
+            font-family: "Afacad", sans-serif;
+            background: #F1F1F1;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            background: #FFFFFF;
+            margin: 30px auto;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #175B43;
+            text-align: center;
+        }
+
+        .divider {
+            width: 100px;
+            height: 3px;
+            background: #579460;
+            margin: 10px auto 25px;
+            border-radius: 8px;
+        }
+
+        .highlight {
+            background: #E5F5E8;
+            padding: 15px;
+            border-left: 5px solid #579460;
+            border-radius: 10px;
+            font-size: 17px;
+            margin-bottom: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #B3B3B3;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">🎉 ¡Felicidades, ganaste!</div>
+        <div class="divider"></div>
+
+        <p class="highlight">
+            Has sido el ganador del sorteo:
+            <strong>{{sorteo}}</strong>.
+        </p>
+
+        <p style="font-size: 17px; color: #363636;">
+            Tu premio:
+            <strong>{{premio}}</strong>
+        </p>
+
+        <p style="font-size: 17px; color: #363636;">
+            Nos pondremos en contacto contigo para coordinar la entrega del premio.
+        </p>
+
+        <div class="footer">© 2025 Sorteazo — Todos los derechos reservados.</div>
+    </div>
+</body>
+
+</html>
