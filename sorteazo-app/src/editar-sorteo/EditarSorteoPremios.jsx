@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { CardPremio } from '../form-components/CardPremio.jsx';
 import { FaGift, FaPlus } from "react-icons/fa";
+import { obtenerSorteoId } from '../controllers/SorteoController.js';
+import { editaPremiosSorteo } from '../controllers/SorteoController.js';
 
 export function EditarSorteoPremios() {
     const { id } = useParams();
@@ -13,31 +15,50 @@ export function EditarSorteoPremios() {
     const [loading, setLoading] = useState(true);
     const [errors, setErrors] = useState({});
 
-    // --- 1. Carga de Datos (Simulada) ---
     useEffect(() => {
         const cargarDatos = async () => {
             try {
-                // Aquí harías: const data = await getSorteoPremios(id);
-                console.log("Cargando premios para ID:", id);
+                const data = await obtenerSorteoId(id);
+                console.log("Datos cargados:", data);
 
-                setTimeout(() => {
-                    setSorteoTitle("Sorteo Navideño 2025");
-                    // Simulamos que ya existen premios
-                    setPrizes([
-                        { id: 101, name: 'iPhone 15 Pro', place: 1, description: 'Nuevo de paquete, color titanio.', imageFile: null, imageUrl: 'https://via.placeholder.com/150' },
-                        { id: 102, name: 'Bono en efectivo', place: 2, description: '$5,000 MXN transferibles.', imageFile: null, imageUrl: null }
-                    ]);
-                    setLoading(false);
-                }, 500);
+                setSorteoTitle(data.title || "Sorteo sin título");
+
+                if (data.prizes && data.prizes.length > 0) {
+                    const premiosMapeados = data.prizes.map((premio, index) => ({
+                        id: premio.id,
+                        name: premio.name || '',
+                        place: premio.place || index + 1,
+                        description: premio.description || '',
+                        imageFile: null,
+                        imageUrl: premio.imageUrl || null
+                    }));
+                    setPrizes(premiosMapeados);
+                } else {
+                    // Si no hay premios, iniciar con uno vacío
+                    setPrizes([{
+                        id: Date.now(),
+                        name: '',
+                        place: 1,
+                        description: '',
+                        imageFile: null,
+                        imageUrl: null
+                    }]);
+                }
+
+                setLoading(false);
             } catch (error) {
                 console.error("Error cargando premios", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudieron cargar los premios del sorteo.'
+                });
                 setLoading(false);
             }
         };
         cargarDatos();
     }, [id]);
 
-    // --- 2. Lógica de Premios (Traída de tu referencia) ---
 
     const handleImageChange = (index, event) => {
         const file = event.target.files[0];
@@ -56,14 +77,13 @@ export function EditarSorteoPremios() {
 
         const newPrizes = [...prizes];
         newPrizes[index].imageFile = file;
-        // Opcional: Crear preview URL local para que el usuario vea la nueva imagen
         newPrizes[index].imageUrl = URL.createObjectURL(file);
         setPrizes(newPrizes);
     };
 
     const handleAddPrize = () => {
         const newPrize = {
-            id: Date.now(), // ID temporal
+            id: Date.now(), // ID temporal para premios nuevos
             name: '',
             place: prizes.length + 1,
             description: '',
@@ -112,7 +132,7 @@ export function EditarSorteoPremios() {
     };
 
     // --- 3. Guardado ---
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         // Validación básica antes de enviar
@@ -134,7 +154,7 @@ export function EditarSorteoPremios() {
             return;
         }
 
-        Swal.fire({
+        const result = await Swal.fire({
             title: '¿Guardar cambios?',
             text: `Se actualizarán los premios del sorteo "${sorteoTitle}".`,
             icon: 'question',
@@ -143,22 +163,34 @@ export function EditarSorteoPremios() {
             cancelButtonColor: '#d33',
             confirmButtonText: 'Sí, guardar',
             cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                console.log("Enviando premios al backend:", prizes);
+        });
 
-                // Lógica de Update...
+        if (result.isConfirmed) {
+            try {
+                // Preparar datos para enviar
+                const premiosData = {
+                    premios: prizes
+                };
 
-                Swal.fire({
+                await editaPremiosSorteo(id, premiosData);
+
+                await Swal.fire({
                     title: '¡Guardado!',
                     text: 'Los premios han sido actualizados correctamente.',
                     icon: 'success',
                     confirmButtonColor: '#6B8E78'
-                }).then(() => {
-                    navigate(-1); // Volver
+                });
+
+                navigate(-1); // Volver
+            } catch (error) {
+                console.error("Error guardando premios:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.response?.data?.message || 'No se pudieron guardar los premios. Intenta de nuevo.'
                 });
             }
-        });
+        }
     };
 
     if (loading) {
@@ -172,7 +204,6 @@ export function EditarSorteoPremios() {
                 {/* Header */}
                 <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-
                         <div className="flex items-center gap-3">
                             <div className="p-3 bg-yellow-100 text-yellow-600 rounded-full">
                                 <FaGift size={24} />
@@ -186,7 +217,7 @@ export function EditarSorteoPremios() {
                         </p>
                     </div>
 
-                    {/* Botón Agregar (Arriba a la derecha) */}
+                    {/* Botón Agregar */}
                     <button
                         type="button"
                         onClick={handleAddPrize}
@@ -202,14 +233,14 @@ export function EditarSorteoPremios() {
                     <div className="space-y-6 mb-8">
                         {prizes.map((prize, index) => (
                             <CardPremio
-                                key={prize.id} // Usar ID estable para evitar re-renders raros
+                                key={prize.id}
                                 index={index}
                                 prize={prize}
                                 totalPrizes={prizes.length}
                                 handleChange={handleChangePrize}
                                 handleImageChange={handleImageChange}
                                 handleRemove={handleRemovePrize}
-                                errors={errors?.premios?.[index]} // Pasar errores específicos de este premio
+                                errors={errors?.premios?.[index]}
                             />
                         ))}
                     </div>
@@ -227,7 +258,6 @@ export function EditarSorteoPremios() {
                             type="submit"
                             className="px-6 py-2 rounded-lg bg-[#6B8E78] text-white font-afacad font-semibold hover:bg-[#5a7a66] transition-colors shadow-sm flex items-center gap-2"
                         >
-
                             Guardar
                         </button>
                     </div>

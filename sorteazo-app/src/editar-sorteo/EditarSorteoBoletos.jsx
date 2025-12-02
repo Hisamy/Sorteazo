@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { InputForm } from '../form-components/InputForm';
 import { FaTicketAlt } from "react-icons/fa";
+import { obtenerSorteoId, editaBoletosSorteo } from '../controllers/SorteoController';
 
 export function EditarSorteoBoletos() {
     const { id } = useParams();
@@ -11,25 +12,31 @@ export function EditarSorteoBoletos() {
     // Estado para los datos y carga
     const [initialData, setInitialData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [errors, setErrors] = useState({});
 
-    // Simulamos la carga de datos del backend
+    // Cargar datos del backend
     useEffect(() => {
         const cargarDatos = async () => {
             try {
-                // Aquí iría tu fetch: await getSorteoBoletos(id);
                 console.log("Cargando datos de boletos para ID:", id);
 
-                setTimeout(() => {
-                    setInitialData({
-                        title: "Sorteo Navideño 2025",
-                        cantidadBoletos: 100,
-                        inicioNumeracion: 1,
-                        precioBoleto: 50.00
-                    });
-                    setLoading(false);
-                }, 500);
+                const data = await obtenerSorteoId(id);
+
+                setInitialData({
+                    title: data.title || "Sorteo sin título",
+                    cantidadBoletos: data.ticketQuantity || 0,
+                    inicioNumeracion: data.ticketNumberStart || 1,
+                    precioBoleto: data.ticketPrice || 0
+                });
+
+                setLoading(false);
             } catch (error) {
                 console.error("Error cargando datos", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudieron cargar los datos de los boletos.'
+                });
                 setLoading(false);
             }
         };
@@ -37,19 +44,52 @@ export function EditarSorteoBoletos() {
         cargarDatos();
     }, [id]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const formData = new FormData(e.target);
+
+        const cantidadBoletos = parseInt(formData.get('cantidadBoletos'));
+        const inicioNumeracion = parseInt(formData.get('inicioNumeracion'));
+        const precioBoleto = parseFloat(formData.get('precioBoleto'));
+
+        const nuevosErrores = {};
+        let hayErrores = false;
+
+        if (!cantidadBoletos || cantidadBoletos < 1 || cantidadBoletos > 1000) {
+            nuevosErrores.cantidadBoletos = "La cantidad debe estar entre 1 y 1,000";
+            hayErrores = true;
+        }
+
+        if (!inicioNumeracion || inicioNumeracion < 0) {
+            nuevosErrores.inicioNumeracion = "El inicio de numeración debe ser mayor a 0";
+            hayErrores = true;
+        }
+
+        if (!precioBoleto || precioBoleto <= 0) {
+            nuevosErrores.precioBoleto = "El precio debe ser mayor a 0";
+            hayErrores = true;
+        }
+
+        if (hayErrores) {
+            setErrors(nuevosErrores);
+            Swal.fire({
+                icon: 'error',
+                title: 'Datos inválidos',
+                text: 'Por favor revisa los campos del formulario.'
+            });
+            return;
+        }
+
         const dataToUpdate = {
-            cantidadBoletos: formData.get('cantidadBoletos'),
-            inicioNumeracion: formData.get('inicioNumeracion'),
-            precioBoleto: formData.get('precioBoleto')
+            ticketQuantity: cantidadBoletos,
+            ticketNumberStart: inicioNumeracion,
+            ticketPrice: precioBoleto
         };
 
         const nombreSorteo = initialData?.title || "el sorteo";
 
-        Swal.fire({
+        const result = await Swal.fire({
             title: 'Editar Boletos',
             text: `Vas a modificar la estructura de boletos de "${nombreSorteo}". ¿Estás seguro?`,
             icon: 'warning',
@@ -58,20 +98,31 @@ export function EditarSorteoBoletos() {
             cancelButtonColor: '#d33',
             confirmButtonText: 'Sí, guardar cambios',
             cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
+        });
+
+        if (result.isConfirmed) {
+            try {
                 console.log("Enviando datos:", dataToUpdate);
 
-                Swal.fire({
+                await editaBoletosSorteo(id, dataToUpdate);
+
+                await Swal.fire({
                     title: '¡Actualizado!',
                     text: 'La configuración de boletos ha sido guardada.',
                     icon: 'success',
                     confirmButtonColor: '#6B8E78'
-                }).then(() => {
-                    navigate(-1);
+                });
+
+                navigate(-1);
+            } catch (error) {
+                console.error("Error actualizando boletos:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.response?.data?.message || 'No se pudo actualizar la configuración de boletos.'
                 });
             }
-        });
+        }
     };
 
     if (loading) {
@@ -111,7 +162,10 @@ export function EditarSorteoBoletos() {
                                 placeholder="Ej. 100"
                                 name="cantidadBoletos"
                                 defaultValue={initialData.cantidadBoletos}
-                            // error={errors?.cantidadBoletos}
+                                error={errors?.cantidadBoletos}
+                                min="1"
+                                max="1000"
+                                required
                             />
                         </div>
                         <div>
@@ -123,7 +177,9 @@ export function EditarSorteoBoletos() {
                                 placeholder="Ej. 1"
                                 name="inicioNumeracion"
                                 defaultValue={initialData.inicioNumeracion}
-                            // error={errors?.inicioNumeracion}
+                                error={errors?.inicioNumeracion}
+                                min="0"
+                                required
                             />
                         </div>
                     </div>
@@ -139,7 +195,9 @@ export function EditarSorteoBoletos() {
                             name="precioBoleto"
                             step="0.01"
                             defaultValue={initialData.precioBoleto}
-                        // error={errors?.precioBoleto}
+                            error={errors?.precioBoleto}
+                            min="0.01"
+                            required
                         />
                     </div>
 

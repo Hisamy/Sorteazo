@@ -54,7 +54,10 @@ export function EditarSorteo() {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const formData = gestorEditarSorteo(e.target, initialData);
+        // CORREGIR: Guardar el resultado del gestor en una variable
+        const datosActualizados = gestorEditarSorteo(e.target, initialData);
+
+        console.log("Datos del gestor:", datosActualizados); // Para debug
 
         const formDataRaw = new FormData(e.target);
         const nombreSorteo = formDataRaw.get('title') || "el sorteo";
@@ -71,7 +74,8 @@ export function EditarSorteo() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await editaSorteo(id, formData);
+                    // CORREGIR: Pasar datosActualizados (no formData)
+                    await editaSorteo(id, datosActualizados);
 
                     Swal.fire({
                         title: '¡Guardado!',
@@ -95,7 +99,6 @@ export function EditarSorteo() {
             }
         });
     };
-
     if (loading) {
         return <div className="p-10 text-center font-afacad">Cargando datos del sorteo...</div>;
     }

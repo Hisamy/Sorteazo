@@ -5,7 +5,11 @@ import { obtenerSorteoPorId } from '../services/SorteazoApi.js';
 
 export const crearSorteo = (formData) => createSorteo(formData);
 
-export const editaSorteo = (formData) => editarSorteo(formData);
+export const editaSorteo = (sorteoId, datosActualizados) => editarSorteo(sorteoId, datosActualizados);
+
+export const editaBoletosSorteo = (sorteoId, datosActualizados) => editarBoletosSorteo(sorteoId, datosActualizados);
+
+export const editaPremiosSorteo = (sorteoId, premiosData) => editarPremiosSorteo(sorteoId, premiosData);
 
 export const eliminaSorteo = (formData) => eliminarSorteo(formData);
 
