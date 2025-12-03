@@ -8,6 +8,8 @@ import { SorteosModule } from './sorteos/sorteos.module';
 import { PagosModule } from './pagos/pagos.module';
 import { BoletosModule } from './boletos/boletos.module';
 import { ConfigModule } from '@nestjs/config';
+import { RecordatorioModule } from './recordatorio/recordatorios.module';
+
 
 @Module({
   imports: [
@@ -16,6 +18,7 @@ import { ConfigModule } from '@nestjs/config';
     SorteosModule,
     BoletosModule,
     PagosModule,
+    RecordatorioModule,
   ],
   controllers: [AppController],
   providers: [AppService],
