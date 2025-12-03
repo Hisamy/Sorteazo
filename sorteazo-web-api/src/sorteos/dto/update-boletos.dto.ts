@@ -1,21 +1,35 @@
-
-import { IsArray, IsDate, IsDateString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
-import { Timestamp } from 'typeorm';
+import { IsInt, IsNumber, Min, Max, IsOptional } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
 export class UpdateBoletosInfoDto {
-    @Transform(({ value }) => parseFloat(value))
-    @IsNumber()
     @IsOptional()
-    ticketPrice: number;
+    @Type(() => Number)
+    @Transform(({ value }) => {
+        const num = Number(value);
+        return isNaN(num) ? value : num;
+    })
+    @IsInt({ message: 'La cantidad de boletos debe ser un número entero' })
+    @Min(1, { message: 'Debe haber al menos 1 boleto' })
+    @Max(1000, { message: 'No puede haber más de 1000 boletos' })
+    numbersQuantity?: number;
 
-    @Transform(({ value }) => parseInt(value))
-    @IsNumber()
     @IsOptional()
-    numbersQuantity: number;
+    @Type(() => Number)
+    @Transform(({ value }) => {
+        const num = Number(value);
+        return isNaN(num) ? value : num;
+    })
+    @IsInt({ message: 'El inicio de numeración debe ser un número entero' })
+    @Min(0, { message: 'El inicio de numeración no puede ser negativo' })
+    startNumber?: number;
 
-    @Transform(({ value }) => parseInt(value))
-    @IsNumber()
     @IsOptional()
-    startNumber: number;
+    @Type(() => Number)
+    @Transform(({ value }) => {
+        const num = Number(value);
+        return isNaN(num) ? value : num;
+    })
+    @IsNumber({}, { message: 'El precio debe ser un número' })
+    @Min(0.01, { message: 'El precio debe ser mayor a 0' })
+    ticketPrice?: number;
 }

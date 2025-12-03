@@ -14,19 +14,15 @@ export function EditarSorteoBoletos() {
     const [loading, setLoading] = useState(true);
     const [errors, setErrors] = useState({});
 
-    // Cargar datos del backend
     useEffect(() => {
         const cargarDatos = async () => {
             try {
-                console.log("Cargando datos de boletos para ID:", id);
-
                 const data = await obtenerSorteoId(id);
 
                 setInitialData({
-                    title: data.title || "Sorteo sin título",
-                    cantidadBoletos: data.ticketQuantity || 0,
-                    inicioNumeracion: data.ticketNumberStart || 1,
-                    precioBoleto: data.ticketPrice || 0
+                    cantidadBoletos: data.numbersQuantity || 0,
+                    inicioNumeracion: data.startNumber || 1,
+                    precioBoleto: data.ticketPrice || 1
                 });
 
                 setLoading(false);
@@ -82,8 +78,8 @@ export function EditarSorteoBoletos() {
         }
 
         const dataToUpdate = {
-            ticketQuantity: cantidadBoletos,
-            ticketNumberStart: inicioNumeracion,
+            numbersQuantity: cantidadBoletos,
+            startNumber: inicioNumeracion,
             ticketPrice: precioBoleto
         };
 

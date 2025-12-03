@@ -19,21 +19,34 @@ export function EditarSorteoPremios() {
         const cargarDatos = async () => {
             try {
                 const data = await obtenerSorteoId(id);
-                console.log("Datos cargados:", data);
+                console.log("Datos cargados completos:", data);
+                console.log("Premios del backend:", data.prizes);
 
                 setSorteoTitle(data.title || "Sorteo sin título");
 
-                if (data.prizes && data.prizes.length > 0) {
-                    const premiosMapeados = data.prizes.map((premio, index) => ({
-                        id: premio.id,
-                        name: premio.name || '',
-                        place: premio.place || index + 1,
-                        description: premio.description || '',
-                        imageFile: null,
-                        imageUrl: premio.imageUrl || null
-                    }));
+                // Verificar diferentes posibles nombres de campos
+                const premiosBackend = data.prizes || data.premios || [];
+
+                console.log("Premios a mapear:", premiosBackend);
+
+                if (premiosBackend && premiosBackend.length > 0) {
+                    const premiosMapeados = premiosBackend.map((premio, index) => {
+                        console.log(`Premio ${index}:`, premio);
+
+                        return {
+                            id: premio.id || premio._id || Date.now() + index,
+                            name: premio.name || premio.nombre || premio.title || '',
+                            place: premio.place || premio.lugar || premio.position || index + 1,
+                            description: premio.description || premio.descripcion || '',
+                            imageFile: null,
+                            imageUrl: premio.imageUrl || premio.imagenUrl || premio.imagen || premio.image || null
+                        };
+                    });
+
+                    console.log("Premios mapeados:", premiosMapeados);
                     setPrizes(premiosMapeados);
                 } else {
+                    console.log("No se encontraron premios, iniciando con uno vacío");
                     // Si no hay premios, iniciar con uno vacío
                     setPrizes([{
                         id: Date.now(),
@@ -48,6 +61,7 @@ export function EditarSorteoPremios() {
                 setLoading(false);
             } catch (error) {
                 console.error("Error cargando premios", error);
+                console.error("Detalles del error:", error.response?.data);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -131,7 +145,6 @@ export function EditarSorteoPremios() {
         }
     };
 
-    // --- 3. Guardado ---
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -172,6 +185,8 @@ export function EditarSorteoPremios() {
                     premios: prizes
                 };
 
+                console.log("Enviando premios al backend:", premiosData);
+
                 await editaPremiosSorteo(id, premiosData);
 
                 await Swal.fire({
@@ -194,7 +209,12 @@ export function EditarSorteoPremios() {
     };
 
     if (loading) {
-        return <div className="p-10 text-center font-afacad">Cargando premios...</div>;
+        return (
+            <div className="p-10 text-center font-afacad">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
+                <p className="mt-4">Cargando premios...</p>
+            </div>
+        );
     }
 
     return (
@@ -213,7 +233,7 @@ export function EditarSorteoPremios() {
                             </h2>
                         </div>
                         <p className="text-[var(--color-gray-text)] font-afacad text-sm ml-14">
-                            Agrega, elimina o modifica los premios del sorteo.
+                            Agrega, elimina o modifica los premios del sorteo "{sorteoTitle}".
                         </p>
                     </div>
 
@@ -231,18 +251,24 @@ export function EditarSorteoPremios() {
                 <form onSubmit={handleSubmit}>
                     {/* Lista de Premios */}
                     <div className="space-y-6 mb-8">
-                        {prizes.map((prize, index) => (
-                            <CardPremio
-                                key={prize.id}
-                                index={index}
-                                prize={prize}
-                                totalPrizes={prizes.length}
-                                handleChange={handleChangePrize}
-                                handleImageChange={handleImageChange}
-                                handleRemove={handleRemovePrize}
-                                errors={errors?.premios?.[index]}
-                            />
-                        ))}
+                        {prizes.length > 0 ? (
+                            prizes.map((prize, index) => (
+                                <CardPremio
+                                    key={prize.id}
+                                    index={index}
+                                    prize={prize}
+                                    totalPrizes={prizes.length}
+                                    handleChange={handleChangePrize}
+                                    handleImageChange={handleImageChange}
+                                    handleRemove={handleRemovePrize}
+                                    errors={errors?.premios?.[index]}
+                                />
+                            ))
+                        ) : (
+                            <div className="text-center p-8 text-gray-500 font-afacad">
+                                No hay premios configurados. Haz clic en "Agregar premio" para comenzar.
+                            </div>
+                        )}
                     </div>
 
                     {/* Footer Actions */}

@@ -138,9 +138,22 @@ export const editarSorteo = async (sorteoId, datosActualizados) => {
         throw error;
     }
 }
+
 export const editarBoletosSorteo = async (sorteoId, datosActualizados) => {
     try {
-        const response = await api.patch(`/sorteos/${sorteoId}/boletos`, datosActualizados);
+        const formData = new FormData();
+
+        Object.keys(datosActualizados).forEach(key => {
+            if (datosActualizados[key] !== null && datosActualizados[key] !== undefined) {
+                formData.append(key, datosActualizados[key]);
+            }
+        });
+
+        const response = await api.patch(`/sorteos/${sorteoId}/boletos`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
         return response.data;
     } catch (error) {
         console.error(`Error al editar boletos del sorteo`, error);
