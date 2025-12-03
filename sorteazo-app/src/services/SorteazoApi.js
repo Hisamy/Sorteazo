@@ -103,3 +103,104 @@ export const apartarBoletosPorCliente = async (sorteoId, seleccionados) => {
         throw error;
     }
 }
+
+export const editarSorteo = async (sorteoId, datosActualizados) => {
+    try {
+        if (!datosActualizados || typeof datosActualizados !== 'object') {
+            throw new Error('Los datos actualizados son inválidos');
+        }
+
+        const formData = new FormData();
+
+        Object.keys(datosActualizados).forEach(key => {
+            if (key === 'imagenSorteo' && datosActualizados[key] instanceof File) {
+                formData.append('imagenSorteo', datosActualizados[key]);
+            }
+            else if (typeof datosActualizados[key] === 'object' && datosActualizados[key] !== null && !(datosActualizados[key] instanceof File)) {
+                formData.append(key, JSON.stringify(datosActualizados[key]));
+            }
+            else if (datosActualizados[key] !== null && datosActualizados[key] !== undefined && !(datosActualizados[key] instanceof File)) {
+                formData.append(key, datosActualizados[key]);
+            }
+        });
+
+        console.log("FormData a enviar:", Array.from(formData.entries())); // Para debug
+
+        const response = await api.patch(`/sorteos/${sorteoId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ocurrió un error al editar sorteo, intentelo más tarde`, error);
+        throw error;
+    }
+}
+
+export const editarBoletosSorteo = async (sorteoId, datosActualizados) => {
+    try {
+        const formData = new FormData();
+
+        Object.keys(datosActualizados).forEach(key => {
+            if (datosActualizados[key] !== null && datosActualizados[key] !== undefined) {
+                formData.append(key, datosActualizados[key]);
+            }
+        });
+
+        const response = await api.patch(`/sorteos/${sorteoId}/boletos`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error(`Error al editar boletos del sorteo`, error);
+        throw error;
+    }
+}
+
+export const editarPremiosSorteo = async (sorteoId, premiosData) => {
+    try {
+        const formData = new FormData();
+
+        const premiosSinImagenes = premiosData.premios.map(premio => ({
+            id: premio.id,
+            name: premio.name,
+            place: premio.place,
+            description: premio.description,
+            ...(premio.imageUrl && !premio.imageFile && { imageUrl: premio.imageUrl })
+        }));
+
+        formData.append('premios', JSON.stringify(premiosSinImagenes));
+
+        premiosData.premios.forEach((premio) => {
+            if (premio.imageFile) {
+                formData.append('imagenesPremios', premio.imageFile);
+            }
+        });
+
+        const response = await api.patch(`/sorteos/${sorteoId}/premios`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error(`Error al editar premios del sorteo`, error);
+        throw error;
+    }
+}
+
+export const eliminarSorteo = async (sorteoId) => {
+    try {
+        const response = await api.delete(`/sorteos/${sorteoId}`);
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ocurrió un error al eliminar sorteo, intentelo más tarde`, error);
+        throw error;
+    }
+}

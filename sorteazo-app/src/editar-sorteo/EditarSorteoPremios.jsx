@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { CardPremio } from '../form-components/CardPremio.jsx';
 import { FaGift, FaPlus } from "react-icons/fa";
+import { obtenerSorteoId } from '../controllers/SorteoController.js';
+import { editaPremiosSorteo } from '../controllers/SorteoController.js';
 
 export function EditarSorteoPremios() {
     const { id } = useParams();
@@ -13,31 +15,64 @@ export function EditarSorteoPremios() {
     const [loading, setLoading] = useState(true);
     const [errors, setErrors] = useState({});
 
-    // --- 1. Carga de Datos (Simulada) ---
     useEffect(() => {
         const cargarDatos = async () => {
             try {
-                // Aquí harías: const data = await getSorteoPremios(id);
-                console.log("Cargando premios para ID:", id);
+                const data = await obtenerSorteoId(id);
+                console.log("Datos cargados completos:", data);
+                console.log("Premios del backend:", data.prizes);
 
-                setTimeout(() => {
-                    setSorteoTitle("Sorteo Navideño 2025");
-                    // Simulamos que ya existen premios
-                    setPrizes([
-                        { id: 101, name: 'iPhone 15 Pro', place: 1, description: 'Nuevo de paquete, color titanio.', imageFile: null, imageUrl: 'https://via.placeholder.com/150' },
-                        { id: 102, name: 'Bono en efectivo', place: 2, description: '$5,000 MXN transferibles.', imageFile: null, imageUrl: null }
-                    ]);
-                    setLoading(false);
-                }, 500);
+                setSorteoTitle(data.title || "Sorteo sin título");
+
+                // Verificar diferentes posibles nombres de campos
+                const premiosBackend = data.prizes || data.premios || [];
+
+                console.log("Premios a mapear:", premiosBackend);
+
+                if (premiosBackend && premiosBackend.length > 0) {
+                    const premiosMapeados = premiosBackend.map((premio, index) => {
+                        console.log(`Premio ${index}:`, premio);
+
+                        return {
+                            id: premio.id || premio._id || Date.now() + index,
+                            name: premio.name || premio.nombre || premio.title || '',
+                            place: premio.place || premio.lugar || premio.position || index + 1,
+                            description: premio.description || premio.descripcion || '',
+                            imageFile: null,
+                            imageUrl: premio.imageUrl || premio.imagenUrl || premio.imagen || premio.image || null
+                        };
+                    });
+
+                    console.log("Premios mapeados:", premiosMapeados);
+                    setPrizes(premiosMapeados);
+                } else {
+                    console.log("No se encontraron premios, iniciando con uno vacío");
+                    // Si no hay premios, iniciar con uno vacío
+                    setPrizes([{
+                        id: Date.now(),
+                        name: '',
+                        place: 1,
+                        description: '',
+                        imageFile: null,
+                        imageUrl: null
+                    }]);
+                }
+
+                setLoading(false);
             } catch (error) {
                 console.error("Error cargando premios", error);
+                console.error("Detalles del error:", error.response?.data);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudieron cargar los premios del sorteo.'
+                });
                 setLoading(false);
             }
         };
         cargarDatos();
     }, [id]);
 
-    // --- 2. Lógica de Premios (Traída de tu referencia) ---
 
     const handleImageChange = (index, event) => {
         const file = event.target.files[0];
@@ -56,14 +91,13 @@ export function EditarSorteoPremios() {
 
         const newPrizes = [...prizes];
         newPrizes[index].imageFile = file;
-        // Opcional: Crear preview URL local para que el usuario vea la nueva imagen
         newPrizes[index].imageUrl = URL.createObjectURL(file);
         setPrizes(newPrizes);
     };
 
     const handleAddPrize = () => {
         const newPrize = {
-            id: Date.now(), // ID temporal
+            id: Date.now(), // ID temporal para premios nuevos
             name: '',
             place: prizes.length + 1,
             description: '',
@@ -111,8 +145,7 @@ export function EditarSorteoPremios() {
         }
     };
 
-    // --- 3. Guardado ---
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         // Validación básica antes de enviar
@@ -134,7 +167,7 @@ export function EditarSorteoPremios() {
             return;
         }
 
-        Swal.fire({
+        const result = await Swal.fire({
             title: '¿Guardar cambios?',
             text: `Se actualizarán los premios del sorteo "${sorteoTitle}".`,
             icon: 'question',
@@ -143,26 +176,45 @@ export function EditarSorteoPremios() {
             cancelButtonColor: '#d33',
             confirmButtonText: 'Sí, guardar',
             cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                console.log("Enviando premios al backend:", prizes);
+        });
 
-                // Lógica de Update...
+        if (result.isConfirmed) {
+            try {
+                // Preparar datos para enviar
+                const premiosData = {
+                    premios: prizes
+                };
 
-                Swal.fire({
+                console.log("Enviando premios al backend:", premiosData);
+
+                await editaPremiosSorteo(id, premiosData);
+
+                await Swal.fire({
                     title: '¡Guardado!',
                     text: 'Los premios han sido actualizados correctamente.',
                     icon: 'success',
                     confirmButtonColor: '#6B8E78'
-                }).then(() => {
-                    navigate(-1); // Volver
+                });
+
+                navigate(-1); // Volver
+            } catch (error) {
+                console.error("Error guardando premios:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.response?.data?.message || 'No se pudieron guardar los premios. Intenta de nuevo.'
                 });
             }
-        });
+        }
     };
 
     if (loading) {
-        return <div className="p-10 text-center font-afacad">Cargando premios...</div>;
+        return (
+            <div className="p-10 text-center font-afacad">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
+                <p className="mt-4">Cargando premios...</p>
+            </div>
+        );
     }
 
     return (
@@ -172,7 +224,6 @@ export function EditarSorteoPremios() {
                 {/* Header */}
                 <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-
                         <div className="flex items-center gap-3">
                             <div className="p-3 bg-yellow-100 text-yellow-600 rounded-full">
                                 <FaGift size={24} />
@@ -182,11 +233,11 @@ export function EditarSorteoPremios() {
                             </h2>
                         </div>
                         <p className="text-[var(--color-gray-text)] font-afacad text-sm ml-14">
-                            Agrega, elimina o modifica los premios del sorteo.
+                            Agrega, elimina o modifica los premios del sorteo "{sorteoTitle}".
                         </p>
                     </div>
 
-                    {/* Botón Agregar (Arriba a la derecha) */}
+                    {/* Botón Agregar */}
                     <button
                         type="button"
                         onClick={handleAddPrize}
@@ -200,18 +251,24 @@ export function EditarSorteoPremios() {
                 <form onSubmit={handleSubmit}>
                     {/* Lista de Premios */}
                     <div className="space-y-6 mb-8">
-                        {prizes.map((prize, index) => (
-                            <CardPremio
-                                key={prize.id} // Usar ID estable para evitar re-renders raros
-                                index={index}
-                                prize={prize}
-                                totalPrizes={prizes.length}
-                                handleChange={handleChangePrize}
-                                handleImageChange={handleImageChange}
-                                handleRemove={handleRemovePrize}
-                                errors={errors?.premios?.[index]} // Pasar errores específicos de este premio
-                            />
-                        ))}
+                        {prizes.length > 0 ? (
+                            prizes.map((prize, index) => (
+                                <CardPremio
+                                    key={prize.id}
+                                    index={index}
+                                    prize={prize}
+                                    totalPrizes={prizes.length}
+                                    handleChange={handleChangePrize}
+                                    handleImageChange={handleImageChange}
+                                    handleRemove={handleRemovePrize}
+                                    errors={errors?.premios?.[index]}
+                                />
+                            ))
+                        ) : (
+                            <div className="text-center p-8 text-gray-500 font-afacad">
+                                No hay premios configurados. Haz clic en "Agregar premio" para comenzar.
+                            </div>
+                        )}
                     </div>
 
                     {/* Footer Actions */}
@@ -227,7 +284,6 @@ export function EditarSorteoPremios() {
                             type="submit"
                             className="px-6 py-2 rounded-lg bg-[#6B8E78] text-white font-afacad font-semibold hover:bg-[#5a7a66] transition-colors shadow-sm flex items-center gap-2"
                         >
-
                             Guardar
                         </button>
                     </div>
