@@ -260,7 +260,7 @@ export const ConsultaSorteoCliente = () => {
                 title: "Pago Registrado",
                 text: metodoPago === 'TRANSFERENCIA' 
                     ? `Se ha registrado tu pago por ${boletoIds.length} boleto(s). El organizador verificará tu comprobante.`
-                    : `Se ha procesado tu pago en línea por ${boletoIds.length} boleto(s) exitosamente.`,
+                    : `¡Pago procesado exitosamente! Tus ${boletoIds.length} boleto(s) han sido pagados con tarjeta.`,
                 confirmButtonText: "Entendido"
             });
 

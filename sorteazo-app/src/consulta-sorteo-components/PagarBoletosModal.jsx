@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { FaTimes, FaCreditCard, FaInfoCircle } from 'react-icons/fa';
 import { FaMoneyBillTransfer } from 'react-icons/fa6';
 import { ComprobantePagoUploader } from './ComprobantePagoUploader';
+import { TarjetaFormulario } from './TarjetaFormulario';
 
 export const PagarBoletosModal = ({ isOpen, onClose, onConfirm, boletos, precioBoleto }) => {
     const [metodoPago, setMetodoPago] = useState('TRANSFERENCIA');
     const [comprobanteFile, setComprobanteFile] = useState(null);
     const [errorComprobante, setErrorComprobante] = useState('');
+    const [datosTarjeta, setDatosTarjeta] = useState(null);
+    const [errorsTarjeta, setErrorsTarjeta] = useState({});
     const [loading, setLoading] = useState(false);
 
     if (!isOpen) return null;
@@ -17,15 +20,59 @@ export const PagarBoletosModal = ({ isOpen, onClose, onConfirm, boletos, precioB
     const handleFileChange = (file) => {
         setComprobanteFile(file);
         if (file) {
-            setErrorComprobante(''); // Limpiar error si se selecciona archivo
+            setErrorComprobante('');
         }
     };
 
+    const handleDatosTarjetaChange = (datos) => {
+        setDatosTarjeta(datos);
+        // Limpiar errores cuando el usuario escribe
+        setErrorsTarjeta({});
+    };
+
+    const validarDatosTarjeta = () => {
+        const errores = {};
+
+        if (!datosTarjeta?.nombreTitular || datosTarjeta.nombreTitular.trim().length < 3) {
+            errores.nombreTitular = 'Ingresa el nombre completo del titular';
+        }
+
+        const numeroLimpio = datosTarjeta?.numeroTarjeta?.replace(/\s/g, '') || '';
+        if (!numeroLimpio || numeroLimpio.length < 15 || numeroLimpio.length > 16) {
+            errores.numeroTarjeta = 'Ingresa un número de tarjeta válido (15-16 dígitos)';
+        }
+
+        const fechaCompleta = datosTarjeta?.fechaVencimiento || '';
+        if (!fechaCompleta || fechaCompleta.length !== 5) {
+            errores.fechaVencimiento = 'Formato MM/YY';
+        } else {
+            const [mes, año] = fechaCompleta.split('/');
+            const mesNum = parseInt(mes, 10);
+            if (mesNum < 1 || mesNum > 12) {
+                errores.fechaVencimiento = 'Mes inválido';
+            }
+        }
+
+        if (!datosTarjeta?.cvv || datosTarjeta.cvv.length < 3) {
+            errores.cvv = 'Ingresa 3 o 4 dígitos';
+        }
+
+        return errores;
+    };
+
     const handleSubmit = async () => {
-        // Validar comprobante si es transferencia
-        if (metodoPago === 'TRANSFERENCIA' && !comprobanteFile) {
-            setErrorComprobante('Debes subir un comprobante de pago para continuar');
-            return;
+        // Validar según método de pago
+        if (metodoPago === 'TRANSFERENCIA') {
+            if (!comprobanteFile) {
+                setErrorComprobante('Debes subir un comprobante de pago para continuar');
+                return;
+            }
+        } else if (metodoPago === 'PAGO EN LINEA') {
+            const errores = validarDatosTarjeta();
+            if (Object.keys(errores).length > 0) {
+                setErrorsTarjeta(errores);
+                return;
+            }
         }
 
         setLoading(true);
@@ -34,6 +81,7 @@ export const PagarBoletosModal = ({ isOpen, onClose, onConfirm, boletos, precioB
             await onConfirm({
                 metodoPago,
                 comprobanteFile,
+                datosTarjeta,
                 boletos,
                 total
             });
@@ -49,6 +97,8 @@ export const PagarBoletosModal = ({ isOpen, onClose, onConfirm, boletos, precioB
     const handleClose = () => {
         setComprobanteFile(null);
         setErrorComprobante('');
+        setDatosTarjeta(null);
+        setErrorsTarjeta({});
         setMetodoPago('TRANSFERENCIA');
         setLoading(false);
         onClose();
@@ -199,19 +249,26 @@ export const PagarBoletosModal = ({ isOpen, onClose, onConfirm, boletos, precioB
                     )}
 
                     {metodoPago === 'PAGO EN LINEA' && (
-                        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                            <div className="flex items-start gap-2">
-                                <FaInfoCircle className="text-green-600 mt-1" />
-                                <div>
-                                    <h3 className="font-afacad font-bold text-green-900 mb-2">
-                                        Pago en Línea (Simulado)
-                                    </h3>
-                                    <p className="text-sm text-green-800 font-afacad">
-                                        Al confirmar, tu pago se procesará automáticamente y tus boletos serán marcados como pagados de inmediato.
-                                        Esta es una versión simulada del pago en línea.
-                                    </p>
+                        <div className="space-y-4">
+                            <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                                <div className="flex items-start gap-2">
+                                    <FaInfoCircle className="text-green-600 mt-1" />
+                                    <div>
+                                        <h3 className="font-afacad font-bold text-green-900 mb-2">
+                                            Pago con Tarjeta (Simulado)
+                                        </h3>
+                                        <p className="text-sm text-green-800 font-afacad">
+                                            Ingresa los datos de tu tarjeta. Tu pago se procesará automáticamente.
+                                            Esta es una versión simulada - no se realizará ningún cargo real.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
+
+                            <TarjetaFormulario 
+                                onDatosChange={handleDatosTarjetaChange}
+                                errors={errorsTarjeta}
+                            />
                         </div>
                     )}
                 </div>
