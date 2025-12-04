@@ -10,6 +10,9 @@ import { Sorteo } from '../sorteos/entities/sorteo.entity';
 import { Boleto } from './entities/boleto.entity';
 import { Client } from './../users/entities/client.entity';
 
+import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
+
 @Injectable()
 export class BoletosService {
   constructor(
@@ -17,7 +20,46 @@ export class BoletosService {
     private sorteoRepository: Repository<Sorteo>,
     @InjectRepository(Boleto)
     private boletoRepository: Repository<Boleto>
+    ,private readonly httpService: HttpService
   ) { }
+
+  private async notifyOrganizerOfReservation(sorteo: Sorteo, boletos: Boleto[], clientId: string) {
+    const organizerEmail = sorteo.organizador?.user?.email;
+    if (!organizerEmail) return;
+    const payload = {
+      template: 'generic',
+      destinatarios: organizerEmail,
+      titulo: 'Nuevas reservas de boletos',
+      descripcion: `Se reservaron ${boletos.length} boletos en el sorteo "${sorteo.title}". Números: ${boletos.map(b => b.number).join(', ')}. Cliente ID: ${clientId}`,
+      fechaEnvio: new Date().toISOString()
+    };
+    await this.sendNotification(payload);
+  }
+
+  private async notifyClientImmediate(clientEmail: string, sorteoTitle: string, reservedNumbers: string[], total: number) {
+    if (!clientEmail) return;
+    const payload = {
+      template: 'generic',
+      destinatarios: clientEmail,
+      titulo: 'Reserva de boletos confirmada',
+      descripcion: `Tu reserva en el sorteo "${sorteoTitle}" fue registrada. Números: ${reservedNumbers.join(', ')}. Total: $${total}`,
+      fechaEnvio: new Date().toISOString()
+    };
+    await this.sendNotification(payload);
+  }
+
+  private async schedulePaymentReminder(clientEmail: string, paymentDeadlineIso: string, reservedNumbers: string[]) {
+    if (!clientEmail || !paymentDeadlineIso) return;
+    const payload = {
+      template: 'generic',
+      destinatarios: clientEmail,
+      titulo: 'Recordatorio: pago pendiente',
+      descripcion: `Tienes hasta el ${paymentDeadlineIso} para completar el pago de los boletos reservados: ${reservedNumbers.join(', ')}`,
+      fechaEnvio: paymentDeadlineIso
+    };
+    await this.sendNotification(payload);
+  }
+
   create(createBoletoDto: CreateBoletoDto) {
     return 'This action adds a new boleto';
   }
@@ -90,7 +132,7 @@ export class BoletosService {
 
     const sorteo = await this.sorteoRepository.findOne({
       where: { id: sorteoId },
-      relations: ['boletos'],
+      relations: ['boletos', 'organizador', 'organizador.user'],
     });
 
     if (!sorteo) {
@@ -114,7 +156,6 @@ export class BoletosService {
       );
     }
 
-    // Marcar como reservados y asignar cliente
     const clientRef = new Client();
     clientRef.userId = clientId;
 
@@ -142,10 +183,18 @@ export class BoletosService {
 
     await this.boletoRepository.save(boletos);
 
+    // notificar al organizador (no bloquea la reserva si falla)
+    await this.notifyOrganizerOfReservation(sorteo, boletos, clientId);
+
     return {
       message: 'Boletos reservados exitosamente',
       reservedNumbers: boletos.map(b => b.number),
       total: boletos.reduce((sum, b) => sum + b.price, 0),
+      sorteo: {
+        id: sorteo.id,
+        title: sorteo.title,
+        organizerEmail: sorteo.organizador?.user?.email || null
+      }
     };
   }
 
@@ -155,5 +204,21 @@ export class BoletosService {
 
   remove(id: number) {
     return `This action removes a #${id} boleto`;
+  }
+
+  private getNotifyEndpoint() {
+    const notificationsUrl = process.env.NOTIFICATIONS_URL || 'http://localhost:3000';
+    return `${notificationsUrl}/notify`;
+  }
+
+  private async sendNotification(payload: Record<string, any>) {
+    const url = this.getNotifyEndpoint();
+    try {
+      await lastValueFrom(this.httpService.post(url, payload));
+      return true;
+    } catch (err) {
+      console.warn('Error enviando notificación:', err?.message || err);
+      return false;
+    }
   }
 }
