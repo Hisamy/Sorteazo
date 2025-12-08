@@ -18,9 +18,7 @@ export class RecordatorioConfig {
   @Column({ type: 'text' })
   body: string;
 
-  @OneToOne(() => Sorteo, (sorteo) => sorteo.recordatorioConfig, {
-    onDelete: 'CASCADE'
-  })
-  @JoinColumn({ name: 'sorteo_id' })
+  @OneToOne(() => Sorteo, (sorteo) => sorteo.recordatorioConfig)
+  @JoinColumn()
   sorteo: Sorteo;
 }

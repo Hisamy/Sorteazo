@@ -4,6 +4,7 @@ import { eliminarSorteo } from '../services/SorteazoApi.js';
 import { obtenerSorteoPorId } from '../services/SorteazoApi.js';
 import { editarPremiosSorteo } from '../services/SorteazoApi.js';
 import { editarBoletosSorteo } from '../services/SorteazoApi.js';
+import { actualizarConfigRecordatorios } from '../services/SorteazoApi.js';
 
 export const crearSorteo = (formData) => createSorteo(formData);
 
@@ -16,3 +17,5 @@ export const editaPremiosSorteo = (sorteoId, premiosData) => editarPremiosSorteo
 export const eliminaSorteo = (formData) => eliminarSorteo(formData);
 
 export const obtenerSorteoId = (formData) => obtenerSorteoPorId(formData);
+
+export const actualizaConfigRecordatorios = (sorteoId, configData) => actualizarConfigRecordatorios(sorteoId, configData);

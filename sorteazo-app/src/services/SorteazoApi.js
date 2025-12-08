@@ -204,3 +204,13 @@ export const eliminarSorteo = async (sorteoId) => {
         throw error;
     }
 }
+
+export const actualizarConfigRecordatorios = async (sorteoId, configData) => {
+    try {
+        const response = await api.patch(`/sorteos/${sorteoId}/config-recordatorios`, configData);
+        return response.data;
+    } catch (error) {
+        console.error(`Error al actualizar configuración de recordatorios:`, error);
+        throw error;
+    }
+};
