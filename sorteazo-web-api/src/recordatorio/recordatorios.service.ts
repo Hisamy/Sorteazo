@@ -13,7 +13,7 @@ export class RecordatorioService {
 
     @InjectRepository(Sorteo)
     private readonly sorteoRepository: Repository<Sorteo>,
-  ) {}
+  ) { }
 
   async updateConfig(
     idSorteo: string,
@@ -32,20 +32,28 @@ export class RecordatorioService {
     }
 
     let config = sorteo.recordatorioConfig;
+    let esNuevo = false;
 
     if (!config) {
-        
+      esNuevo = true;
       config = this.configRepository.create({
-        frequencyDays: 3,
-        sendTime: "09:00",
-        subject: "",
-        body: "",
-        sorteo: sorteo,
+        sorteo: sorteo
       });
     }
 
-    Object.assign(config, dto);
+    if (dto.frequencyDays !== undefined) config.frequencyDays = dto.frequencyDays;
+    if (dto.sendTime !== undefined) config.sendTime = dto.sendTime;
+    if (dto.subject !== undefined) config.subject = dto.subject;
+    if (dto.body !== undefined) config.body = dto.body;
 
-    return await this.configRepository.save(config);
+    const configGuardada = await this.configRepository.save(config);
+
+
+    if (esNuevo) {
+      sorteo.recordatorioConfig = configGuardada;
+      await this.sorteoRepository.save(sorteo);
+    }
+
+    return configGuardada;
   }
 }

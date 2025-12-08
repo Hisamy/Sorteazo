@@ -1,4 +1,4 @@
-import { Controller, Patch, Param, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Patch, Param, Body, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RecordatorioService } from './recordatorios.service';
 import { UpdateRecordatorioConfigDto } from './dto/update-recordatorio-config.dto';
@@ -6,7 +6,7 @@ import { UpdateRecordatorioConfigDto } from './dto/update-recordatorio-config.dt
 @UseGuards(AuthGuard("jwt"))
 @Controller('sorteos/:id/config-recordatorios')
 export class RecordatorioController {
-  constructor(private readonly recordatorioService: RecordatorioService) {}
+  constructor(private readonly recordatorioService: RecordatorioService) { }
 
   @Patch()
   update(
@@ -15,6 +15,12 @@ export class RecordatorioController {
     @Req() req
   ) {
     const user = req.user;
-    return this.recordatorioService.updateConfig(idSorteo, dto, user.sub);
+
+    if (user.role !== "organizador") {
+      throw new UnauthorizedException("No tienes permisos.");
+    }
+
+
+    return this.recordatorioService.updateConfig(idSorteo, dto, user.id);
   }
 }

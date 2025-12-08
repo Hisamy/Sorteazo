@@ -124,7 +124,7 @@ export class SorteosService {
   async findOne(id: string) {
     const sorteo = await this.sorteoRepository.findOne({
       where: { id },
-      relations: ['organizador', 'premios', 'boletos']
+      relations: ['organizador', 'premios', 'boletos', 'recordatorioConfig']
     });
 
     if (!sorteo) throw new NotFoundException(`Sorteo with id ${id} not found.`);
@@ -184,7 +184,7 @@ export class SorteosService {
     if (updateSorteoDto.paymentDeadlineDays !== undefined)
       allowedUpdates.paymentDeadlineDays = updateSorteoDto.paymentDeadlineDays;
 
-    const imagenSorteoFile = files?.imagenSorteo?.[0]; 
+    const imagenSorteoFile = files?.imagenSorteo?.[0];
 
     if (imagenSorteoFile) {
       allowedUpdates.imageUrl = `/uploads/${imagenSorteoFile.filename}`;
@@ -342,14 +342,14 @@ export class SorteosService {
     premiosData.forEach((p, index) => {
       const imagenPremioUrl = files?.imagenesPremios?.[index]
         ? `/uploads/${files.imagenesPremios[index].filename}`
-        : p.imageUrl || ''; 
+        : p.imageUrl || '';
 
       const premio: Premio = this.premioRepository.create({
         name: p.name,
         place: p.place,
         imageUrl: imagenPremioUrl,
         description: p.description || '',
-        sorteo: existingSorteo 
+        sorteo: existingSorteo
       });
       newPremios.push(premio);
     });
@@ -358,7 +358,7 @@ export class SorteosService {
 
     existingSorteo.premios = savedPremios;
     const updatedSorteo = await this.sorteoRepository.save(existingSorteo);
-    
+
     if (updatedSorteo.premios) {
       updatedSorteo.premios.forEach(premio => {
         delete premio.sorteo;
