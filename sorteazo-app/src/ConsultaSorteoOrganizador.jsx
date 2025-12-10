@@ -7,8 +7,10 @@ import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos'
 import { BoletoGrid } from './consulta-sorteo-components/BoletoGrid';
 import { BoletoDetalleModal } from './consulta-sorteo-components/BoletoDetalleModal';
 import { obtenerSorteoPorId, obtenerBoletosPorSorteoOrganizador } from './services/SorteazoApi';
+import { aprobarPago, denegarPago } from './controllers/PagosController';
 import { EmptyStateCard } from './util-components/EmptyStateCard';
 import { PremiosModal } from './consulta-sorteo-components/PremiosModal';
+import Swal from 'sweetalert2';
 
 export const ConsultaSorteoOrganizador = () => {
     const { id } = useParams();
@@ -40,14 +42,38 @@ export const ConsultaSorteoOrganizador = () => {
                 }
 
                 const boletosData = await obtenerBoletosPorSorteoOrganizador(id);
+                console.log("Boletos del organizador:", boletosData);
 
-                const boletosMapeados = boletosData.map(b => ({
-                    ...b,
-                    numero: Number(b.number),            // siempre número
-                    price: b.price,
-                    isReserved: !!b.isReserved,         // conservar para cálculos
-                    estado: b.isReserved ? 'apartado' : 'disponible'
-                }));
+                const boletosMapeados = boletosData.map(b => {
+                    let estadoFrontend = 'disponible';
+                    
+                    switch(b.status) {
+                        case 'DISPONIBLE':
+                            estadoFrontend = 'disponible';
+                            break;
+                        case 'RESERVADO':
+                            estadoFrontend = 'apartado';
+                            break;
+                        case 'PAGO_PENDIENTE':
+                            // Amarillo - Pago pendiente de aprobación
+                            estadoFrontend = 'apartado';
+                            break;
+                        case 'PAGADO':
+                            // Azul - Ya pagado y confirmado
+                            estadoFrontend = 'pagado';
+                            break;
+                        default:
+                            estadoFrontend = 'disponible';
+                    }
+                    
+                    return {
+                        ...b,
+                        numero: Number(b.number),
+                        price: b.price,
+                        estado: estadoFrontend
+                    };
+                });
+                
                 // ordenar por número ascendente antes de agrupar
                 boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
                 setBoletos(boletosMapeados);
@@ -75,6 +101,126 @@ export const ConsultaSorteoOrganizador = () => {
         setSelectedBoleto(null);
     };
 
+    const handleConfirmarPago = async (pagoId) => {
+        try {
+            await aprobarPago(pagoId);
+            
+            await Swal.fire({
+                icon: 'success',
+                title: 'Pago Aprobado',
+                text: 'El pago ha sido confirmado exitosamente.',
+                confirmButtonText: 'Entendido'
+            });
+
+            // Recargar boletos
+            const boletosData = await obtenerBoletosPorSorteoOrganizador(id);
+            const boletosMapeados = boletosData.map(b => {
+                let estadoFrontend = 'disponible';
+                
+                switch(b.status) {
+                    case 'DISPONIBLE':
+                        estadoFrontend = 'disponible';
+                        break;
+                    case 'RESERVADO':
+                        estadoFrontend = 'apartado';
+                        break;
+                    case 'PAGO_PENDIENTE':
+                        estadoFrontend = 'apartado';
+                        break;
+                    case 'PAGADO':
+                        estadoFrontend = 'pagado';
+                        break;
+                    default:
+                        estadoFrontend = 'disponible';
+                }
+                
+                return {
+                    ...b,
+                    numero: Number(b.number),
+                    price: b.price,
+                    estado: estadoFrontend
+                };
+            });
+            
+            boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
+            setBoletos(boletosMapeados);
+            
+        } catch (error) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'No se pudo aprobar el pago',
+                confirmButtonText: 'Entendido'
+            });
+        }
+    };
+
+    const handleRechazarPago = async (pagoId) => {
+        const result = await Swal.fire({
+            icon: 'warning',
+            title: '¿Rechazar pago?',
+            text: 'El boleto volverá a estar disponible. Esta acción no se puede deshacer.',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, rechazar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#dc2626'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            await denegarPago(pagoId);
+            
+            await Swal.fire({
+                icon: 'success',
+                title: 'Pago Rechazado',
+                text: 'El pago ha sido rechazado y el boleto está disponible nuevamente.',
+                confirmButtonText: 'Entendido'
+            });
+
+            // Recargar boletos
+            const boletosData = await obtenerBoletosPorSorteoOrganizador(id);
+            const boletosMapeados = boletosData.map(b => {
+                let estadoFrontend = 'disponible';
+                
+                switch(b.status) {
+                    case 'DISPONIBLE':
+                        estadoFrontend = 'disponible';
+                        break;
+                    case 'RESERVADO':
+                        estadoFrontend = 'apartado';
+                        break;
+                    case 'PAGO_PENDIENTE':
+                        estadoFrontend = 'apartado';
+                        break;
+                    case 'PAGADO':
+                        estadoFrontend = 'pagado';
+                        break;
+                    default:
+                        estadoFrontend = 'disponible';
+                }
+                
+                return {
+                    ...b,
+                    numero: Number(b.number),
+                    price: b.price,
+                    estado: estadoFrontend
+                };
+            });
+            
+            boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
+            setBoletos(boletosMapeados);
+            
+        } catch (error) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'No se pudo rechazar el pago',
+                confirmButtonText: 'Entendido'
+            });
+        }
+    };
+
     const CHUNK_SIZE = 100;
     const boletosAgrupados = useMemo(() => {
         if (!boletos || boletos.length === 0) return [];
@@ -97,7 +243,7 @@ export const ConsultaSorteoOrganizador = () => {
         return <div className="container mx-auto p-8"><EmptyStateCard message="Sorteo no encontrado." /></div>;
     }
 
-    const numerosDisponibles = boletos.filter(b => !b.isReserved).length;
+    const numerosDisponibles = boletos.filter(b => b.estado === 'disponible').length;
     const numerosTotales = sorteo.numbersQuantity || boletos.length;
 
     return (
@@ -122,18 +268,18 @@ export const ConsultaSorteoOrganizador = () => {
                                 <p className="font-afacad text-2xl font-bold text-green-600">{numerosDisponibles}/{numerosTotales}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-6 text-sm text-gray-600 font-afacad">
+                        <div className="flex items-center gap-4 text-sm text-gray-600 font-afacad flex-wrap">
                             <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 border border-gray-400 rounded"></div>
+                                <div className="w-5 h-5 border-2 border-gray-400 rounded-full bg-white"></div>
                                 <span>Disponible</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 bg-gray-400 rounded"></div>
-                                <span>Comprado</span>
+                                <div className="w-5 h-5 bg-yellow-400 rounded-full"></div>
+                                <span>Apartado</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 bg-yellow-400 rounded"></div>
-                                <span>Apartado</span>
+                                <div className="w-5 h-5 bg-blue-500 rounded-full"></div>
+                                <span>Pagado</span>
                             </div>
                         </div>
                     </div>
@@ -163,7 +309,14 @@ export const ConsultaSorteoOrganizador = () => {
                     })}
                 </div>
             </div>
-            <BoletoDetalleModal isOpen={isModalOpen} boleto={selectedBoleto} onClose={closeModal} />
+            <BoletoDetalleModal 
+                isOpen={isModalOpen} 
+                boleto={selectedBoleto} 
+                onClose={closeModal}
+                isOrganizer={true}
+                onConfirmarPago={handleConfirmarPago}
+                onRechazarPago={handleRechazarPago}
+            />
             <PremiosModal
                 isOpen={isPremiosModalOpen}
                 premios={sorteo?.premios}

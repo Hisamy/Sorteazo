@@ -5,13 +5,14 @@ import { FaArrowLeft } from 'react-icons/fa';
 import prizeImage from './assets/images/sorteo-placeholder.png';
 import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos';
 import { BoletoGrid } from './consulta-sorteo-components/BoletoGrid';
-import { obtenerSorteoPorId, obtenerBoletosPorSorteoCliente, apartarBoletosPorCliente } from './services/SorteazoApi';
+import { obtenerSorteoPorId, obtenerBoletosPorSorteoCliente, apartarBoletosPorCliente, obtenerUsuarioActual } from './services/SorteazoApi';
+import { procesarPagoTransferencia, procesarPagoEnLinea } from './controllers/PagosController';
 import { EmptyStateCard } from './util-components/EmptyStateCard';
 import { PremiosModal } from './consulta-sorteo-components/PremiosModal';
 import { FloatingActionBar } from './consulta-sorteo-components/FloatingActionBar';
 import { ConfirmacionApartadoModal } from './consulta-sorteo-components/ConfirmacionApartadoModal';
+import { PagarBoletosModal } from './consulta-sorteo-components/PagarBoletosModal';
 import Swal from "sweetalert2";
-
 
 export const ConsultaSorteoCliente = () => {
     const { id } = useParams();
@@ -25,11 +26,20 @@ export const ConsultaSorteoCliente = () => {
     const [seleccionados, setSeleccionados] = useState([]);
     const [isPremiosModalOpen, setIsPremiosModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [isPagoModalOpen, setIsPagoModalOpen] = useState(false);
+    const [modoSeleccion, setModoSeleccion] = useState('apartar'); // 'apartar' | 'pagar'
+    const [currentUserId, setCurrentUserId] = useState(null);
 
     useEffect(() => {
         const cargarDatosSorteo = async () => {
             try {
                 setLoading(true);
+                
+                // Obtener el usuario actual autenticado (desde JWT en cookies)
+                const usuarioActual = await obtenerUsuarioActual();
+                const currentUserId = usuarioActual?.id || usuarioActual?.userId;
+                setCurrentUserId(currentUserId);
+                console.log("Usuario actual autenticado:", usuarioActual, "ID:", currentUserId);
                 
                 // Siempre obtener los datos completos del sorteo para asegurar que tengamos los premios
                 const data = await obtenerSorteoPorId(id);
@@ -43,13 +53,49 @@ export const ConsultaSorteoCliente = () => {
                 setSorteo(sorteoData);
 
                 const boletosData = await obtenerBoletosPorSorteoCliente(id);
-                const boletosMapeados = boletosData.map(b => ({
-                    ...b,
-                    numero: Number(b.number),            // siempre número
-                    price: b.price,
-                    isReserved: !!b.isReserved,         // conservar para cálculos
-                    estado: b.isReserved ? 'apartado' : 'disponible'
-                }));
+                console.log("Boletos obtenidos del backend:", boletosData);
+                
+                const boletosMapeados = boletosData.map(b => {
+                    let estadoFrontend = 'disponible';
+                    const numeroActual = Number(b.number);
+                    
+                    switch(b.status) {
+                        case 'DISPONIBLE':
+                            estadoFrontend = 'disponible';
+                            break;
+                        case 'RESERVADO':
+                            estadoFrontend = 'apartadoOtro';
+                            break;
+                        case 'PAGO_PENDIENTE':
+                            // Amarillo si es mío (pago pendiente de aprobación)
+                            // Gris si es de otro
+                            const boletoClientId = String(b.clientId || '');
+                            const usuarioId = String(currentUserId || '');
+                            
+                            if (boletoClientId && usuarioId && boletoClientId === usuarioId) {
+                                estadoFrontend = 'apartadoMio';
+                            } else {
+                                estadoFrontend = 'apartadoOtro';
+                            }
+                            break;
+                        case 'PAGADO':
+                            // Azul para todos - Ya está pagado y confirmado
+                            estadoFrontend = 'pagado';
+                            break;
+                        default:
+                            estadoFrontend = 'disponible';
+                    }
+                    
+                    return {
+                        ...b,
+                        numero: numeroActual,
+                        price: b.price,
+                        estado: estadoFrontend
+                    };
+                });
+                
+                console.log("Boletos mapeados:", boletosMapeados.filter(b => b.estado === 'apartadoMio'));
+                
                 // ordenar por número ascendente antes de agrupar
                 boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
                 setBoletos(boletosMapeados);
@@ -65,25 +111,57 @@ export const ConsultaSorteoCliente = () => {
     }, [id]);
 
     const handleBoletoClick = (numero) => {
-        const boletoOriginal = boletos.find(b => b.numero === numero);
-        if (boletoOriginal && boletoOriginal.estado === 'apartado') {
+        const boleto = boletos.find(b => b.numero === numero);
+        if (!boleto) return;
+        
+        // Caso 1: Boleto disponible → Modo apartar
+        if (boleto.estado === 'disponible') {
+            setModoSeleccion('apartar');
+            // Si ya hay boletos apartados seleccionados, limpiar
+            setSeleccionados(prev => {
+                const tieneApartados = prev.some(num => {
+                    const b = boletos.find(x => x.numero === num);
+                    return b?.estado === 'apartadoMio';
+                });
+                if (tieneApartados) return [numero];
+                return prev.includes(numero) 
+                    ? prev.filter(n => n !== numero)
+                    : [...prev, numero];
+            });
+        }
+        // Caso 2: Boleto apartado por MÍ → Modo pagar (clickeable)
+        else if (boleto.estado === 'apartadoMio') {
+            setModoSeleccion('pagar');
+            // Si ya hay boletos disponibles seleccionados, limpiar
+            setSeleccionados(prev => {
+                const tieneDisponibles = prev.some(num => {
+                    const b = boletos.find(x => x.numero === num);
+                    return b?.estado === 'disponible';
+                });
+                if (tieneDisponibles) return [numero];
+                return prev.includes(numero)
+                    ? prev.filter(n => n !== numero)
+                    : [...prev, numero];
+            });
+        }
+        // Caso 3: Boleto apartado por OTRO → Bloqueado (no hacer nada)
+        else if (boleto.estado === 'apartadoOtro') {
             return;
         }
-
-        setSeleccionados(prev =>
-            prev.includes(numero)
-                ? prev.filter(n => n !== numero)
-                : [...prev, numero]
-        );
+        // Caso 4: Boleto pagado → Bloqueado (no hacer nada)
+        else if (boleto.estado === 'pagado') {
+            return;
+        }
     };
 
     const handleConfirmarApartado = async () => {
         console.log('Apartando boletos:', seleccionados);
 
+        // Actualizar estado local optimistamente
         setBoletos(prevBoletos =>
             prevBoletos.map(boleto => {
                 if (seleccionados.includes(boleto.numero)) {
-                    return { ...boleto, estado: 'apartado' };
+                    return { ...boleto, estado: 'apartadoMio', status: 'PAGO_PENDIENTE' };
                 }
                 return boleto;
             })
@@ -103,6 +181,98 @@ export const ConsultaSorteoCliente = () => {
                 icon: "error",
                 title: "No se pudo apartar",
                 text: err?.message || "Intenta nuevamente más tarde."
+            });
+        }
+    };
+
+    const handleConfirmarPago = async ({ metodoPago, comprobanteFile, boletos: boletosAPagar }) => {
+        console.log('Procesando pago:', { 
+            metodoPago, 
+            boletosAPagar,
+            comprobanteFile: comprobanteFile?.name 
+        });
+
+        try {
+            // Obtener los IDs de los boletos seleccionados
+            const boletoIds = seleccionados
+                .map(num => boletos.find(b => b.numero === num))
+                .filter(Boolean)
+                .map(b => b.id);
+
+            console.log('IDs de boletos a pagar:', boletoIds);
+
+            let resultado;
+            
+            if (metodoPago === 'TRANSFERENCIA') {
+                resultado = await procesarPagoTransferencia(boletoIds, comprobanteFile);
+            } else if (metodoPago === 'PAGO EN LINEA') {
+                resultado = await procesarPagoEnLinea(boletoIds);
+            }
+
+            // Cerrar modal
+            setIsPagoModalOpen(false);
+            setSeleccionados([]);
+
+            // Recargar los boletos para obtener el estado actualizado
+            const boletosData = await obtenerBoletosPorSorteoCliente(id);
+            const usuarioActual = await obtenerUsuarioActual();
+            const currentUserId = usuarioActual?.id || usuarioActual?.userId;
+            
+            const boletosMapeados = boletosData.map(b => {
+                let estadoFrontend = 'disponible';
+                const numeroActual = Number(b.number);
+                
+                switch(b.status) {
+                    case 'DISPONIBLE':
+                        estadoFrontend = 'disponible';
+                        break;
+                    case 'RESERVADO':
+                        estadoFrontend = 'apartadoOtro';
+                        break;
+                    case 'PAGO_PENDIENTE':
+                        const boletoClientId = String(b.clientId || '');
+                        const usuarioId = String(currentUserId || '');
+                        estadoFrontend = (boletoClientId && usuarioId && boletoClientId === usuarioId) 
+                            ? 'apartadoMio' 
+                            : 'apartadoOtro';
+                        break;
+                    case 'PAGADO':
+                        estadoFrontend = 'pagado';
+                        break;
+                    default:
+                        estadoFrontend = 'disponible';
+                }
+                
+                return {
+                    ...b,
+                    numero: numeroActual,
+                    price: b.price,
+                    estado: estadoFrontend
+                };
+            });
+            
+            boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
+            setBoletos(boletosMapeados);
+
+            // Mostrar mensaje de éxito
+            await Swal.fire({
+                icon: "success",
+                title: "Pago Registrado",
+                text: metodoPago === 'TRANSFERENCIA' 
+                    ? `Se ha registrado tu pago por ${boletoIds.length} boleto(s). El organizador verificará tu comprobante.`
+                    : `¡Pago procesado exitosamente! Tus ${boletoIds.length} boleto(s) han sido pagados con tarjeta.`,
+                confirmButtonText: "Entendido"
+            });
+
+        } catch (error) {
+            console.error('Error al procesar pago:', error);
+            setIsPagoModalOpen(false);
+            
+            await Swal.fire({
+                icon: "error",
+                title: "Error al procesar pago",
+                text: error?.response?.data?.message || error?.message || "No se pudo procesar el pago. Intenta nuevamente.",
+                confirmButtonText: "Entendido"
             });
         }
     };
@@ -164,17 +334,25 @@ export const ConsultaSorteoCliente = () => {
                                 <p className="font-afacad text-2xl font-bold text-green-600">{boletos.filter(b => b.estado === 'disponible').length}/{numerosTotales}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-6 text-sm text-gray-600 font-afacad">
+                        <div className="flex items-center gap-4 text-sm text-gray-600 font-afacad flex-wrap">
                             <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 border border-gray-400 rounded"></div>
+                                <div className="w-5 h-5 border-2 border-gray-400 rounded-full bg-white"></div>
                                 <span>Disponible</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 bg-gray-400 rounded"></div>
+                                <div className="w-5 h-5 bg-yellow-400 rounded-full"></div>
+                                <span>Mis Apartados</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-5 h-5 bg-gray-400 rounded-full"></div>
                                 <span>Apartado</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 bg-green-600 rounded"></div>
+                                <div className="w-5 h-5 bg-blue-500 rounded-full"></div>
+                                <span>Pagado</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-5 h-5 bg-green-600 rounded-full"></div>
                                 <span>Seleccionado</span>
                             </div>
                         </div>
@@ -217,7 +395,14 @@ export const ConsultaSorteoCliente = () => {
                 <FloatingActionBar
                     count={seleccionados.length}
                     totalPrice={totalAPagar}
-                    onActionClick={() => setIsConfirmModalOpen(true)}
+                    mode={modoSeleccion}
+                    onActionClick={() => {
+                        if (modoSeleccion === 'pagar') {
+                            setIsPagoModalOpen(true);
+                        } else {
+                            setIsConfirmModalOpen(true);
+                        }
+                    }}
                 />
             )}
             <ConfirmacionApartadoModal
@@ -225,6 +410,16 @@ export const ConsultaSorteoCliente = () => {
                 onClose={() => setIsConfirmModalOpen(false)}
                 onConfirm={handleConfirmarApartado}
                 seleccionados={seleccionados}
+                precioBoleto={sorteo.ticketPrice}
+            />
+            <PagarBoletosModal
+                isOpen={isPagoModalOpen}
+                onClose={() => {
+                    setIsPagoModalOpen(false);
+                    setSeleccionados([]);
+                }}
+                onConfirm={handleConfirmarPago}
+                boletos={seleccionados.map(num => boletos.find(b => b.numero === num)).filter(Boolean)}
                 precioBoleto={sorteo.ticketPrice}
             />
         </div>

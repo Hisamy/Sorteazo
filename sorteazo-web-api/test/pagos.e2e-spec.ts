@@ -160,7 +160,6 @@ describe('Pagos Module (E2E Real Flow)', () => {
       number: '00010',
       price: 100,
       status: EstadoBoleto.RESERVED,
-      isReserved: true,
       sorteo: sorteo
     }));
 
@@ -169,7 +168,6 @@ describe('Pagos Module (E2E Real Flow)', () => {
       number: '00015',
       price: 100,
       status: EstadoBoleto.RESERVED,
-      isReserved: true,
       sorteo: sorteo
     }));
 
@@ -177,7 +175,6 @@ describe('Pagos Module (E2E Real Flow)', () => {
       number: '00020',
       price: 100,
       status: EstadoBoleto.RESERVED,
-      isReserved: true,
       sorteo: sorteo
     }));
 
