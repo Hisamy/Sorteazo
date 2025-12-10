@@ -164,6 +164,18 @@ export const rechazarPago = async (pagoId) => {
     return response.data;
 };
 
+export const liberarBoletos = async (boletoIds) => {
+    try {
+        const response = await api.patch('/boletos/release', {
+            boletoIds
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error al liberar boletos:', error);
+        throw error;
+    }
+};
+
 export const editarSorteo = async (sorteoId, datosActualizados) => {
     try {
         if (!datosActualizados || typeof datosActualizados !== 'object') {

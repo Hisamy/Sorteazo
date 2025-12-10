@@ -6,7 +6,7 @@ import prizeImage from './assets/images/sorteo-placeholder.png';
 import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos';
 import { BoletoGrid } from './consulta-sorteo-components/BoletoGrid';
 import { BoletoDetalleModal } from './consulta-sorteo-components/BoletoDetalleModal';
-import { obtenerSorteoPorId, obtenerBoletosPorSorteoOrganizador } from './services/SorteazoApi';
+import { obtenerSorteoPorId, obtenerBoletosPorSorteoOrganizador, liberarBoletos } from './services/SorteazoApi';
 import { aprobarPago, denegarPago } from './controllers/PagosController';
 import { EmptyStateCard } from './util-components/EmptyStateCard';
 import { PremiosModal } from './consulta-sorteo-components/PremiosModal';
@@ -150,6 +150,72 @@ export const ConsultaSorteoOrganizador = () => {
                 icon: 'error',
                 title: 'Error',
                 text: error.message || 'No se pudo aprobar el pago',
+                confirmButtonText: 'Entendido'
+            });
+        }
+    };
+
+    const handleLiberarBoleto = async (boletoId) => {
+        const result = await Swal.fire({
+            icon: 'warning',
+            title: '¿Liberar boleto?',
+            text: 'El boleto volverá a estar disponible y se perderán los datos del cliente.',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, liberar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#374151'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            await liberarBoletos([boletoId]);
+            
+            await Swal.fire({
+                icon: 'success',
+                title: 'Boleto Liberado',
+                text: 'El boleto ha sido liberado exitosamente.',
+                confirmButtonText: 'Entendido'
+            });
+
+            // Recargar boletos
+            const boletosData = await obtenerBoletosPorSorteoOrganizador(id);
+            const boletosMapeados = boletosData.map(b => {
+                let estadoFrontend = 'disponible';
+                
+                switch(b.status) {
+                    case 'DISPONIBLE':
+                        estadoFrontend = 'disponible';
+                        break;
+                    case 'RESERVADO':
+                        estadoFrontend = 'apartado';
+                        break;
+                    case 'PAGO_PENDIENTE':
+                        estadoFrontend = 'apartado';
+                        break;
+                    case 'PAGADO':
+                        estadoFrontend = 'pagado';
+                        break;
+                    default:
+                        estadoFrontend = 'disponible';
+                }
+                
+                return {
+                    ...b,
+                    numero: Number(b.number),
+                    price: b.price,
+                    estado: estadoFrontend
+                };
+            });
+            
+            boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
+            setBoletos(boletosMapeados);
+            
+        } catch (error) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.message || 'No se pudo liberar el boleto',
                 confirmButtonText: 'Entendido'
             });
         }
@@ -316,6 +382,7 @@ export const ConsultaSorteoOrganizador = () => {
                 isOrganizer={true}
                 onConfirmarPago={handleConfirmarPago}
                 onRechazarPago={handleRechazarPago}
+                onLiberarBoleto={handleLiberarBoleto}
             />
             <PremiosModal
                 isOpen={isPremiosModalOpen}

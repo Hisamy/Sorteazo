@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaTimes, FaUser, FaWhatsapp, FaReceipt, FaCheckCircle, FaExclamationCircle, FaTimesCircle } from 'react-icons/fa';
 
-export const BoletoDetalleModal = ({ isOpen, boleto, onClose, isOrganizer = false, onConfirmarPago, onRechazarPago }) => {
+export const BoletoDetalleModal = ({ isOpen, boleto, onClose, isOrganizer = false, onConfirmarPago, onRechazarPago, onLiberarBoleto }) => {
     const [loading, setLoading] = useState(false);
 
     if (!isOpen || !boleto) {
@@ -68,6 +68,20 @@ export const BoletoDetalleModal = ({ isOpen, boleto, onClose, isOrganizer = fals
         }
     };
 
+    const handleLiberar = async () => {
+        if (onLiberarBoleto && boleto?.id) {
+            setLoading(true);
+            try {
+                await onLiberarBoleto(boleto.id);
+                onClose();
+            } catch (error) {
+                console.error('Error al liberar boleto:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
     return (
         <div className="fixed inset-0 bg-black/50 z-[60] flex justify-center items-center p-4 overflow-y-auto">
             <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md relative font-afacad my-8 max-h-[90vh] overflow-y-auto">
@@ -113,6 +127,17 @@ export const BoletoDetalleModal = ({ isOpen, boleto, onClose, isOrganizer = fals
                                     {client.phoneNumber}
                                 </a>
                             </div>
+                        )}
+                        
+                        {/* Botón Liberar para Organizador */}
+                        {isOrganizer && !isPagado && (
+                            <button
+                                onClick={handleLiberar}
+                                disabled={loading}
+                                className="mt-3 w-full bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors"
+                            >
+                                {loading ? 'Liberando...' : 'Liberar boleto'}
+                            </button>
                         )}
                     </div>
                 )}
