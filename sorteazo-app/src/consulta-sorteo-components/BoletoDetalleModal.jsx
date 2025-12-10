@@ -1,15 +1,22 @@
-import React from 'react';
-import { FaTimes, FaUser, FaWhatsapp, FaReceipt, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaTimes, FaUser, FaWhatsapp, FaReceipt, FaCheckCircle, FaExclamationCircle, FaTimesCircle } from 'react-icons/fa';
 
-export const BoletoDetalleModal = ({ isOpen, boleto, onClose }) => {
+export const BoletoDetalleModal = ({ isOpen, boleto, onClose, isOrganizer = false, onConfirmarPago, onRechazarPago }) => {
+    const [loading, setLoading] = useState(false);
+
     if (!isOpen || !boleto) {
         return null;
     }
 
-    const { number, price, isReserved, client, payment: pago } = boleto;
+    const { number, price, estado, status, client, payment: pago } = boleto;
     
     const hasClientInfo = !!client; 
     const hasPaymentInfo = !!pago;
+    
+    // Determinar si está reservado basado en el estado o status
+    const isReserved = estado === 'apartado' || estado === 'apartadoMio' || estado === 'apartadoOtro' || 
+                       status === 'PAGO_PENDIENTE' || status === 'RESERVADO';
+    const isPagado = estado === 'pagado' || status === 'PAGADO';
 
     const getImageUrl = (path) => {
         if (!path) return null;
@@ -21,12 +28,49 @@ export const BoletoDetalleModal = ({ isOpen, boleto, onClose }) => {
         ? getImageUrl(pago.comprobante.imageUrl) 
         : null;
 
-    const statusText = isReserved ? "Apartado" : "Disponible";
-    const statusColor = isReserved ? "text-red-600" : "text-green-600";
+    // Determinar texto y color del estado
+    let statusText = "Disponible";
+    let statusColor = "text-green-600";
+    
+    if (isPagado) {
+        statusText = "Pagado";
+        statusColor = "text-blue-600";
+    } else if (isReserved) {
+        statusText = "Apartado";
+        statusColor = "text-yellow-600";
+    }
+
+    const handleConfirmar = async () => {
+        if (onConfirmarPago && pago?.id) {
+            setLoading(true);
+            try {
+                await onConfirmarPago(pago.id);
+                onClose();
+            } catch (error) {
+                console.error('Error al confirmar pago:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
+    const handleRechazar = async () => {
+        if (onRechazarPago && pago?.id) {
+            setLoading(true);
+            try {
+                await onRechazarPago(pago.id);
+                onClose();
+            } catch (error) {
+                console.error('Error al rechazar pago:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-[9999] flex justify-center items-center p-4">
-            <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-sm relative font-afacad">
+        <div className="fixed inset-0 bg-black/50 z-[60] flex justify-center items-center p-4 overflow-y-auto">
+            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md relative font-afacad my-8 max-h-[90vh] overflow-y-auto">
                 <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                     <FaTimes size={20} />
                 </button>
@@ -108,7 +152,7 @@ export const BoletoDetalleModal = ({ isOpen, boleto, onClose }) => {
                                     <img 
                                         src={comprobanteUrl} 
                                         alt="Comprobante de pago" 
-                                        className="w-full h-32 object-contain bg-white"
+                                        className="w-full h-auto max-h-64 object-contain bg-white"
                                     />
                                 </a>
                             ) : (
@@ -117,13 +161,36 @@ export const BoletoDetalleModal = ({ isOpen, boleto, onClose }) => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Botones de Aprobación/Rechazo para Organizador */}
+                        {isOrganizer && pago.status === 'PENDIENTE' && (
+                            <div className="mt-4 flex gap-3">
+                                <button
+                                    onClick={handleConfirmar}
+                                    disabled={loading}
+                                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <FaCheckCircle />
+                                    {loading ? 'Procesando...' : 'Aprobar'}
+                                </button>
+                                <button
+                                    onClick={handleRechazar}
+                                    disabled={loading}
+                                    className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <FaTimesCircle />
+                                    {loading ? 'Procesando...' : 'Rechazar'}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
                 
-                <div className="mt-8 text-center">
+                <div className="mt-6 text-center">
                     <button 
                         onClick={onClose}
-                        className="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-8 rounded-lg shadow-lg"
+                        disabled={loading}
+                        className="bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 text-white font-bold py-2 px-8 rounded-lg shadow-lg transition-colors"
                     >
                         Cerrar
                     </button>
