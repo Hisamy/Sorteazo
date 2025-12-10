@@ -239,18 +239,6 @@ export class SorteosService {
       throw new UnauthorizedException('No tienes permisos para modificar este sorteo.');
     }
 
-    if (updateSorteoDto.ticketPrice !== undefined) {
-      const boletosVendidos = await this.boletoRepository.count({
-        where: {
-          sorteo: { id: idSorteo },
-          status: Not(EstadoBoleto.AVAILABLE)
-        }
-      });
-
-      if (boletosVendidos > 0) {
-        throw new ConflictException(
-          `No se puede modificar el precio del boleto debido a que el sorteo cuenta ya con ${boletosVendidos} boletos comprados o reservados.`
-        );
     const boletosVendidos = await this.boletoRepository.count({
       where: {
         sorteo: { id: idSorteo },
@@ -304,9 +292,9 @@ export class SorteosService {
     const sorteoToUpdate = this.sorteoRepository.merge(existingSorteo, updates);
     const updated = await this.sorteoRepository.save(sorteoToUpdate);
 
-    delete updated.organizador;
+    const { organizador, ...sorteoSinOrganizador } = updated;
 
-    return updated;
+    return sorteoSinOrganizador;
   }
 
   /**

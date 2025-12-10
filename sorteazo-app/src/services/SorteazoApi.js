@@ -125,31 +125,6 @@ export const pagarBoletosTransferencia = async (boletoIds, comprobanteFile) => {
         formData.append('comprobantePago', comprobanteFile);
 
         const response = await api.post('/pagos/transfer', formData, {
-}
-
-export const editarSorteo = async (sorteoId, datosActualizados) => {
-    try {
-        if (!datosActualizados || typeof datosActualizados !== 'object') {
-            throw new Error('Los datos actualizados son inválidos');
-        }
-
-        const formData = new FormData();
-
-        Object.keys(datosActualizados).forEach(key => {
-            if (key === 'imagenSorteo' && datosActualizados[key] instanceof File) {
-                formData.append('imagenSorteo', datosActualizados[key]);
-            }
-            else if (typeof datosActualizados[key] === 'object' && datosActualizados[key] !== null && !(datosActualizados[key] instanceof File)) {
-                formData.append(key, JSON.stringify(datosActualizados[key]));
-            }
-            else if (datosActualizados[key] !== null && datosActualizados[key] !== undefined && !(datosActualizados[key] instanceof File)) {
-                formData.append(key, datosActualizados[key]);
-            }
-        });
-
-        console.log("FormData a enviar:", Array.from(formData.entries())); // Para debug
-
-        const response = await api.patch(`/sorteos/${sorteoId}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -188,6 +163,34 @@ export const rechazarPago = async (pagoId) => {
     const response = await api.patch(`/pagos/${pagoId}/reject`);
     return response.data;
 };
+
+export const editarSorteo = async (sorteoId, datosActualizados) => {
+    try {
+        if (!datosActualizados || typeof datosActualizados !== 'object') {
+            throw new Error('Los datos actualizados son inválidos');
+        }
+
+        const formData = new FormData();
+
+        Object.keys(datosActualizados).forEach(key => {
+            if (key === 'imagenSorteo' && datosActualizados[key] instanceof File) {
+                formData.append('imagenSorteo', datosActualizados[key]);
+            }
+            else if (typeof datosActualizados[key] === 'object' && datosActualizados[key] !== null && !(datosActualizados[key] instanceof File)) {
+                formData.append(key, JSON.stringify(datosActualizados[key]));
+            }
+            else if (datosActualizados[key] !== null && datosActualizados[key] !== undefined && !(datosActualizados[key] instanceof File)) {
+                formData.append(key, datosActualizados[key]);
+            }
+        });
+
+        console.log("FormData a enviar:", Array.from(formData.entries())); // Para debug
+
+        const response = await api.patch(`/sorteos/${sorteoId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
 
         return response.data;
     } catch (error) {

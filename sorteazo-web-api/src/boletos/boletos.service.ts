@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, ConflictException, 
 import { CreateBoletoDto } from './dto/create-boleto.dto';
 import { UpdateBoletoDto } from './dto/update-boleto.dto';
 import { ReserveBoletoDto } from './dto/reserve-boleto.dto';
+import { ReleaseBoletoDto } from './dto/release-boleto.dto';
 import { EstadoBoleto } from './enums/boleto.enum';
 
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,8 +11,6 @@ import { Repository, In } from 'typeorm';
 import { Sorteo } from '../sorteos/entities/sorteo.entity';
 import { Boleto } from './entities/boleto.entity';
 import { Client } from './../users/entities/client.entity';
-import { EstadoBoleto } from './enums/boleto.enum';
-import { ReleaseBoletoDto } from './dto/release-boleto.dto';
 
 @Injectable()
 export class BoletosService {
