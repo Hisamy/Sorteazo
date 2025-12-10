@@ -10,6 +10,7 @@ import { obtenerSorteoPorId, obtenerBoletosPorSorteoOrganizador, liberarBoletos 
 import { aprobarPago, denegarPago } from './controllers/PagosController';
 import { EmptyStateCard } from './util-components/EmptyStateCard';
 import { PremiosModal } from './consulta-sorteo-components/PremiosModal';
+import { GenerarReporteModal } from './consulta-sorteo-components/GenerarReporteModal';
 import Swal from 'sweetalert2';
 
 export const ConsultaSorteoOrganizador = () => {
@@ -24,6 +25,7 @@ export const ConsultaSorteoOrganizador = () => {
     const [selectedBoleto, setSelectedBoleto] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPremiosModalOpen, setIsPremiosModalOpen] = useState(false);
+    const [isGenerarReporteModalOpen, setIsGenerarReporteModalOpen] = useState(false);
 
     useEffect(() => {
         const cargarDatosSorteo = async () => {
@@ -46,8 +48,8 @@ export const ConsultaSorteoOrganizador = () => {
 
                 const boletosMapeados = boletosData.map(b => {
                     let estadoFrontend = 'disponible';
-                    
-                    switch(b.status) {
+
+                    switch (b.status) {
                         case 'DISPONIBLE':
                             estadoFrontend = 'disponible';
                             break;
@@ -65,7 +67,7 @@ export const ConsultaSorteoOrganizador = () => {
                         default:
                             estadoFrontend = 'disponible';
                     }
-                    
+
                     return {
                         ...b,
                         numero: Number(b.number),
@@ -73,7 +75,7 @@ export const ConsultaSorteoOrganizador = () => {
                         estado: estadoFrontend
                     };
                 });
-                
+
                 // ordenar por número ascendente antes de agrupar
                 boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
                 setBoletos(boletosMapeados);
@@ -87,6 +89,19 @@ export const ConsultaSorteoOrganizador = () => {
         };
         cargarDatosSorteo();
     }, [id]);
+
+    const handleGenerarReporte = async (tipo) => {
+        // API 
+        console.log("Generando reporte tipo:", tipo);
+
+        // Simular espera
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Lógica específica
+        if (tipo === 'DEUDORES') {
+            // descargarPDFDeudores()...
+        }
+    };
 
     const handleBoletoClick = (numeroBoleto) => {
         const boletoSeleccionado = boletos.find(b => b.numero === numeroBoleto);
@@ -104,7 +119,7 @@ export const ConsultaSorteoOrganizador = () => {
     const handleConfirmarPago = async (pagoId) => {
         try {
             await aprobarPago(pagoId);
-            
+
             await Swal.fire({
                 icon: 'success',
                 title: 'Pago Aprobado',
@@ -116,8 +131,8 @@ export const ConsultaSorteoOrganizador = () => {
             const boletosData = await obtenerBoletosPorSorteoOrganizador(id);
             const boletosMapeados = boletosData.map(b => {
                 let estadoFrontend = 'disponible';
-                
-                switch(b.status) {
+
+                switch (b.status) {
                     case 'DISPONIBLE':
                         estadoFrontend = 'disponible';
                         break;
@@ -133,7 +148,7 @@ export const ConsultaSorteoOrganizador = () => {
                     default:
                         estadoFrontend = 'disponible';
                 }
-                
+
                 return {
                     ...b,
                     numero: Number(b.number),
@@ -141,10 +156,10 @@ export const ConsultaSorteoOrganizador = () => {
                     estado: estadoFrontend
                 };
             });
-            
+
             boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
             setBoletos(boletosMapeados);
-            
+
         } catch (error) {
             await Swal.fire({
                 icon: 'error',
@@ -170,7 +185,7 @@ export const ConsultaSorteoOrganizador = () => {
 
         try {
             await liberarBoletos([boletoId]);
-            
+
             await Swal.fire({
                 icon: 'success',
                 title: 'Boleto Liberado',
@@ -182,8 +197,8 @@ export const ConsultaSorteoOrganizador = () => {
             const boletosData = await obtenerBoletosPorSorteoOrganizador(id);
             const boletosMapeados = boletosData.map(b => {
                 let estadoFrontend = 'disponible';
-                
-                switch(b.status) {
+
+                switch (b.status) {
                     case 'DISPONIBLE':
                         estadoFrontend = 'disponible';
                         break;
@@ -199,7 +214,7 @@ export const ConsultaSorteoOrganizador = () => {
                     default:
                         estadoFrontend = 'disponible';
                 }
-                
+
                 return {
                     ...b,
                     numero: Number(b.number),
@@ -207,10 +222,10 @@ export const ConsultaSorteoOrganizador = () => {
                     estado: estadoFrontend
                 };
             });
-            
+
             boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
             setBoletos(boletosMapeados);
-            
+
         } catch (error) {
             await Swal.fire({
                 icon: 'error',
@@ -236,7 +251,7 @@ export const ConsultaSorteoOrganizador = () => {
 
         try {
             await denegarPago(pagoId);
-            
+
             await Swal.fire({
                 icon: 'success',
                 title: 'Pago Rechazado',
@@ -248,8 +263,8 @@ export const ConsultaSorteoOrganizador = () => {
             const boletosData = await obtenerBoletosPorSorteoOrganizador(id);
             const boletosMapeados = boletosData.map(b => {
                 let estadoFrontend = 'disponible';
-                
-                switch(b.status) {
+
+                switch (b.status) {
                     case 'DISPONIBLE':
                         estadoFrontend = 'disponible';
                         break;
@@ -265,7 +280,7 @@ export const ConsultaSorteoOrganizador = () => {
                     default:
                         estadoFrontend = 'disponible';
                 }
-                
+
                 return {
                     ...b,
                     numero: Number(b.number),
@@ -273,10 +288,10 @@ export const ConsultaSorteoOrganizador = () => {
                     estado: estadoFrontend
                 };
             });
-            
+
             boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
             setBoletos(boletosMapeados);
-            
+
         } catch (error) {
             await Swal.fire({
                 icon: 'error',
@@ -356,6 +371,11 @@ export const ConsultaSorteoOrganizador = () => {
                             className="mt-4 bg-green-600 text-white font-afacad px-5 py-2 rounded-lg hover:bg-green-700 w-full max-w-xs">
                             Ver premios
                         </button>
+                        <button
+                            onClick={() => setIsGenerarReporteModalOpen(true)}
+                            className="mt-4 bg-green-600 text-white font-afacad px-5 py-2 rounded-lg hover:bg-green-700 w-full max-w-xs">
+                            Generar Reporte
+                        </button>
                     </div>
                 </div>
                 <div className="mt-12 space-y-4">
@@ -375,9 +395,9 @@ export const ConsultaSorteoOrganizador = () => {
                     })}
                 </div>
             </div>
-            <BoletoDetalleModal 
-                isOpen={isModalOpen} 
-                boleto={selectedBoleto} 
+            <BoletoDetalleModal
+                isOpen={isModalOpen}
+                boleto={selectedBoleto}
                 onClose={closeModal}
                 isOrganizer={true}
                 onConfirmarPago={handleConfirmarPago}
@@ -389,6 +409,13 @@ export const ConsultaSorteoOrganizador = () => {
                 premios={sorteo?.premios}
                 onClose={() => setIsPremiosModalOpen(false)}
             />
+            <GenerarReporteModal
+                isOpen={isGenerarReporteModalOpen}
+                onClose={() => setIsGenerarReporteModalOpen(false)}
+                onGenerarReporte={handleGenerarReporte}
+            />
+
+
         </div >
     );
 };
