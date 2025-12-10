@@ -4,7 +4,6 @@ import { UpdateSorteoDto } from './dto/update-sorteo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Sorteo } from './entities/sorteo.entity';
 import { Boleto } from '../boletos/entities/boleto.entity';
-import { EstadoBoleto } from '../boletos/enums/boleto.enum';
 import { Organizador } from '../users/entities/organizador.entity';
 import { Premio } from './entities/premio.entity';
 import { relative } from 'path';
@@ -394,7 +393,7 @@ export class SorteosService {
     const boletosVendidos = await this.boletoRepository.count({
       where: {
         sorteo: { id: idSorteo },
-        status: Not(EstadoBoleto.AVAILABLE)
+        isReserved: true
       }
     });
 

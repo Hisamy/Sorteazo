@@ -18,7 +18,7 @@ export class PagosService {
     private readonly boletoRepository: Repository<Boleto>,
     @InjectRepository(Comprobante)
     private readonly comprobanteRepository: Repository<Comprobante>,
-  ) {}
+  ) { }
 
   async create(createPagoDto: CreatePagoDto, userId: string, file: Express.Multer.File) {
     const { boletoId, paymentMethod } = createPagoDto;
@@ -51,19 +51,19 @@ export class PagosService {
       });
       comprobantePago = await this.comprobanteRepository.save(newComprobante);
     }
-    
+
     const newPago = this.pagoRepository.create({
       boleto: boleto,
       amount: boleto.price,
       paymentMethod,
-      status: EstadoPago.PENDING, 
+      status: EstadoPago.PENDING,
       comprobante: comprobantePago || undefined,
     });
 
     const savedPago = await this.pagoRepository.save(newPago);
 
-    await this.boletoRepository.update(boleto.id, { 
-      status: EstadoBoleto.PENDING_PAYMENT 
+    await this.boletoRepository.update(boleto.id, {
+      status: EstadoBoleto.PENDING_PAYMENT
     });
 
     return savedPago;
@@ -76,15 +76,15 @@ export class PagosService {
     });
 
     if (!pago) throw new NotFoundException(`Payment with ID ${pagoId} not found.`);
-    
+
     if (!pago.boleto) {
-       throw new ConflictException('Inconsistency: Payment exists but has no linked Ticket.');
+      throw new ConflictException('Inconsistency: Payment exists but has no linked Ticket.');
     }
 
     const organizador = pago.boleto.sorteo?.organizador;
 
     if (!organizador) {
-       throw new ConflictException('Incomplete data: Ticket has no organizer associated.');
+      throw new ConflictException('Incomplete data: Ticket has no organizer associated.');
     }
 
     const orgIdFromDb = organizador.userId || (organizador as any).user?.id || (organizador as any).id;
@@ -92,13 +92,13 @@ export class PagosService {
     if (orgIdFromDb !== organizadorId) {
       throw new ForbiddenException('You are not authorized to manage this payment.');
     }
-    
+
     if (pago.status !== EstadoPago.PENDING) {
       throw new ConflictException('This payment has already been processed.');
     }
 
-    // Actualizar estado del pago
     pago.status = EstadoPago.PAID;
+
     await this.pagoRepository.save(pago);
 
     // Actualizar estado del boleto - limpiar deadline ya que está pagado
@@ -123,7 +123,7 @@ export class PagosService {
     const organizador = pago.boleto?.sorteo?.organizador;
 
     if (!organizador) {
-        throw new ConflictException('Incomplete data: Ticket has no organizer associated.');
+      throw new ConflictException('Incomplete data: Ticket has no organizer associated.');
     }
 
     const orgIdFromDb = organizador.userId || (organizador as any).user?.id || (organizador as any).id;
@@ -136,7 +136,6 @@ export class PagosService {
       throw new ConflictException('This payment has already been processed.');
     }
 
-    // Actualizar estado del pago
     pago.status = EstadoPago.REJECTED;
     await this.pagoRepository.save(pago);
 
@@ -152,38 +151,6 @@ export class PagosService {
 
     return pago;
   }
-
-  // async createOnlinePayment(boletoId: string, userId: string) {
-  //   const boleto = await this.boletoRepository.findOne({
-  //     where: { id: boletoId },
-  //     relations: ['client', 'pago'],
-  //   });
-
-  //   if (!boleto) throw new NotFoundException(`Ticket with ID ${boletoId} not found.`);
-  //   if (!boleto.client || boleto.client.userId !== userId) throw new ConflictException('This ticket is not reserved under your name.');
-  //   if (boleto.pago) throw new ConflictException('This ticket already has an associated payment attempt.');
-
-  //   const simulatedClientSecret = `pi_${crypto.randomUUID()}_secret`;
-
-  //   const newPago = this.pagoRepository.create({
-  //     boleto: boleto,
-  //     amount: boleto.price,
-  //     paymentMethod: TipoPago.ONLINE,
-  //     status: EstadoPago.PENDING,
-  //   });
-    
-  //   const savedPago = await this.pagoRepository.save(newPago);
-
-  //   await this.boletoRepository.update(boleto.id, { 
-  //     status: EstadoBoleto.PENDING_PAYMENT 
-  //   });
-
-  //   return {
-  //     message: 'Payment intent created successfully (simulated).',
-  //     clientSecret: simulatedClientSecret,
-  //     pagoId: savedPago.id
-  //   };
-  // }
 
   async simulateFullOnlinePayment(boletoId: string, userId: string) {
     const boleto = await this.boletoRepository.findOne({
@@ -203,7 +170,7 @@ export class PagosService {
       boleto: boleto,
       amount: boleto.price,
       paymentMethod: TipoPago.ONLINE,
-      status: EstadoPago.PAID, 
+      status: EstadoPago.PAID,
       lastCardDigits: '4242',
       cardType: 'VISA',
     });
@@ -225,47 +192,4 @@ export class PagosService {
     };
   }
 
-  // async handleSimulatedPaymentSuccess(pagoId: string) {
-  //   const pago = await this.pagoRepository.findOne({
-  //     where: { id: pagoId },
-  //     relations: ['boleto'],
-  //   });
-
-  //   if (!pago) {
-  //     throw new NotFoundException(`Payment with ID ${pagoId} not found.`);
-  //   }
-
-  //   if (pago.paymentMethod !== TipoPago.ONLINE) {
-  //     throw new BadRequestException('This action is only for online payments.');
-  //   }
-
-  //   if (pago.status !== EstadoPago.PENDING) {
-  //     return pago;
-  //   }
-
-  //   pago.status = EstadoPago.PAID;
-    
-  //   await this.pagoRepository.save(pago);
-  //   await this.boletoRepository.update(pago.boleto.id, { 
-  //     status: EstadoBoleto.PAID 
-  //   });
-
-  //   return pago;
-  // }
-
-  // findAll() {
-  //   return `This action returns all pagos`;
-  // }
-
-  // findOne(id: number) {
-  //   return `This action returns a #${id} pago`;
-  // }
-
-  // update(id: number, updatePagoDto: UpdatePagoDto) {
-  //   return `This action updates a #${id} pago`;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} pago`;
-  // }
 }

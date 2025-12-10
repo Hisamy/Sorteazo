@@ -9,7 +9,6 @@ import {
 import request from 'supertest';
 import { Sorteo } from '../src/sorteos/entities/sorteo.entity';
 import { Boleto } from '../src/boletos/entities/boleto.entity';
-import { EstadoBoleto } from '../src/boletos/enums/boleto.enum';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { AuthGuard } from '@nestjs/passport';
 import { BoletosModule } from '../src/boletos/boletos.module';
@@ -46,8 +45,8 @@ describe('BoletosController (E2E) - GET /boletos/:sorteoId', () => {
   let server: any;
 
   const mockBoletos = [
-    { id: 'b1', number: 1, price: 50, status: EstadoBoleto.AVAILABLE },
-    { id: 'b2', number: 2, price: 50, status: EstadoBoleto.PENDING_PAYMENT },
+    { id: 'b1', number: 1, price: 50, isReserved: false },
+    { id: 'b2', number: 2, price: 50, isReserved: true },
   ];
 
   const mockSorteo = {
@@ -96,8 +95,8 @@ describe('BoletosController (E2E) - GET /boletos/:sorteoId', () => {
       .expect(HttpStatus.OK);
 
     expect(response.body).toEqual([
-      { id: 'b1', number: 1, price: 50, status: EstadoBoleto.AVAILABLE },
-      { id: 'b2', number: 2, price: 50, status: EstadoBoleto.PENDING_PAYMENT },
+      { id: 'b1', number: 1, price: 50, isReserved: false },
+      { id: 'b2', number: 2, price: 50, isReserved: true },
     ]);
     expect(mockSorteoRepository.findOne).toHaveBeenCalledWith({
       where: { id: mockSorteo.id },

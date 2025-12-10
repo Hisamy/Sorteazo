@@ -26,17 +26,6 @@ export const obtenerUsuario = async (usuarioData) => {
     }
 };
 
-// Obtener el usuario actual autenticado (desde JWT en cookies)
-export const obtenerUsuarioActual = async () => {
-    try {
-        const response = await api.get("/users/profile/me");
-        return response.data;
-    } catch (error) {
-        console.error("Error al obtener usuario actual:", error);
-        return null;
-    }
-};
-
 export const obtenerTodosLosSorteos = async () => {
     try {
         const response = await api.get("/sorteos");
@@ -110,7 +99,7 @@ export const apartarBoletosPorCliente = async (sorteoId, seleccionados) => {
 
         return response.data;
     } catch (error) {
-        console.error("Ocurrió un error al apartar los números, intente de nuevo más tarde.", error);
+        console.error(`Ocurrió un error al apartar los números, intente de nuevo más tarde.`, error);
         throw error;
     }
 };
@@ -129,40 +118,8 @@ export const pagarBoletosTransferencia = async (boletoIds, comprobanteFile) => {
                 'Content-Type': 'multipart/form-data',
             },
         });
-        pagos.push(response.data);
     }
-
-    return {
-        message: `Se registraron ${pagos.length} pago(s) exitosamente`,
-        pagos
-    };
-};
-
-export const pagarBoletosEnLinea = async (boletoIds) => {
-    const pagos = [];
-
-    for (const boletoId of boletoIds) {
-        const response = await api.post('/pagos/simulate-online', {
-            boletoId
-        });
-        pagos.push(response.data);
-    }
-
-    return {
-        message: `Se procesaron ${pagos.length} pago(s) en línea exitosamente`,
-        pagos
-    };
-};
-
-export const confirmarPago = async (pagoId) => {
-    const response = await api.patch(`/pagos/${pagoId}/confirm`);
-    return response.data;
-};
-
-export const rechazarPago = async (pagoId) => {
-    const response = await api.patch(`/pagos/${pagoId}/reject`);
-    return response.data;
-};
+}
 
 export const editarSorteo = async (sorteoId, datosActualizados) => {
     try {
