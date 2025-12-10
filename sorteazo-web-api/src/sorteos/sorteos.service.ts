@@ -4,7 +4,6 @@ import { UpdateSorteoDto } from './dto/update-sorteo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Sorteo } from './entities/sorteo.entity';
 import { Boleto } from '../boletos/entities/boleto.entity';
-import { EstadoBoleto } from '../boletos/enums/boleto.enum';
 import { Organizador } from '../users/entities/organizador.entity';
 import { Premio } from './entities/premio.entity';
 import { relative } from 'path';
@@ -239,18 +238,6 @@ export class SorteosService {
       throw new UnauthorizedException('No tienes permisos para modificar este sorteo.');
     }
 
-    if (updateSorteoDto.ticketPrice !== undefined) {
-      const boletosVendidos = await this.boletoRepository.count({
-        where: {
-          sorteo: { id: idSorteo },
-          status: Not(EstadoBoleto.AVAILABLE)
-        }
-      });
-
-      if (boletosVendidos > 0) {
-        throw new ConflictException(
-          `No se puede modificar el precio del boleto debido a que el sorteo cuenta ya con ${boletosVendidos} boletos comprados o reservados.`
-        );
     const boletosVendidos = await this.boletoRepository.count({
       where: {
         sorteo: { id: idSorteo },
@@ -404,7 +391,7 @@ export class SorteosService {
     const boletosVendidos = await this.boletoRepository.count({
       where: {
         sorteo: { id: idSorteo },
-        status: Not(EstadoBoleto.AVAILABLE)
+        isReserved: true
       }
     });
 

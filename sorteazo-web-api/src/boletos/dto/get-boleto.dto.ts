@@ -1,9 +1,7 @@
-import { EstadoBoleto } from '../enums/boleto.enum';
-
 export class GetBoletoDto {
   number: string;
   price: number;
-  status: EstadoBoleto;
+  isReserved: boolean;
   fechaReserva: Date;
   paymentDeadline: Date;
 }
