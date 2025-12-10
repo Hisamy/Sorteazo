@@ -8,7 +8,7 @@ import { EstadoBoleto } from '../boletos/enums/boleto.enum';
 import { Organizador } from '../users/entities/organizador.entity';
 import { Premio } from './entities/premio.entity';
 import { relative } from 'path';
-import { Not } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 
 import { UpdateBoletosInfoDto } from './dto/update-boletos.dto';
 import { UpdatePremiosDto } from './dto/update-premios.dto';
@@ -16,10 +16,10 @@ import { UpdatePremiosDto } from './dto/update-premios.dto';
 @Injectable()
 export class SorteosService {
   constructor(
-    @InjectRepository(Sorteo) private readonly sorteoRepository,
-    @InjectRepository(Boleto) private readonly boletoRepository,
-    @InjectRepository(Premio) private readonly premioRepository,
-    @InjectRepository(Organizador) private readonly organizadorRepository
+    @InjectRepository(Sorteo) private readonly sorteoRepository: Repository<Sorteo>,
+    @InjectRepository(Boleto) private readonly boletoRepository: Repository<Boleto>,
+    @InjectRepository(Premio) private readonly premioRepository: Repository<Premio>,
+    @InjectRepository(Organizador) private readonly organizadorRepository: Repository<Organizador>
   ) { }
 
   async create(
@@ -88,14 +88,10 @@ export class SorteosService {
     const savedSorteo = await this.sorteoRepository.save(sorteo);
 
     if (savedSorteo.premios) {
-      savedSorteo.premios.forEach(premio => {
-        delete premio.sorteo;
-      });
+      savedSorteo.premios = savedSorteo.premios.map(({ sorteo: _, ...premio }) => premio as Premio);
     }
     if (savedSorteo.boletos) {
-      savedSorteo.boletos.forEach(boleto => {
-        delete boleto.sorteo;
-      });
+      savedSorteo.boletos = savedSorteo.boletos.map(({ sorteo: _, ...boleto }) => boleto as Boleto);
     }
 
     return savedSorteo;
@@ -153,6 +149,14 @@ export class SorteosService {
       relations: ['organizador'],
     });
 
+    if (!existingSorteo) {
+      throw new NotFoundException(`Sorteo con ID ${idSorteo} no encontrado.`);
+    }
+
+    if (existingSorteo.organizador.userId !== idOrganizador) {
+      throw new UnauthorizedException('No tienes permisos para modificar este sorteo.');
+    }
+
     const saleStart: Date = updateSorteoDto.saleStartDate
       ? new Date(updateSorteoDto.saleStartDate)
       : existingSorteo.saleStartDate;
@@ -209,9 +213,9 @@ export class SorteosService {
 
     const updated = await this.sorteoRepository.save(sorteoToUpdate);
 
-    delete updated.organizador;
+    const { organizador, ...sorteoSinOrganizador } = updated;
 
-    return updated;
+    return sorteoSinOrganizador;
   }
 
   /**
@@ -239,18 +243,6 @@ export class SorteosService {
       throw new UnauthorizedException('No tienes permisos para modificar este sorteo.');
     }
 
-    if (updateSorteoDto.ticketPrice !== undefined) {
-      const boletosVendidos = await this.boletoRepository.count({
-        where: {
-          sorteo: { id: idSorteo },
-          status: Not(EstadoBoleto.AVAILABLE)
-        }
-      });
-
-      if (boletosVendidos > 0) {
-        throw new ConflictException(
-          `No se puede modificar el precio del boleto debido a que el sorteo cuenta ya con ${boletosVendidos} boletos comprados o reservados.`
-        );
     const boletosVendidos = await this.boletoRepository.count({
       where: {
         sorteo: { id: idSorteo },
@@ -304,9 +296,9 @@ export class SorteosService {
     const sorteoToUpdate = this.sorteoRepository.merge(existingSorteo, updates);
     const updated = await this.sorteoRepository.save(sorteoToUpdate);
 
-    delete updated.organizador;
+    const { organizador, ...sorteoSinOrganizador } = updated;
 
-    return updated;
+    return sorteoSinOrganizador;
   }
 
   /**
@@ -323,39 +315,39 @@ export class SorteosService {
     idOrganizador: string,
     files?: { imagenesPremios?: Express.Multer.File[] }
   ) {
-    const existingSorteo = await this.sorteoRepository.findOne({
-      where: { id: idSorteo },
-      relations: ['organizador', 'premios'],
-    });
+        const existingSorteo = await this.sorteoRepository.findOne({
+          where: { id: idSorteo },
+          relations: ['organizador', 'premios'],
+        });
 
-    if (!existingSorteo) {
-      throw new NotFoundException(`Sorteo con ID ${idSorteo} no encontrado.`);
-    }
+        if (!existingSorteo) {
+          throw new NotFoundException(`Sorteo con ID ${idSorteo} no encontrado.`);
+        }
 
-    if (existingSorteo.organizador.userId !== idOrganizador) {
-      throw new UnauthorizedException('No tienes permisos para modificar este sorteo.');
-    }
+        if (existingSorteo.organizador.userId !== idOrganizador) {
+          throw new UnauthorizedException('No tienes permisos para modificar este sorteo.');
+        }
 
-    const boletosVendidos = await this.boletoRepository.count({
-      where: {
-        sorteo: { id: idSorteo },
-        isReserved: true
-      }
-    });
+        const boletosVendidos = await this.boletoRepository.count({
+          where: {
+            sorteo: { id: idSorteo },
+            isReserved: true
+          }
+        });
 
-    if (boletosVendidos > 0) {
-      throw new ConflictException(`No se pueden actualizar los premios. Ya hay ${boletosVendidos} boletos vendidos o apartados.`);
-    }
+        if (boletosVendidos > 0) {
+          throw new ConflictException(`No se pueden actualizar los premios. Ya hay ${boletosVendidos} boletos vendidos o apartados.`);
+        }
 
-    await this.premioRepository.delete({ sorteo: { id: idSorteo } });
+        await this.premioRepository.delete({ sorteo: { id: idSorteo } });
 
-    const newPremios: Premio[] = [];
-    const premiosData = updatePremiosDto.premios || [];
+        const newPremios: Premio[] = [];
+        const premiosData = updatePremiosDto.premios || [];
 
-    premiosData.forEach((p, index) => {
-      const imagenPremioUrl = files?.imagenesPremios?.[index]
-        ? `/uploads/${files.imagenesPremios[index].filename}`
-        : p.imageUrl || '';
+        premiosData.forEach((p, index) => {
+          const imagenPremioUrl = files?.imagenesPremios?.[index]
+            ? `/uploads/${files.imagenesPremios[index].filename}`
+            : p.imageUrl || '';
 
       const premio: Premio = this.premioRepository.create({
         name: p.name,
@@ -373,18 +365,16 @@ export class SorteosService {
     const updatedSorteo = await this.sorteoRepository.save(existingSorteo);
 
     if (updatedSorteo.premios) {
-      updatedSorteo.premios.forEach(premio => {
-        delete premio.sorteo;
-      });
+      updatedSorteo.premios = updatedSorteo.premios.map(({ sorteo: _, ...premio }) => premio as Premio);
     }
 
-    delete updatedSorteo.organizador;
+    const { organizador, ...sorteoSinOrganizador } = updatedSorteo;
 
-    return updatedSorteo;
+    return sorteoSinOrganizador;
   }
+      
 
   async remove(idSorteo: string, idOrganizador: string) {
-
     const sorteo = await this.sorteoRepository.findOne({
       where: { id: idSorteo },
       relations: ['organizador']

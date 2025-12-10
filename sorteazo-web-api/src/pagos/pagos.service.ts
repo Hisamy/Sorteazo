@@ -101,10 +101,11 @@ export class PagosService {
     pago.status = EstadoPago.PAID;
     await this.pagoRepository.save(pago);
 
-    // Actualizar estado del boleto
+    // Actualizar estado del boleto - limpiar deadline ya que está pagado
     const boleto = await this.boletoRepository.findOne({ where: { id: pago.boleto.id } });
     if (boleto) {
       boleto.status = EstadoBoleto.PAID;
+      boleto.paymentDeadline = null; // Ya no hay deadline, está pagado
       await this.boletoRepository.save(boleto);
     }
 
@@ -139,11 +140,13 @@ export class PagosService {
     pago.status = EstadoPago.REJECTED;
     await this.pagoRepository.save(pago);
 
-    // Actualizar estado del boleto - volver a disponible y quitar cliente
+    // Actualizar estado del boleto - volver a disponible y limpiar todos los datos
     const boleto = await this.boletoRepository.findOne({ where: { id: pago.boleto.id } });
     if (boleto) {
       boleto.status = EstadoBoleto.AVAILABLE;
       boleto.client = null;
+      boleto.fechaReserva = null;
+      boleto.paymentDeadline = null;
       await this.boletoRepository.save(boleto);
     }
 
@@ -207,9 +210,13 @@ export class PagosService {
 
     const savedPago = await this.pagoRepository.save(newPago);
 
-    await this.boletoRepository.update(boleto.id, { 
-      status: EstadoBoleto.PAID 
-    });
+    // Actualizar boleto a pagado y limpiar deadline
+    const boletoToUpdate = await this.boletoRepository.findOne({ where: { id: boleto.id } });
+    if (boletoToUpdate) {
+      boletoToUpdate.status = EstadoBoleto.PAID;
+      boletoToUpdate.paymentDeadline = null; // Ya no hay deadline, está pagado
+      await this.boletoRepository.save(boletoToUpdate);
+    }
 
     return {
       message: 'Pago simulado con éxito. El boleto ha sido pagado.',
