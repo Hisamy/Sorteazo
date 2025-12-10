@@ -14,6 +14,7 @@ import { BoletosService } from './boletos.service';
 import { CreateBoletoDto } from './dto/create-boleto.dto';
 import { UpdateBoletoDto } from './dto/update-boleto.dto';
 import { ReserveBoletoDto } from './dto/reserve-boleto.dto';
+import { ReleaseBoletoDto } from './dto/release-boleto.dto';
 
 @Controller('boletos')
 export class BoletosController {
@@ -48,6 +49,17 @@ export class BoletosController {
     }
 
     return this.boletosService.reserveBoletos(reserveBoletoDto, req.user.id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('release')
+  async releaseBoletos(@Body() releaseBoletoDto: ReleaseBoletoDto, @Request() req) {
+    
+    if (!req.user || req.user.role !== 'organizador') {
+      throw new UnauthorizedException('Solo los organizadores pueden liberar boletos');
+    }
+
+    return this.boletosService.releaseBoletos(releaseBoletoDto, req.user.id);
   }
 
   @Get('detalles/:id')

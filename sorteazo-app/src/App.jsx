@@ -9,10 +9,9 @@ import { ConsultaSorteoCliente } from "./ConsultaSorteoCliente";
 import { EditarSorteo } from "./editar-sorteo/EditarSorteo";
 import { EditarSorteoBoletos } from "./editar-sorteo/EditarSorteoBoletos";
 import { EditarSorteoPremios } from "./editar-sorteo/EditarSorteoPremios";
-
+import { ConfigurarNotificacionesSorteo } from "./ConfigurarNotificacionesSorteo";
 
 function App() {
-
 
   return (
     <BrowserRouter>
@@ -25,6 +24,7 @@ function App() {
         <Route path="/sorteos/organizador/editar/:id" element={<EditarSorteo />} />
         <Route path="/sorteos/organizador/editar-boletos/:id" element={<EditarSorteoBoletos />} />
         <Route path="/sorteos/organizador/editar-premios/:id" element={<EditarSorteoPremios />} />
+        <Route path="/sorteos/organizador/configurar-notificaciones/:id" element={<ConfigurarNotificacionesSorteo />} />
         <Route path="/sorteos/cliente/:id" element={<ConsultaSorteoCliente />} />
         <Route path="/" element={<InicioSesion />} />
       </Routes>
