@@ -9,7 +9,6 @@ import { Organizador } from '../users/entities/organizador.entity';
 import { Premio } from './entities/premio.entity';
 import { relative } from 'path';
 import { Not } from 'typeorm';
-
 import { UpdateBoletosInfoDto } from './dto/update-boletos.dto';
 import { UpdatePremiosDto } from './dto/update-premios.dto';
 
@@ -133,14 +132,6 @@ export class SorteosService {
     return sorteo;
   }
 
-  /**
-   * Actualiza la informacion basica de un sorteo (fechas, titulo, descripcion y dias para para pagar).
-   * @param idSorteo ID del sorteo a modificar.
-   * @param updateSorteoDto Objeto que contiene la informacion nueva para el sorteo.
-   * @param idOrganizador ID del organizador del sorteo. (usado para validacion).
-   * @param files Imagen representativa del sorteo.
-   * @returns 
-   */
   async updateBasicInfo(
     idSorteo: string,
     updateSorteoDto: UpdateSorteoDto,
@@ -214,13 +205,6 @@ export class SorteosService {
     return updated;
   }
 
-  /**
-   * Actualiza los boletos del sorteo (cantidad de boletos, precio por unidad y numero de inicio de los mismos)
-   * @param idSorteo ID del sorteo con los boletos a modificar.
-   * @param updateBoletosInfoDto Objeto con los datos necesarios para la actualizacion.
-   * @param idOrganizador ID del organizador del sorteo (usado para validacion).
-   * @returns 
-   */
   async updateBoletosInfo(
     idSorteo: string,
     updateBoletosInfoDto: UpdateBoletosInfoDto,
@@ -297,14 +281,6 @@ export class SorteosService {
     return sorteoSinOrganizador;
   }
 
-  /**
-   * Actualiza los premios del sorteo si el mismo no cuenta ya con boletos vendidos.
-   * @param idSorteo ID del sorteo con los boletos a modificar.
-   * @param updatePremiosDto Objeto con la informacion de los premios.
-   * @param idOrganizador ID del organizador del sorteo (usado para validacion).
-   * @param files Imagenes de los premios a guardar.
-   * @returns 
-   */
   async updatePremios(
     idSorteo: string,
     updatePremiosDto: UpdatePremiosDto,
@@ -382,9 +358,6 @@ export class SorteosService {
       throw new NotFoundException(`El sorteo con id ${idSorteo} no existe.`);
     }
 
-    console.log(sorteo.organizador.userId);
-    console.log(idOrganizador);
-
     if (sorteo.organizador.userId !== idOrganizador) {
       throw new NotFoundException(`No tienes permisos para modificar este recurso.`);
     }
@@ -401,5 +374,169 @@ export class SorteosService {
     }
 
     await this.sorteoRepository.remove(sorteo);
+  }
+
+  async getSorteoDashboard(raffleId: string, organizerId: string) {
+    const sorteo = await this.sorteoRepository.findOne({
+      where: { id: raffleId },
+      relations: ['organizador', 'organizador.user', 'boletos'],
+    });
+
+    if (!sorteo) throw new NotFoundException('Raffle not found');
+
+    const ownerId = sorteo.organizador.user?.id || sorteo.organizador.userId;
+
+    if (ownerId !== organizerId) {
+      throw new UnauthorizedException('You do not have permission to view this raffle dashboard');
+    }
+
+    const now = new Date();
+    const endDate = new Date(sorteo.saleEndDate);
+    const diffTime = endDate.getTime() - now.getTime();
+    const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    let collectedAmount = 0;
+    let pendingAmount = 0;
+    let soldCount = 0;
+    let reservedCount = 0;
+    let availableCount = 0;
+
+    sorteo.boletos.forEach((ticket) => {
+      if (ticket.status === EstadoBoleto.PAID) {
+        collectedAmount += ticket.price;
+        soldCount++;
+      } else if (ticket.status === EstadoBoleto.PENDING_PAYMENT || ticket.status === EstadoBoleto.RESERVED) {
+        pendingAmount += ticket.price;
+        reservedCount++;
+      } else if (ticket.status === EstadoBoleto.AVAILABLE) {
+        availableCount++;
+      }
+    });
+
+    return {
+      sorteoId: sorteo.id,
+      title: sorteo.title,
+      daysRemaining: daysRemaining > 0 ? daysRemaining : 0,
+      financials: {
+        collected: collectedAmount,
+        pending: pendingAmount,
+        totalExpected: collectedAmount + pendingAmount + (availableCount * sorteo.ticketPrice),
+      },
+      tickets: {
+        sold: soldCount,
+        reserved: reservedCount,
+        available: availableCount,
+        total: sorteo.numbersQuantity
+      }
+    };
+  }
+
+  async getDebtorsReport(raffleId: string, organizerId: string) {
+    const sorteo = await this.sorteoRepository.findOne({
+      where: { id: raffleId },
+      relations: ['organizador', 'organizador.user', 'boletos', 'boletos.client', 'boletos.client.user'],
+    });
+
+    if (!sorteo) throw new NotFoundException('Raffle not found');
+
+    const ownerId = sorteo.organizador.user?.id || sorteo.organizador.userId;
+
+    if (ownerId !== organizerId) {
+      throw new UnauthorizedException('You do not have permission to view this report');
+    }
+
+    const debtors = sorteo.boletos
+      .filter(t => t.status === EstadoBoleto.PENDING_PAYMENT || t.status === EstadoBoleto.RESERVED)
+      .map(t => ({
+        ticketId: t.id,
+        number: t.number,
+        debtAmount: t.price,
+        client: t.client ? {
+          name: t.client.user?.name || 'Unknown User',
+          phone: t.client.user?.phone || 'No Phone',
+          email: t.client.user?.email
+        } : 'Unknown Client',
+        reservedAt: t.fechaReserva,
+        paymentDeadline: t.paymentDeadline
+      }));
+
+    return debtors;
+  }
+
+  async getTicketStatusReport(raffleId: string, organizerId: string) {
+    const sorteo = await this.sorteoRepository.findOne({
+      where: { id: raffleId },
+      relations: ['organizador', 'organizador.user', 'boletos'],
+    });
+
+    if (!sorteo) throw new NotFoundException('Raffle not found');
+
+    const ownerId = sorteo.organizador.user?.id || sorteo.organizador.userId;
+
+    if (ownerId !== organizerId) {
+      throw new UnauthorizedException('Access denied or raffle not found');
+    }
+
+    const report = {
+      sold: [] as string[],
+      reserved: [] as string[],
+      available: [] as string[]
+    };
+
+    sorteo.boletos.forEach(t => {
+      if (t.status === EstadoBoleto.PAID) {
+        report.sold.push(t.number);
+      } else if (t.status === EstadoBoleto.AVAILABLE) {
+        report.available.push(t.number);
+      } else {
+        report.reserved.push(t.number);
+      }
+    });
+
+    return report;
+  }
+
+  async getHistoricalReport(organizerId: string) {
+    const sorteos = await this.sorteoRepository.find({
+      where: { organizador: { userId: organizerId } },
+      relations: ['boletos'],
+      order: { saleEndDate: 'DESC' }
+    });
+
+    return sorteos.map(sorteo => {
+      let collectedAmount = 0;
+      let pendingAmount = 0;
+      let sold = 0;
+      let unpaid = 0;
+      let free = 0;
+
+      sorteo.boletos.forEach(t => {
+        if (t.status === EstadoBoleto.PAID) {
+          collectedAmount += t.price;
+          sold++;
+        } else if (t.status === EstadoBoleto.AVAILABLE) {
+          free++;
+        } else {
+          pendingAmount += t.price;
+          unpaid++;
+        }
+      });
+
+      return {
+        id: sorteo.id,
+        name: sorteo.title,
+        drawDate: sorteo.raffleDateTime,
+        status: new Date() > new Date(sorteo.raffleDateTime) ? 'FINISHED' : 'ACTIVE',
+        financials: {
+          collected: collectedAmount,
+          pending: pendingAmount,
+        },
+        counts: {
+          sold,
+          unpaid,
+          free
+        }
+      };
+    });
   }
 }

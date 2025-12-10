@@ -5,7 +5,6 @@ import { UpdateSorteoDto } from './dto/update-sorteo.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../configs/multer.config';
-
 import { UpdateBoletosInfoDto } from './dto/update-boletos.dto';
 import { UpdatePremiosDto } from './dto/update-premios.dto';
 
@@ -26,7 +25,7 @@ export class SorteosController {
   ) {
     const user = req.user;
     if (user.role != "organizador") throw new UnauthorizedException("No tienes permisos para realizar esta acción.");
-    return this.sorteosService.create(createSorteoDto, user.sub, files);
+    return this.sorteosService.create(createSorteoDto, user.id, files);
   }
 
   @Get()
@@ -37,10 +36,44 @@ export class SorteosController {
   @Get('organizador/mis-sorteos')
   findSorteosByOrganizador(@Req() req) {
     const user = req.user;
-    console.log(user);
-    //console.log()
     if (user.role != "organizador") throw new UnauthorizedException("No tienes permisos para ver este recurso.");
-    return this.sorteosService.findAllByOrganizador(user.sub);
+    return this.sorteosService.findAllByOrganizador(user.id);
+  }
+
+  @Get('organizer/reports/historical')
+  async getHistoricalReport(@Req() req) {
+    const user = req.user;
+    if (user.role !== "organizador") {
+      throw new UnauthorizedException("You do not have permission to view reports.");
+    }
+    return this.sorteosService.getHistoricalReport(user.id);
+  }
+
+  @Get(':id/reports/dashboard')
+  async getRaffleDashboard(@Param('id') id: string, @Req() req) {
+    const user = req.user;
+    if (user.role !== "organizador") {
+      throw new UnauthorizedException("You do not have permission to view reports.");
+    }
+    return this.sorteosService.getSorteoDashboard(id, user.id);
+  }
+
+  @Get(':id/reports/debtors')
+  async getDebtorsReport(@Param('id') id: string, @Req() req) {
+    const user = req.user;
+    if (user.role !== "organizador") {
+      throw new UnauthorizedException("You do not have permission to view reports.");
+    }
+    return this.sorteosService.getDebtorsReport(id, user.id);
+  }
+
+  @Get(':id/reports/ticket-status')
+  async getTicketStatusReport(@Param('id') id: string, @Req() req) {
+    const user = req.user;
+    if (user.role !== "organizador") {
+      throw new UnauthorizedException("You do not have permission to view reports.");
+    }
+    return this.sorteosService.getTicketStatusReport(id, user.id);
   }
 
   @Get(':id')
@@ -115,5 +148,4 @@ export class SorteosController {
     await this.sorteosService.remove(id, user.id);
     return { "message": "Se eliminó el sorteo con éxito." };
   }
-  
 }
