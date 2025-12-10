@@ -16,18 +16,17 @@ export const GenerarReporteModal = ({ isOpen, onClose, onGenerarReporte }) => {
         return null;
     }
 
-    // Manejador para ejecutar la acción de generar
+    // --- ESTA ES LA FUNCIÓN QUE FALTABA ---
     const handleGenerate = async (type) => {
         setReportType(type);
         setLoading(true);
         try {
-            // Se asume que onGenerarReporte es una función que recibe el tipo y devuelve una promesa
-            // Tipos: 'DEUDORES', 'ESTADO', 'HISTORICO'
+            // Llamamos a la función que nos pasa el padre
             if (onGenerarReporte) {
                 await onGenerarReporte(type);
             }
         } catch (error) {
-            console.error("Error generando el reporte:", error);
+            console.error("Error en modal:", error);
         } finally {
             setLoading(false);
             setReportType(null);
@@ -36,10 +35,8 @@ export const GenerarReporteModal = ({ isOpen, onClose, onGenerarReporte }) => {
 
     return (
         <div className="fixed inset-0 bg-black/50 z-[60] flex justify-center items-center p-4 overflow-y-auto">
-            {/* Se mantiene el estilo del contenedor del modal original */}
             <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg relative font-afacad my-8 max-h-[90vh] overflow-y-auto">
 
-                {/* Botón de cerrar */}
                 <button
                     onClick={onClose}
                     disabled={loading}
@@ -48,7 +45,6 @@ export const GenerarReporteModal = ({ isOpen, onClose, onGenerarReporte }) => {
                     <FaTimes size={20} />
                 </button>
 
-                {/* Título */}
                 <h2 className="text-3xl font-bold text-gray-800 mb-2 text-center">
                     Generar Reportes
                 </h2>
@@ -57,7 +53,6 @@ export const GenerarReporteModal = ({ isOpen, onClose, onGenerarReporte }) => {
                 </p>
 
                 <div className="space-y-4">
-
                     {/* Opción 1: Reporte de Deudores */}
                     <div className="group border border-gray-200 rounded-lg p-4 hover:border-red-300 hover:shadow-md transition-all">
                         <div className="flex justify-between items-start">
@@ -111,14 +106,14 @@ export const GenerarReporteModal = ({ isOpen, onClose, onGenerarReporte }) => {
                     </div>
 
                     {/* Opción 3: Reporte Histórico */}
-                    <div className="group border border-gray-200 rounded-lg p-4 hover:border-purple-300 hover:shadow-md transition-all">
+                    <div className="group border border-gray-200 rounded-lg p-4 hover:border-yellow-400 hover:shadow-md transition-all">
                         <div className="flex justify-between items-start">
                             <div className="flex items-start gap-4">
-                                <div className="p-3 bg-purple-50 text-purple-600 rounded-full">
+                                <div className="p-3 bg-yellow-50 text-yellow-600 rounded-full">
                                     <FaHistory size={20} />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-lg text-gray-800 group-hover:text-purple-700 transition-colors">
+                                    <h3 className="font-bold text-lg text-gray-800 group-hover:text-yellow-700 transition-colors">
                                         Histórico de Sorteos
                                     </h3>
                                     <p className="text-sm text-gray-500 mt-1">
@@ -129,13 +124,12 @@ export const GenerarReporteModal = ({ isOpen, onClose, onGenerarReporte }) => {
                             <button
                                 onClick={() => handleGenerate('HISTORICO')}
                                 disabled={loading}
-                                className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white p-3 rounded-lg shadow transition-colors"
+                                className="bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-400 text-white p-3 rounded-lg shadow transition-colors"
                             >
                                 {loading && reportType === 'HISTORICO' ? <FaSpinner className="animate-spin" /> : <FaDownload />}
                             </button>
                         </div>
                     </div>
-
                 </div>
 
                 {/* Botón Cerrar Inferior */}
@@ -148,7 +142,6 @@ export const GenerarReporteModal = ({ isOpen, onClose, onGenerarReporte }) => {
                         Cerrar
                     </button>
                 </div>
-
             </div>
         </div>
     );

@@ -286,3 +286,35 @@ export const actualizarConfigRecordatorios = async (sorteoId, configData) => {
         throw error;
     }
 };
+
+// Para los reportes
+
+export const obtenerReporteHistorico = async () => {
+    try {
+        const response = await api.get('/sorteos/organizer/reports/historical');
+        return response.data;
+    } catch (error) {
+        console.error("Error al obtener reporte histórico:", error);
+        throw error;
+    }
+};
+
+export const obtenerReporteDeudores = async (sorteoId) => {
+    try {
+        const response = await api.get(`/sorteos/${sorteoId}/reports/debtors`);
+        return response.data;
+    } catch (error) {
+        console.error(`Error al obtener reporte de deudores para sorteo ${sorteoId}:`, error);
+        throw error;
+    }
+};
+
+export const obtenerReporteEstadoBoletos = async (sorteoId) => {
+    try {
+        const response = await api.get(`/sorteos/${sorteoId}/reports/ticket-status`);
+        return response.data;
+    } catch (error) {
+        console.error(`Error al obtener reporte de estado para sorteo ${sorteoId}:`, error);
+        throw error;
+    }
+};

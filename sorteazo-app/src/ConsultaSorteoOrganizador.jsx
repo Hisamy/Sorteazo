@@ -1,13 +1,27 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import {
+    useNavigate,
+    useParams,
+    useLocation
+} from 'react-router-dom';
 import { TopNavBar } from './util-components/TopNavBar';
 import { FaArrowLeft } from 'react-icons/fa';
 import prizeImage from './assets/images/sorteo-placeholder.png';
 import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos';
 import { BoletoGrid } from './consulta-sorteo-components/BoletoGrid';
 import { BoletoDetalleModal } from './consulta-sorteo-components/BoletoDetalleModal';
-import { obtenerSorteoPorId, obtenerBoletosPorSorteoOrganizador, liberarBoletos } from './services/SorteazoApi';
+import {
+    obtenerSorteoPorId,
+    obtenerBoletosPorSorteoOrganizador,
+    liberarBoletos,
+} from './services/SorteazoApi';
 import { aprobarPago, denegarPago } from './controllers/PagosController';
+import {
+    getReporteHistorico,
+    getReporteDeudores,
+    getReporteEstado
+} from './controllers/SorteoController.js'
+import { generarPDF } from './consulta-sorteo-components/PdfGenerator.js';
 import { EmptyStateCard } from './util-components/EmptyStateCard';
 import { PremiosModal } from './consulta-sorteo-components/PremiosModal';
 import { GenerarReporteModal } from './consulta-sorteo-components/GenerarReporteModal';
@@ -44,7 +58,6 @@ export const ConsultaSorteoOrganizador = () => {
                 }
 
                 const boletosData = await obtenerBoletosPorSorteoOrganizador(id);
-                console.log("Boletos del organizador:", boletosData);
 
                 const boletosMapeados = boletosData.map(b => {
                     let estadoFrontend = 'disponible';
@@ -91,15 +104,107 @@ export const ConsultaSorteoOrganizador = () => {
     }, [id]);
 
     const handleGenerarReporte = async (tipo) => {
-        // API 
-        console.log("Generando reporte tipo:", tipo);
+        try {
+            let data = [];
+            let tituloReporte = "";
+            let nombreArchivo = sorteo?.title ? sorteo.title.replace(/\s+/g, '_') : 'Sorteo';
 
-        // Simular espera
-        await new Promise(resolve => setTimeout(resolve, 2000));
+            // Función auxiliar para formatear moneda
+            const fmtMoney = (amount) => `$${Number(amount || 0).toFixed(2)}`;
 
-        // Lógica específica
-        if (tipo === 'DEUDORES') {
-            // descargarPDFDeudores()...
+            switch (tipo) {
+
+                // CASO 1: REPORTE DE DEUDORES
+                case 'DEUDORES':
+                    const deudoresRaw = await getReporteDeudores(id);
+
+                    data = deudoresRaw.map(d => {
+                        const cliente = d.client || {};
+
+                        return {
+                            "Número": d.number,
+                            "Cliente": cliente.name || 'Desconocido',
+                            "Teléfono": cliente.phone || '-',
+                            "Email": cliente.email || '-',
+                            "Monto Deuda": fmtMoney(d.debtAmount),
+                            "Fecha Límite": d.paymentDeadline ? new Date(d.paymentDeadline).toLocaleDateString() : '-'
+                        };
+                    });
+
+                    tituloReporte = `Reporte de Deudores - ${sorteo?.title}`;
+                    nombreArchivo = `Deudores_${nombreArchivo}`;
+                    break;
+
+
+                // CASO 2: ESTADO DE BOLETOS
+                case 'ESTADO':
+                    if (!boletos || boletos.length === 0) throw new Error("No hay boletos cargados");
+
+                    data = boletos.map(b => {
+                        return {
+                            "Número": b.numero,
+                            "Estado": b.estado.toUpperCase(),
+                            "Cliente": (b.estado === 'disponible') ? '-' : b.client?.name
+                        };
+                    });
+
+                    tituloReporte = `Estado General de Boletos - ${sorteo?.title}`;
+                    nombreArchivo = `Estado_Boletos_${nombreArchivo}`;
+                    break;
+
+                // CASO 3: HISTÓRICO
+                case 'HISTORICO':
+                    const historicoRaw = await getReporteHistorico();
+
+                    const listaHistorico = Array.isArray(historicoRaw) ? historicoRaw : [];
+
+                    data = listaHistorico.map(h => {
+                        const financials = h.financials || { collected: 0, pending: 0 };
+                        const counts = h.counts || { sold: 0, unpaid: 0, free: 0 };
+
+                        return {
+                            "Sorteo": h.name,
+                            "Fecha Sorteo": h.drawDate ? new Date(h.drawDate).toLocaleDateString() : '-',
+                            "Estado": h.status === 'FINISHED' ? 'Finalizado' : 'Activo',
+                            "Recaudado": fmtMoney(financials.collected),
+                            "Pendiente": fmtMoney(financials.pending),
+                            "Vendidos": counts.sold,
+                            "Por Pagar": counts.unpaid,
+                            "Libres": counts.free
+                        };
+                    });
+
+                    tituloReporte = "Histórico General de Sorteos";
+                    nombreArchivo = "Historico_General";
+                    break;
+
+                default:
+                    return;
+            }
+
+            // Generar el PDF
+            generarPDF(data, tituloReporte, nombreArchivo);
+
+            const Toast = Swal.mixin({
+                toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true
+            });
+            Toast.fire({ icon: 'success', title: 'Reporte generado' });
+
+        } catch (error) {
+            console.error("Error al generar reporte:", error);
+
+            if (error.response && error.response.status === 404) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Ruta no encontrada (404)',
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo generar el reporte.'
+                });
+            }
         }
     };
 
