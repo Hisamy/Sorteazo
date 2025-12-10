@@ -28,11 +28,6 @@ export class Boleto {
     @Column({ type: 'timestamp', nullable: true })
     paymentDeadline: Date | null;
 
-    /*
-    @ManyToOne(() => Sorteo, (sorteo) => sorteo.boletos)
-    @JoinColumn({ name: 'sorteo_id' })
-    sorteo: Sorteo;
-    */
 
     @ManyToOne(() => Sorteo, (sorteo) => sorteo.boletos, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'sorteo_id' })
@@ -42,7 +37,6 @@ export class Boleto {
     @JoinColumn({ name: 'client_id' })
     client: Client | null;
 
-    
     @OneToOne(() => Pago, (pago) => pago.boleto, { nullable: true, cascade: true })
     pago: Pago | null;
 }
