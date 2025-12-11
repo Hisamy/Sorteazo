@@ -5,11 +5,12 @@ import {
     useLocation
 } from 'react-router-dom';
 import { TopNavBar } from './util-components/TopNavBar';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaTrophy, FaFileDownload } from 'react-icons/fa';
 import prizeImage from './assets/images/sorteo-placeholder.png';
 import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos';
 import { BoletoGrid } from './consulta-sorteo-components/BoletoGrid';
 import { BoletoDetalleModal } from './consulta-sorteo-components/BoletoDetalleModal';
+import { DashboardResumenCard } from './consulta-sorteo-components/DashboardResumenCard.jsx';
 import {
     obtenerSorteoPorId,
     obtenerBoletosPorSorteoOrganizador,
@@ -454,35 +455,72 @@ export const ConsultaSorteoOrganizador = () => {
                                 <p className="font-afacad text-2xl font-bold text-green-600">{numerosDisponibles}/{numerosTotales}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-600 font-afacad flex-wrap">
-                            <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 border-2 border-gray-400 rounded-full bg-white"></div>
-                                <span>Disponible</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 bg-yellow-400 rounded-full"></div>
-                                <span>Apartado</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 bg-blue-500 rounded-full"></div>
-                                <span>Pagado</span>
+                        {/* Simbología / Leyenda (Estilizada) */}
+                        <div className="flex items-center gap-6 border-t border-gray-100 pt-6 w-full max-w-xl">
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Estado:</span>
+                            <div className="flex gap-4 text-sm font-afacad font-medium text-gray-600">
+                                <div className="flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+                                    <div className="w-2.5 h-2.5 border-2 border-gray-400 rounded-full bg-white"></div>
+                                    <span>Disponible</span>
+                                </div>
+                                <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-100">
+                                    <div className="w-2.5 h-2.5 bg-yellow-400 rounded-full"></div>
+                                    <span className="text-yellow-800">Apartado</span>
+                                </div>
+                                <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                                    <div className="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+                                    <span className="text-blue-800">Pagado</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div className="flex flex-col items-center">
-                        <img src={sorteo.imageUrl} alt="Premio del sorteo" className="w-full max-w-xs rounded-lg shadow-md object-cover" />
-                        <button
-                            onClick={() => setIsPremiosModalOpen(true)}
-                            className="mt-4 bg-green-600 text-white font-afacad px-5 py-2 rounded-lg hover:bg-green-700 w-full max-w-xs">
-                            Ver premios
-                        </button>
-                        <button
-                            onClick={() => setIsGenerarReporteModalOpen(true)}
-                            className="mt-4 bg-green-600 text-white font-afacad px-5 py-2 rounded-lg hover:bg-green-700 w-full max-w-xs">
-                            Generar Reporte
-                        </button>
+                        <div className="relative group">
+                            <img
+                                src={sorteo.imageUrl}
+                                alt="Premio del sorteo"
+                                className="w-full max-w-xs rounded-2xl shadow-lg object-cover border border-gray-100 group-hover:shadow-xl transition-all duration-300"
+                            />
+                            {/* Etiqueta flotante decorativa (opcional) */}
+                            <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gray-600 shadow-sm">
+                                {sorteo.premios?.length || 0} Premios
+                            </div>
+                        </div>
+
+                        {/* Contenedor de Botones - Estilo Panel de Control */}
+                        <div className="w-full max-w-xs mt-6 flex flex-col gap-3">
+
+                            {/* Botón Ver Premios - Estilo Dorado/Ámbar */}
+                            <button
+                                onClick={() => setIsPremiosModalOpen(true)}
+                                className="group flex items-center justify-center gap-3 w-full px-5 py-3.5 bg-amber-50 hover:bg-amber-100 text-amber-800   rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                            >
+                                <div className="p-1.5  text-amber-500  group-hover:scale-110 transition-transform">
+                                    <FaTrophy size={16} />
+                                </div>
+                                <span className="font-afacad font-bold text-lg">Ver premios</span>
+                            </button>
+
+                            {/* Botón Generar Reporte */}
+                            <button
+                                onClick={() => setIsGenerarReporteModalOpen(true)}
+                                className="group flex items-center justify-center gap-3 w-full px-5 py-3.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800   rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                            >
+                                <div className="p-1.5   text-emerald-600  group-hover:scale-110 transition-transform">
+                                    <FaFileDownload size={16} />
+                                </div>
+                                <span className="font-afacad font-bold text-lg">Generar Reporte</span>
+                            </button>
+                        </div>
+
                     </div>
+
                 </div>
+                <DashboardResumenCard
+                    boletos={boletos}
+                    precioBoleto={Number(sorteo.ticketPrice)}
+                    fechaSorteo={sorteo.raffleDateTime}
+                />
                 <div className="mt-12 space-y-4">
                     {boletosAgrupados.map((chunk, index) => {
                         const numeros = chunk.map(b => Number(b.numero)).filter(n => !Number.isNaN(n));
