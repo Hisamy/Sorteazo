@@ -40,7 +40,7 @@ const CardSorteoOrganizador = ({ sorteo, onDelete, onClick, onEdit, onNotificati
         <div onClick={handleCardClick} className="flex items-center gap-6 bg-white border border-gray-200 rounded-lg p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
             <img src={imageUrl} alt={title} className="w-28 h-20 object-cover rounded-md" />
             <div className="flex-grow">
-                <h2 className="text-xl font-semibold text-gray-800 mb-3">{title}</h2>
+                <h2 className="text-xl font-semibold text-gray-800 mb-3 line-clamp-1">{title}</h2>
                 <div className="flex gap-10 text-sm text-gray-500">
                     <p>
                         Precio del boleto:

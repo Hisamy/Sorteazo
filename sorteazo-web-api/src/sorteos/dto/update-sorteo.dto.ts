@@ -1,10 +1,13 @@
-import { IsArray, IsDate, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested, Min, Max } from 'class-validator';
+import { IsArray, IsDate, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested, Min, Max, MinLength, MaxLength} from 'class-validator';
 import { Timestamp } from 'typeorm';
 import { Type, Transform } from 'class-transformer';
 import { CreatePremioDto } from './create-premio.dto';
 export class UpdateSorteoDto {
-    @IsOptional()
+
     @IsString()
+    @IsNotEmpty({ message: 'El titulo del sorteo es obligatorio.' })
+    @MinLength(10, { message: 'El titulo del sorteo debe tener al menos 10 caractéres.' })
+    @MaxLength(100, { message: 'El titulo del sorteo debe tener menos de 100 caractéres.' })
     title?: string;
 
     @IsString()
@@ -12,7 +15,9 @@ export class UpdateSorteoDto {
     imageUrl?: string;
 
     @IsString()
-    @IsOptional()
+    @IsNotEmpty({ message: 'La descripción del sorteo es obligatorio.' })
+    @MinLength(10, { message: 'La descripción del sorteo debe tener al menos 10 caractéres.' })
+    @MaxLength(300, { message: 'La descripción del sorteo debe tener menos de 300 caractéres.' })
     description?: string;
 
     @IsOptional()

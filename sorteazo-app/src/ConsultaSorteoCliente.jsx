@@ -323,7 +323,7 @@ export const ConsultaSorteoCliente = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="md:col-span-2">
                         <h1 className="font-afacad text-4xl font-bold text-[var(--color-dark-text)]">{sorteo.title}</h1>
-                        <p className="font-afacad text-lg text-[var(--color-gray-text)] mt-2 mb-6">{sorteo.description}</p>
+                        <p className="font-afacad text-lg text-[var(--color-gray-text)] mt-2 mb-6 break-words whitespace-pre-line">{sorteo.description}</p>
                         <div className="flex gap-12 mb-6">
                             <div>
                                 <p className="font-afacad text-sm text-gray-500">Precio del boleto:</p>

@@ -93,8 +93,8 @@ export function GestorCrearSorteo() {
             stepErrors.cantidadBoletos = "Ingresa la cantidad de boletos.";
         } else if (!Number.isInteger(cantidadBoletos)) {
             stepErrors.cantidadBoletos = "Ingresa un número entero válido.";
-        } else if (cantidadBoletos < 1 || cantidadBoletos > 1000) {
-            stepErrors.cantidadBoletos = "Debe estar entre 1 y 1,000.";
+        } else if (cantidadBoletos < 5 || cantidadBoletos > 1000) {
+            stepErrors.cantidadBoletos = "Debe estar entre 5 y 1,000.";
         }
 
         if (inicioNumeracionRaw === undefined || inicioNumeracionRaw === null || `${inicioNumeracionRaw}`.trim() === "") {

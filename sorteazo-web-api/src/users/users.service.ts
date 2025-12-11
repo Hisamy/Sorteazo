@@ -27,7 +27,7 @@ export class UsersService {
       where: { email: dto.email },
     });
     if (existingUser) {
-      throw new ConflictException('This email is already in use');
+      throw new ConflictException('Este correo electrónico ya se encuentra en uso.');
     }
 
     const user = this.userRepository.create({
@@ -48,7 +48,7 @@ export class UsersService {
     try {
       await this.clientRepository.save(client);
     } catch (error) {
-      throw new Error(`Error registering client: ${error.message}`);
+      throw new Error(`Ocurrió un error al registrar el usuario: ${error.message}`);
     }
 
     const { password, ...result } = savedUser;
@@ -99,7 +99,7 @@ export class UsersService {
   async findByEmail(email: string): Promise<User | null> {
     const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
-      throw new NotFoundException(`User with email ${email} not found`);
+      throw new NotFoundException(`No se pudo encontrar al usuario con el email '${email}'.`);
     }
     return user;
   }
@@ -110,7 +110,7 @@ export class UsersService {
       loginUserDto.password,
     );
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('El correo electrónico o la contraseña son inválidos.');
     }
 
     const payload = { email: user.email, sub: user.id, role: user.role };
