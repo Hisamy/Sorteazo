@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { TopNavBar } from './util-components/TopNavBar';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaTrophy } from 'react-icons/fa';
 import prizeImage from './assets/images/sorteo-placeholder.png';
 import { AccordionBoletos } from './consulta-sorteo-components/AccordionBoletos';
 import { BoletoGrid } from './consulta-sorteo-components/BoletoGrid';
@@ -34,13 +34,13 @@ export const ConsultaSorteoCliente = () => {
         const cargarDatosSorteo = async () => {
             try {
                 setLoading(true);
-                
+
                 // Obtener el usuario actual autenticado (desde JWT en cookies)
                 const usuarioActual = await obtenerUsuarioActual();
                 const currentUserId = usuarioActual?.id || usuarioActual?.userId;
                 setCurrentUserId(currentUserId);
                 console.log("Usuario actual autenticado:", usuarioActual, "ID:", currentUserId);
-                
+
                 // Siempre obtener los datos completos del sorteo para asegurar que tengamos los premios
                 const data = await obtenerSorteoPorId(id);
                 console.log("Datos del sorteo obtenidos:", data);
@@ -54,12 +54,12 @@ export const ConsultaSorteoCliente = () => {
 
                 const boletosData = await obtenerBoletosPorSorteoCliente(id);
                 console.log("Boletos obtenidos del backend:", boletosData);
-                
+
                 const boletosMapeados = boletosData.map(b => {
                     let estadoFrontend = 'disponible';
                     const numeroActual = Number(b.number);
-                    
-                    switch(b.status) {
+
+                    switch (b.status) {
                         case 'DISPONIBLE':
                             estadoFrontend = 'disponible';
                             break;
@@ -71,7 +71,7 @@ export const ConsultaSorteoCliente = () => {
                             // Gris si es de otro
                             const boletoClientId = String(b.clientId || '');
                             const usuarioId = String(currentUserId || '');
-                            
+
                             if (boletoClientId && usuarioId && boletoClientId === usuarioId) {
                                 estadoFrontend = 'apartadoMio';
                             } else {
@@ -85,7 +85,7 @@ export const ConsultaSorteoCliente = () => {
                         default:
                             estadoFrontend = 'disponible';
                     }
-                    
+
                     return {
                         ...b,
                         numero: numeroActual,
@@ -93,9 +93,9 @@ export const ConsultaSorteoCliente = () => {
                         estado: estadoFrontend
                     };
                 });
-                
+
                 console.log("Boletos mapeados:", boletosMapeados.filter(b => b.estado === 'apartadoMio'));
-                
+
                 // ordenar por número ascendente antes de agrupar
                 boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
                 setBoletos(boletosMapeados);
@@ -113,7 +113,7 @@ export const ConsultaSorteoCliente = () => {
     const handleBoletoClick = (numero) => {
         const boleto = boletos.find(b => b.numero === numero);
         if (!boleto) return;
-        
+
         // Caso 1: Boleto disponible → Modo apartar
         if (boleto.estado === 'disponible') {
             setModoSeleccion('apartar');
@@ -124,7 +124,7 @@ export const ConsultaSorteoCliente = () => {
                     return b?.estado === 'apartadoMio';
                 });
                 if (tieneApartados) return [numero];
-                return prev.includes(numero) 
+                return prev.includes(numero)
                     ? prev.filter(n => n !== numero)
                     : [...prev, numero];
             });
@@ -186,10 +186,10 @@ export const ConsultaSorteoCliente = () => {
     };
 
     const handleConfirmarPago = async ({ metodoPago, comprobanteFile, boletos: boletosAPagar }) => {
-        console.log('Procesando pago:', { 
-            metodoPago, 
+        console.log('Procesando pago:', {
+            metodoPago,
             boletosAPagar,
-            comprobanteFile: comprobanteFile?.name 
+            comprobanteFile: comprobanteFile?.name
         });
 
         try {
@@ -202,7 +202,7 @@ export const ConsultaSorteoCliente = () => {
             console.log('IDs de boletos a pagar:', boletoIds);
 
             let resultado;
-            
+
             if (metodoPago === 'TRANSFERENCIA') {
                 resultado = await procesarPagoTransferencia(boletoIds, comprobanteFile);
             } else if (metodoPago === 'PAGO EN LINEA') {
@@ -217,12 +217,12 @@ export const ConsultaSorteoCliente = () => {
             const boletosData = await obtenerBoletosPorSorteoCliente(id);
             const usuarioActual = await obtenerUsuarioActual();
             const currentUserId = usuarioActual?.id || usuarioActual?.userId;
-            
+
             const boletosMapeados = boletosData.map(b => {
                 let estadoFrontend = 'disponible';
                 const numeroActual = Number(b.number);
-                
-                switch(b.status) {
+
+                switch (b.status) {
                     case 'DISPONIBLE':
                         estadoFrontend = 'disponible';
                         break;
@@ -232,8 +232,8 @@ export const ConsultaSorteoCliente = () => {
                     case 'PAGO_PENDIENTE':
                         const boletoClientId = String(b.clientId || '');
                         const usuarioId = String(currentUserId || '');
-                        estadoFrontend = (boletoClientId && usuarioId && boletoClientId === usuarioId) 
-                            ? 'apartadoMio' 
+                        estadoFrontend = (boletoClientId && usuarioId && boletoClientId === usuarioId)
+                            ? 'apartadoMio'
                             : 'apartadoOtro';
                         break;
                     case 'PAGADO':
@@ -242,7 +242,7 @@ export const ConsultaSorteoCliente = () => {
                     default:
                         estadoFrontend = 'disponible';
                 }
-                
+
                 return {
                     ...b,
                     numero: numeroActual,
@@ -250,7 +250,7 @@ export const ConsultaSorteoCliente = () => {
                     estado: estadoFrontend
                 };
             });
-            
+
             boletosMapeados.sort((a, b) => (a.numero || 0) - (b.numero || 0));
             setBoletos(boletosMapeados);
 
@@ -258,7 +258,7 @@ export const ConsultaSorteoCliente = () => {
             await Swal.fire({
                 icon: "success",
                 title: "Pago Registrado",
-                text: metodoPago === 'TRANSFERENCIA' 
+                text: metodoPago === 'TRANSFERENCIA'
                     ? `Se ha registrado tu pago por ${boletoIds.length} boleto(s). El organizador verificará tu comprobante.`
                     : `¡Pago procesado exitosamente! Tus ${boletoIds.length} boleto(s) han sido pagados con tarjeta.`,
                 confirmButtonText: "Entendido"
@@ -267,7 +267,7 @@ export const ConsultaSorteoCliente = () => {
         } catch (error) {
             console.error('Error al procesar pago:', error);
             setIsPagoModalOpen(false);
-            
+
             await Swal.fire({
                 icon: "error",
                 title: "Error al procesar pago",
@@ -358,12 +358,35 @@ export const ConsultaSorteoCliente = () => {
                         </div>
                     </div>
                     <div className="flex flex-col items-center">
-                        <img src={sorteo.imageUrl} alt="Premio del sorteo" className="w-full max-w-xs rounded-lg shadow-md object-cover" />
-                        <button
-                            onClick={() => setIsPremiosModalOpen(true)}
-                            className="mt-4 bg-green-600 text-white font-afacad px-5 py-2 rounded-lg hover:bg-green-700 w-full max-w-xs">
-                            Ver premios
-                        </button>
+                        <div className="relative group">
+                            <img
+                                src={sorteo.imageUrl}
+                                alt="Premio del sorteo"
+                                className="w-full max-w-xs rounded-2xl shadow-lg object-cover border border-gray-100 group-hover:shadow-xl transition-all duration-300"
+                            />
+                            {/* Etiqueta flotante decorativa (opcional) */}
+                            <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gray-600 shadow-sm">
+                                {sorteo.premios?.length || 0} Premios
+                            </div>
+                        </div>
+
+                        {/* Contenedor de Botones - Estilo Panel de Control */}
+                        <div className="w-full max-w-xs mt-6 flex flex-col gap-3">
+
+                            {/* Botón Ver Premios - Estilo Dorado/Ámbar */}
+                            <button
+                                onClick={() => setIsPremiosModalOpen(true)}
+                                className="group flex items-center justify-center gap-3 w-full px-5 py-3.5 bg-amber-50 hover:bg-amber-100 text-amber-800   rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                            >
+                                <div className="p-1.5  text-amber-500  group-hover:scale-110 transition-transform">
+                                    <FaTrophy size={16} />
+                                </div>
+                                <span className="font-afacad font-bold text-lg">Ver premios</span>
+                            </button>
+
+
+                        </div>
+
                     </div>
                 </div>
                 <div className="mt-12 space-y-4">
