@@ -9,7 +9,7 @@ export class UpdateBoletosInfoDto {
         return isNaN(num) ? value : num;
     })
     @IsInt({ message: 'La cantidad de boletos debe ser un número entero' })
-    @Min(1, { message: 'Debe haber al menos 1 boleto' })
+    @Min(5, { message: 'Debe haber al menos 5 boletos' })
     @Max(1000, { message: 'No puede haber más de 1000 boletos' })
     numbersQuantity?: number;
 
